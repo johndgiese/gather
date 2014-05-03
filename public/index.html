@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>People Games</title>
+
+    <script src="/vendor/socket.io-client/dist/socket.io.js"></script>
+    <script>
+      var socket = io.connect('http://localhost:3000');
+
+      socket.on('visit', function() {
+        console.log("a visit occured");
+      });
+
+    </script>
+
+  </head>
+  <body>
+  </body>
+</html>

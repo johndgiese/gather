@@ -1,10 +1,9 @@
 var express = require('express');
-var http = require('http');
 var socket = require('socket.io');
 var mysql = require('mysql');
 
 var app = express();
-var server = http.createServer(app);
+var server = app.listen(3000);
 var io = socket.listen(server);
 
 var db = mysql.createConnection({
@@ -15,16 +14,20 @@ var db = mysql.createConnection({
 });
 
 
+// use express for servering static files
 app.use(function(req, res, next){
   console.log('%s %s', req.method, req.url);
-  var url = db.escape(req.url);
-  var method = db.escape(req.method);
-  db.query('INSERT INTO tbvisit (url, method) VALUES (' + url + ', ' + method + ');');
   next();
 });
-
-app.get('/', function(req, res){
-  res.send('<p>hello world</p>');
+app.use(express.static(__dirname + '/public'));
+app.get('/', function(req, res) {
+  res.sendfile(__dirname + '/index.html');
 });
 
-app.listen(3000);
+
+// use sockets for everything else
+io.sockets.on('connection', function (socket) {
+  console.log("setting up connection");
+  socket.broadcast.emit('visit');
+});
+
