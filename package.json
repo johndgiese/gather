@@ -6,6 +6,7 @@
   "dependencies": {
     "express": "~4.1.1",
     "socket.io": "~0.9.16",
+    "mysql": "~2.2.0"
   },
   "devDependencies": {},
   "scripts": {
@@ -15,4 +16,3 @@
   "author": "",
   "license": "BSD"
 }
-

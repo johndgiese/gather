@@ -1,0 +1,9 @@
+CREATE DATABASE nounadj;
+USE nounadj;
+
+CREATE TABLE tbvisit (
+    id MEDIUMINT NOT NULL AUTO_INCREMENT,
+    url VARCHAR(1024) NOT NULL,
+    method VARCHAR(32) NOT NULL,
+    PRIMARY KEY (id)
+);
