@@ -5,6 +5,7 @@
   "main": "index.js",
   "dependencies": {
     "express": "~4.1.1",
+    "socket.io": "~0.9.16",
   },
   "devDependencies": {},
   "scripts": {
