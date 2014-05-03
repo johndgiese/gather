@@ -1,0 +1,22 @@
+{
+  "name": "NounAdj",
+  "version": "0.0.0",
+  "authors": [
+    "J. David Giese <johndgiese@gmail.com>"
+  ],
+  "license": "MIT",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "public/vendor",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "angular": "~1.2.16",
+    "socket.io": "~0.9.15",
+    "bootstrap": "~3.1.1"
+  }
+}
