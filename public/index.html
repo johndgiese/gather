@@ -2,19 +2,27 @@
 <html>
   <head>
     <meta charset="UTF-8">
-    <title>People Games</title>
-
-    <script src="/vendor/socket.io-client/dist/socket.io.js"></script>
-    <script>
-      var socket = io.connect('http://localhost:3000');
-
-      socket.on('visit', function() {
-        console.log("a visit occured");
-      });
-
-    </script>
-
+    <title>Gather Games</title>
+    <style>
+      .page {
+        width: 100%;
+        height: 100%;
+      }
+    </style>
+    <script src="/vendor/angular/angular.min.js"></script>
   </head>
-  <body>
+
+  <body ng-app="app" ng-cloak>
+    <div ng-controller="AppCtrl" class="page">
+      <p>Visits {{ visits }}</p>
+    </div>
   </body>
+
+  <script src="/vendor/socket.io-client/dist/socket.io.min.js"></script>
+  <script src="/vendor/angular-ui-router/release/angular-ui-router.min.js"></script>
+
+  <script src="/app/app.js"></script>
+  <script src="/socket/socket.js"></script>
+  <script src="/app/controllers/AppCtrl.js"></script>
+
 </html>
