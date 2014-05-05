@@ -1,5 +1,9 @@
-var app = angular.module('app', ['socket']);
+var app = angular.module('app', [
+  'socket',
+  'ui.router'
+]);
 
-//app.config(['socketProvider', function(socketProvider) {
-  //socketProvider.setUrl('http://localhost:3000');
-//}]);
+app.config(['SocketProvider', function(SocketProvider) {
+  SocketProvider.setUrl('http://localhost:3000');
+}]);
+
