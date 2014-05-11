@@ -6,13 +6,23 @@ at the same location.
 
 ## Installation
 
-Starting from the root of the repository:
+## Install Dependencies
 
 ```bash
 cd public
 bower install
 cd ../server
 npm install
+```
+
+## Setup Database
+
+Currently assuming there is a username/password matching those in `server/db.js`.
+
+First create a database named "gather".  Then create the database:
+
+```bash
+mysql -uroot -p gather < server/schema.sql
 ```
 
 
