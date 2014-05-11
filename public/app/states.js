@@ -18,6 +18,18 @@ app.config(['$stateProvider', function($stateProvider) {
     url: '/search',
     controller: 'SearchCtrl',
     templateUrl: 'templates/search.html',
+  })
+
+  .state('setup', {
+    url: '/setup',
+    controller: 'SetupCtrl',
+    templateUrl: 'templates/setup.html',
+  })
+
+  .state('game', {
+    url: '/game',
+    controller: 'GameCtrl',
+    templateUrl: 'templates/game.html',
   });
 
 }]);
