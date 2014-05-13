@@ -83,7 +83,7 @@ io.sockets.on('connection', function (socket) {
       game = game_;
       player.join(game.id).then(function() {
         socket.join(game.id);
-        socket.broadcast.emit('playerJoined', player);
+        socket.broadcast.to(game.id).emit('playerJoined', player);
         acknowledge(game);
       });
     });

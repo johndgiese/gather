@@ -9,10 +9,6 @@ app.controller('WaitingCtrl', [
       $state.go('game');
     });
 
-    $scope.cancelSearch = function() {
-      $state.go('landing');
-    };
-
   }
 ]);
 

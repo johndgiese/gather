@@ -14,10 +14,6 @@ app.controller('CreatePlayerCtrl', [
       });
     };
 
-    $scope.cancel = function() {
-      $state.go('landing');
-    };
-
   }
 ]);
 

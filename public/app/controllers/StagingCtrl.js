@@ -11,10 +11,6 @@ app.controller('StagingCtrl', [
       });
     };
 
-    $scope.cancelSearch = function() {
-      $state.go('landing');
-    };
-
   }
 ]);
 

@@ -12,10 +12,6 @@ app.controller('SearchCtrl', [
       });
     };
 
-    $scope.cancelSearch = function() {
-      $state.go('landing');
-    };
-
   }
 ]);
 
