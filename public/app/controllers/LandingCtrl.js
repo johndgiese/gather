@@ -1,12 +1,19 @@
 app.controller('LandingCtrl', [
-  '$scope', '$state',
-  function($scope, $state) {
+  '$scope', '$state', 'playerService', 'gameService',
+  function($scope, $state, playerService, gameService) {
+
+    gameService.set(null);
+
     $scope.createGame = function() {
-      $state.go('create');
+      $state.go('createGame');
     };
 
     $scope.searchForGames = function() {
-      $state.go('search');
+      if (playerService.get() === null) {
+        $state.go('createPlayer');
+      } else {
+        $state.go('search');
+      }
     };
   }
 ]);

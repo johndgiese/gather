@@ -1,0 +1,8 @@
+<h3>What is your Name?</h3>
+
+<form novalidation name="form">
+  <p>Name <input type="text" name="playerName" ng-model="playerName" required></input></p>
+  <button type="button" ng-click="createPlayer()" ng-disabled="form.$invalid">Search For Games</button>
+</form>
+
+<button type="button" ng-click="cancel()">Cancel</button>

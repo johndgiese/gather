@@ -22,6 +22,9 @@ Model.prototype.getFields = function() {
 
 Model.prototype.setFields = function(fieldNames) {
   this._fields = fieldNames;
+  if (fieldNames.id === undefined) {
+    this._fields.push('id');
+  }
 };
 
 Model.prototype.getFieldData = function() {
@@ -37,39 +40,52 @@ Model.prototype.getFieldData = function() {
   return data;
 };
 
-Model.prototype.save = function () {
+// mysql query that uses a promise
+Model.prototype.query = function() {
   var instance = this;
   var deferred = Q.defer();
-
-  var inserts = [this.getTable(), this.getFieldData()];
-  var afterInsert = function(error, result) {
+  var after = function(error, result) {
     if (error) {
       deferred.reject(new Error(error));
     } else {
-      instance.id = result.insertId;
-      deferred.resolve(instance);
+      deferred.resolve(result);
     }
+  };
+
+  if (arguments.length == 2) {
+    db.query(arguments[0], arguments[1], after);
+  } else if (arguments.length == 1) {
+    db.query(arguments[0], after);
   }
 
-  db.query('INSERT INTO ?? SET ?', inserts, afterInsert);
   return deferred.promise;
+}
+
+
+Model.prototype.save = function () {
+  var instance = this;
+  var inserts = [this.getTable(), this.getFieldData()];
+  return this.query('INSERT INTO ?? SET ?', inserts)
+  .then(function(result) {
+    instance.id = result.insertId;
+    return instance;
+  });
 };
 
 
 Model.prototype.delete = function () {
   var instance = this;
-  var deferred = Q.defer();
-
-  var inserts = [this.getTable(), instance.id];
-  var afterDelete = function(error, result) {
-    if (error) {
-      deferred.reject(new Error(error));
+  var inserts = [this.getTable(), this.id];
+  return this.query('DELETE FROM ?? WHERE id = ?', inserts)
+  .then(function(result) {
+    var success = result.affectedRows === 1;
+    if (success) {
+      return true;
     } else {
-      var success = result.affectedRows === 1;
-      deferred.resolve(success);
+      var msg = "Unable to delete id = " + instance.id +
+                " from " + instance.getTable();
+      throw new Error(msg);
     }
-  };
-
-  db.query('DELETE FROM ?? WHERE id = ?', inserts, afterDelete);
-  return deferred.promise;
+  });
 };
+

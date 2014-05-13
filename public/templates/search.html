@@ -1,5 +1,9 @@
-<p>Searching...</p>
+<h3>Searching for nearby games</h3>
 
-<button type="button" ng-click="cancelSearch()">
-  Cancel
-</button>
+<ul>
+  <li ng-repeat="g in games">
+    <button type="button" ng-click="join(g.id)">Join {{ g.name }}</button>
+  </li>
+</ul>
+
+<button type="button" ng-click="cancelSearch()">Cancel</button>
