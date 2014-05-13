@@ -12,7 +12,7 @@ app.factory('gameService', ['socket', function(socket) {
 
   function setGame(newGame) { 
     var gameId = game && game.id;
-    var newGameId = newGame && newGameId;
+    var newGameId = newGame && newGame.id;
     if (gameId !== newGameId && game !== null) {
       socket.emit('leaveGame', game.id);
     }

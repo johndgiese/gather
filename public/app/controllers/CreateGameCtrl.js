@@ -50,7 +50,7 @@ app.controller('CreateGameCtrl', [
 
     function createGame(gameName) {
       var deferred = $q.defer();
-      return socket.emit('createGame', {
+      socket.emit('createGame', {
         gameName: gameName,
       }, function(game) {
         gameService.set(game);
