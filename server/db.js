@@ -1,10 +1,10 @@
-var constants = require('./_local');
+var config = require('./config');
 
 var mysql = require('mysql');
 
 module.exports = mysql.createConnection({
   host: 'localhost',
-  user: constants.DB_USERNAME,
-  password: constants.DB_PASSWORD,
+  user: config.DB_USERNAME,
+  password: config.DB_PASSWORD,
   database: 'gather'
 });

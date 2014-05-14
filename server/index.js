@@ -1,9 +1,11 @@
+var config = require('./config');
+
 var express = require('express');
 var socket = require('socket.io');
 var models = require('./models');
 
 var app = express();
-var server = app.listen(3000);
+var server = app.listen(config.PORT);
 var io = socket.listen(server);
 
 

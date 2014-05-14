@@ -5,7 +5,7 @@ angular.module('app', [
 ])
 
 .config(['socketProvider', function(socketProvider) {
-  socketProvider.setUrl('http://localhost:3000');
+  socketProvider.setUrl('/');
 }])
 
 .config(['$urlRouterProvider', function($urlRouterProvider) {
