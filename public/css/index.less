@@ -1,7 +1,44 @@
-@import "../_vendor/bootstrap/less/bootstrap.less";
+@import "../_vendor/bootstrap/less/variables.less";
+@import "../_vendor/bootstrap/less/mixins.less";
 @import "variables.less";
+
+@import "../_vendor/bootstrap/less/normalize.less";
+@import "../_vendor/bootstrap/less/type.less";
+@import "../_vendor/bootstrap/less/grid.less";
+@import "../_vendor/bootstrap/less/buttons.less";
 
 body {
     background-color: @brand-background;
+}
 
+header {
+    background-image: url('/img/logo.png');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+    height: 72px;
+}
+
+btn.color-highlight:hover,
+.color-highlight {
+    color: @brand-highlight !important;
+}
+
+btn.color-accent:hover,
+.color-accent {
+    color: @brand-accent !important;
+}
+
+.action-button {
+    .btn();
+    font-size: 30px;
+    background-color: @brand-primary;
+
+    &:hover {
+        background-color: fadeout(@brand-primary, 10%);
+    }
+}
+
+.action-button:hover {
+    color: none;
 }

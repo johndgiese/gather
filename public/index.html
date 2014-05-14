@@ -2,17 +2,31 @@
 <html>
   <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
     <title>Gather</title>
+
     <script src="/_vendor/angular/angular.min.js"></script>
     <link rel="stylesheet" type="text/css" href="/_dist/index.css">
   </head>
 
   <body ng-app="app" ng-cloak>
     <div class="container-fluid" ng-controller="AppCtrl">
-      <ul class="message-list" ng-show="messages.length">
-        <li class="message" ng-repeat="m in messages">{{ m.message }}</li>
-      </ul>
-      <div ui-view></div>
+
+      <header class="row">
+      </header>
+
+      <div class="row" ng-show="messages.length">
+        <ul class="message-list">
+          <li class="message" ng-repeat="m in messages">{{ m.message }}</li>
+        </ul>
+      </div>
+
+      <div class="row">
+        <div class="span12" ui-view>
+        </div>
+      </div>
+
     </div>
   </body>
 
