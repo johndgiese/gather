@@ -1,5 +1,5 @@
 {
-  "name": "NounAdj",
+  "name": "Gather",
   "version": "0.0.0",
   "authors": [
     "J. David Giese <johndgiese@gmail.com>"
@@ -15,9 +15,9 @@
     "tests"
   ],
   "dependencies": {
-    "angular": "~1.2",
-    "bootstrap": "~3.1",
-    "socket.io-client": "~0.9",
-    "angular-ui-router": "~0.2"
+    "angular": "1.2",
+    "bootstrap": "3.1",
+    "socket.io-client": "0.9",
+    "angular-ui-router": "0.2"
   }
 }

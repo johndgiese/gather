@@ -1,3 +1,4 @@
 public/_vendor
 public/_dist
 node_modules
+server/_local.js

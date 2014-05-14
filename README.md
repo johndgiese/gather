@@ -1,7 +1,7 @@
 # Gather Games Word Associations
 
-A simple group-based word game designed to be played on phones and tables while
-at the same location.
+A simple group-based word game designed to be played on phones and tablets
+while at the same location.
 
 
 ## Installation
@@ -18,14 +18,27 @@ npm install
 
 ## Setup Database
 
-Currently assuming there is a username/password matching those in `server/db.js`.
-
-First create a database named "gather".  Then create the database:
-
 ```bash
-mysql -uroot -p gather < server/schema.sql
+cp server/local.template.js server/_local.js
+vim server/_local.js  # fill in details
+echo "CREATE DATABASE gather" | mysql -u USERNAME -p
+mysql -u USERNAME -p gather < server/schema.sql
 ```
 
+## Static Files
+
+Minify and compress less:
+
+```bash
+grunt less
+grunt uglify
+```
+
+Watch source files and re-run using the default task:
+
+```bash
+grunt
+```
 
 ## Run Server
 
