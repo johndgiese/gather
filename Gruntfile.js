@@ -19,12 +19,18 @@ module.exports = function(grunt) {
       'public/modal/**/*.js',
       'public/words/**/*.js',
     ],
+    lessSrc: [
+      'public/css/**/*.less',
+      'public/css/**/*.css',
+      'public/_vendor/bootstrap/less/*.less'
+    ],
     externalSrc: [
       'public/modal/ui-bootstrap-modal-0.10.0.js',
       'public/modal/ui-bootstrap-modal-tpls-0.10.0.js',
       'public/_vendor/angular-ui-router/release/angular-ui-router.js',
       'public/_vendor/socket.io-client/dist/socket.io.js',
     ],
+
     uglify: {
       options: {
         banner: '/*! <%= pkg.name %> <%= grunt.template.today("yyyy-mm-dd") %> */\n',
@@ -35,19 +41,51 @@ module.exports = function(grunt) {
         src: ['<%= src %>', '<%= externalSrc %>']
       }
     },
+
     jshint: {
       all: '<%= src %>',
     },
+
     watch: {
-      files: '<%= src %>',
-      tasks: ['jshint', 'uglify']
+      js: {
+        files: '<%= src %>',
+        tasks: ['jshint', 'uglify']
+      },
+      configFiles: {
+        files: ['Gruntfile.js'],
+        options: {
+          livereload: true
+        }
+      },
+      style: {
+        files: '<%= lessSrc %>',
+        tasks: ['less:development'],
+      }
+    },
+
+    less: {
+      development: {
+        options: {
+          paths: '<%= lessSrc %>',
+          sourceMap: true,
+          sourceMapFilename: 'public/_dist/index.map.css',
+          sourceMapURL: '/_dist/index.map.css',
+          strictImports: true
+        },
+        files: {
+          'public/_dist/index.css': 'public/css/index.less'
+        }
+      }
     }
+
+
   });
 
+  grunt.loadNpmTasks('grunt-contrib-less');
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-contrib-watch');
 
-  grunt.registerTask('default', ['jshint', 'uglify', 'watch']);
+  grunt.registerTask('default', ['jshint', 'less', 'uglify', 'watch']);
 
 };
