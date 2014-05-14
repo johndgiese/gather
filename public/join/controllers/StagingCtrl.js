@@ -1,7 +1,8 @@
-app.controller('StagingCtrl', [
-  '$scope', '$state', 'Socket', 'liveModelList',
-  function($scope, $state, Socket, liveModelList) {
-    var socket = new Socket($scope);
+angular.module('join')
+.controller('StagingCtrl', [
+  '$scope', '$state', 'ScopedSocket', 'liveModelList',
+  function($scope, $state, ScopedSocket, liveModelList) {
+    var socket = new ScopedSocket($scope);
 
     $scope.players = liveModelList(socket, 'getGamePlayers', 'playerJoined', 'playerLeft');
 

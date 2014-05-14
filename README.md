@@ -8,10 +8,11 @@ at the same location.
 
 ## Install Dependencies
 
+You will need to install `mysql` and `node` first.
+
 ```bash
-cd public
+npm install -g grunt-cli bower
 bower install
-cd ../server
 npm install
 ```
 

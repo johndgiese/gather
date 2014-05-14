@@ -1,4 +1,5 @@
-app.controller('LandingCtrl', [
+angular.module('join')
+.controller('LandingCtrl', [
   '$scope', '$state', 'playerService', 'gameService',
   function($scope, $state, playerService, gameService) {
 

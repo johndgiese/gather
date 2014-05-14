@@ -1,0 +1,20 @@
+{
+  "name": "Gather",
+  "version": "0.0.0",
+  "description": "Realtime, local, tech-enabled games for people.",
+  "main": "index.js",
+  "dependencies": {
+    "express": "~4.1",
+    "socket.io": "~0.9",
+    "mysql": "~2.2",
+    "q": "~1.0"
+  },
+  "devDependencies": {
+    "grunt": "~0.4",
+    "grunt-contrib-uglify": "~0.4",
+    "grunt-contrib-jshint": "~0.10.0"
+  },
+  "repository": "https://bitbucket.org/jdgiese/gather-games-word-association",
+  "author": "",
+  "license": ""
+}

@@ -1,4 +1,5 @@
-app.factory('gameService', ['socket', function(socket) {
+angular.module('join')
+.factory('gameService', ['socket', function(socket) {
   var game = null;
 
   return {
@@ -8,7 +9,7 @@ app.factory('gameService', ['socket', function(socket) {
 
   function getGame() {
     return game;
-  };
+  }
 
   function setGame(newGame) { 
     var gameId = game && game.id;
@@ -17,6 +18,6 @@ app.factory('gameService', ['socket', function(socket) {
       socket.emit('leaveGame', game.id);
     }
     game = newGame;
-  };
+  }
 
 }]);

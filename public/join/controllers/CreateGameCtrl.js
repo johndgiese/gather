@@ -1,7 +1,8 @@
-app.controller('CreateGameCtrl', [
-  '$scope', '$state', 'Socket', 'playerService', 'gameService', '$q', 
-  function($scope, $state, Socket, playerService, gameService, $q) {
-    var socket = new Socket($scope);
+angular.module('join')
+.controller('CreateGameCtrl', [
+  '$scope', '$state', 'ScopedSocket', 'playerService', 'gameService', '$q', 
+  function($scope, $state, ScopedSocket, playerService, gameService, $q) {
+    var socket = new ScopedSocket($scope);
 
     $scope.playerCreated = playerService.get() !== null;
 
@@ -21,10 +22,11 @@ app.controller('CreateGameCtrl', [
 
     $scope.create = function() {
 
+      var player;
       if (!$scope.playerCreated) {
-        var player = createPlayer($scope.playerName);
+        player = createPlayer($scope.playerName);
       } else {
-        var player = $q.when(playerService.get());
+        player = $q.when(playerService.get());
       }
 
       player.then(function() {
