@@ -6,4 +6,3 @@ for (key in local) {
   exports[key] = local[key];
 }
 
-console.log(exports);
