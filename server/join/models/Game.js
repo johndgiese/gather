@@ -1,18 +1,12 @@
-var Model = require('../orm').Model;
+var Model = require('../../orm').Model;
 
-exports.model = Game;
-
-function Game(data) {
-  var instance = this;
-  this.getFields().forEach(function(field) {
-    if (data[field] !== undefined) {
-      instance[field] = data[field];
-    }
-  });
-}
+exports.Model = Game;
 
 var fields = ['name', 'created_by', 'active_players', 'open'];
 Game.prototype = new Model('tb_game', fields);
+function Game(data) {
+  this.setFieldData(data);
+}
 
 Game.prototype.getState = function(playerId) {
   var instance = this;
@@ -23,13 +17,10 @@ Game.prototype.getState = function(playerId) {
 
   return this.query(sql, [this.id])
   .then(function(players) {
-
-    // game state currently just has players
     return {
       players: players
     };
   });
-
 };
 
 Game.prototype.close = function() {

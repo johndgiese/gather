@@ -1,3 +1,5 @@
+serverConfig = require('./server/config');
+
 module.exports = function(grunt) {
 
   grunt.initConfig({
@@ -18,6 +20,9 @@ module.exports = function(grunt) {
       'public/socket/**/*.js',
       'public/modal/**/*.js',
       'public/words/**/*.js',
+    ],
+    serverSrc: [
+      'server/**/*.js',
     ],
     lessSrc: [
       'public/css/**/*.less',
@@ -43,7 +48,7 @@ module.exports = function(grunt) {
     },
 
     jshint: {
-      all: '<%= src %>',
+      all: ['<%= src %>', '<%= serverSrc %>'],
     },
 
     watch: {

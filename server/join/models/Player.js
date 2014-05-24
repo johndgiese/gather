@@ -1,14 +1,13 @@
-var Model = require('../orm').Model;
+var Model = require('../../orm').Model;
 var db = require('../db');
 
-exports.model = Player;
-
-function Player(name) {
-  this.name = name;
-}
+exports.Model = Player;
 
 var fields = ['name'];
 Player.prototype = new Model('tb_player', fields);
+function Player(name) {
+  this.name = name;
+}
 
 Player.prototype.serialize = function() {
   var fields = this.getFieldData();

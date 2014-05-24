@@ -1,8 +1,8 @@
-var config = require('./config');
-
 var express = require('express');
 var socket = require('socket.io');
-var models = require('./models');
+
+var config = require('./config');
+var models = require('./join/models');
 
 var app = express();
 var server = app.listen(config.PORT);
