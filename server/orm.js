@@ -91,10 +91,14 @@ Model.raw = Model.prototype.raw = function() {
   };
 
   console.log(arguments);
-  if (arguments.length == 2) {
-    db.query(arguments[0], arguments[1], after);
-  } else if (arguments.length == 1) {
-    db.query(arguments[0], after);
+  try {
+    if (arguments.length == 2) {
+      db.query(arguments[0], arguments[1], after);
+    } else if (arguments.length == 1) {
+      db.query(arguments[0], after);
+    }
+  } catch(e) {
+    return Q.when(e);
   }
 
   return deferred.promise;
@@ -102,18 +106,18 @@ Model.raw = Model.prototype.raw = function() {
 
 Model.query = function() {
   var M = this.M;
-  M.raw(arguments)
-    .then(function(raw) {
-      if (_.isObject(result)) {
-         return new M(result);
-      } else {
-        objs = [];
-        for (var i = 0, len = result.length; i < len; i++) {
-          objs.push(new M(result[i]));
-        }
-        return objs;
+  return M.raw.apply(null, arguments)
+  .then(function(raw) {
+    if (_.isObject(raw)) {
+      return new M(raw);
+    } else {
+      var objs = [];
+      for (var i = 0, len = raw.length; i < len; i++) {
+        objs.push(new M(raw[i]));
       }
-    });
+      return objs;
+    }
+  });
 };
 
 // execute a query then return the original self
@@ -149,16 +153,16 @@ Model.prototype.delete = function () {
   var self = this;
   var inserts = [this.M.table, this.M.idField, this.id];
   return this.raw('DELETE FROM ?? WHERE ??=?', inserts)
-    .then(function(result) {
-      var success = result.affectedRows === 1;
-      if (success) {
-        return true;
-      } else {
-        var msg = "Unable to delete id = " + self.id +
-                  " from " + self.M.table;
-        throw new Error(msg);
-      }
-    });
+  .then(function(result) {
+    var success = result.affectedRows === 1;
+    if (success) {
+      return true;
+    } else {
+      var msg = "Unable to delete id = " + self.id +
+                " from " + self.M.table;
+      throw new Error(msg);
+    }
+  });
 };
 
 // Load Model classes from a folder, and expose them as a single module.
