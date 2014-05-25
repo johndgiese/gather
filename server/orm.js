@@ -29,6 +29,7 @@ function define(table, propFieldMap, idField) {
   M.idField = idField;
   M.props = props;
   M.fields = fields;
+  M.propFieldMap = map;
   _.extend(M, Model);
 
   return M;
@@ -64,15 +65,16 @@ Model.prototype.hydrate = function(data) {
   }
 };
 
-Model.prototype.fieldData = function(fields) {
-  if (fields === undefined) {
-    fields = this.M.fields;
+Model.prototype.fieldData = function(props) {
+  if (props === undefined) {
+    props = this.M.props;
   }
   var fieldData = {};
-  for (var i = 0, len = fields.length; i < len; i++) {
-    var field = fields[i];
-    if (this[field] !== undefined) {
-      fieldData[field] = this[field];
+  for (var i = 0, len = props.length; i < len; i++) {
+    var prop = props[i];
+    if (this[prop] !== undefined) {
+      var field = this.M.propFieldMap[prop];
+      fieldData[field] = this[prop];
     }
   }
   return fieldData;
