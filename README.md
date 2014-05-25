@@ -22,7 +22,9 @@ npm install
 cp server/local.template.js server/_local.js
 vim server/_local.js  # fill in details
 echo "CREATE DATABASE gather" | mysql -u USERNAME -p
-mysql -u USERNAME -p gather < server/schema.sql
+cd server
+mysql -u USERNAME -p gather < schema.sql
+cd -
 ```
 
 ## Static Files
