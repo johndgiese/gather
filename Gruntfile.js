@@ -74,15 +74,17 @@ module.exports = function(grunt) {
     },
 
     less: {
-      options: {
-        paths: '<%= lessSrc %>',
-        sourceMap: true,
-        sourceMapFilename: 'public/_dist/index.map.css',
-        sourceMapURL: '/_dist/index.map.css',
-        strictImports: true
-      },
-      files: {
-        'public/_dist/index.css': 'public/css/index.less'
+      public: {
+        options: {
+          paths: '<%= lessSrc %>',
+          sourceMap: true,
+          sourceMapFilename: 'public/_dist/index.map.css',
+          sourceMapURL: '/_dist/index.map.css',
+          strictImports: true
+        },
+        files: {
+          'public/_dist/index.css': 'public/css/index.less'
+        }
       }
     }
 
