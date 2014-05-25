@@ -59,11 +59,21 @@ io.sockets.on('connection', function (socket) {
     });
   }
 
+  function requireValidPlayerName(data) {
+    return Q.fcall(function() {
+      var name = data.playerName;
+      return name instanceof String && name.length >= 1;
+    });
+  }
+
   function createPlayer(data, acknowledge) {
-    player = new models.Player({name: data.playerName});
-    player.save()
+    requireValidPlayerName(data)
     .then(function() {
-      acknowledge(player);
+      player = new models.Player({name: data.playerName});
+      return player.save()
+      .then(function() {
+        acknowledge(player);
+      });
     })
     .fail(function(error) {
       console.error(error);
@@ -79,8 +89,7 @@ io.sockets.on('connection', function (socket) {
       .then(function() {
         socket.broadcast.emit('gameOpen', game);
         joinGame(game.id, acknowledge);
-      })
-      .done();
+      });
     })
     .fail(function(error) {
       console.error(error);
@@ -96,8 +105,7 @@ io.sockets.on('connection', function (socket) {
         socket.broadcast.emit('gameClosed', game);
         socket.broadcast.to(game.id).emit('gameStart', true);
         acknowledge();
-      })
-      .done();
+      });
     })
     .fail(function(error) {
       console.error(error);
@@ -123,8 +131,7 @@ io.sockets.on('connection', function (socket) {
       return game.getState(player.id)
       .then(function(state) {
         acknowledge(state.players);
-      })
-      .done();
+      });
     })
     .fail(function(error) {
       console.error(error);
@@ -144,8 +151,7 @@ io.sockets.on('connection', function (socket) {
         socket.join(game.id);
         socket.broadcast.to(game.id).emit('playerJoined', player);
         acknowledge(game);
-      })
-      .done();
+      });
     })
     .fail(function(error) {
       console.error(error);
@@ -167,8 +173,7 @@ io.sockets.on('connection', function (socket) {
           socket.broadcast.emit('gameClosed', game);
         }
         game = null;
-      })
-      .done();
+      });
     })
     .fail(function(error) {
       console.error(error);
