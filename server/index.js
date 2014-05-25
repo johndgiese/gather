@@ -1,18 +1,15 @@
-var express = require('express');
-var socket = require('socket.io');
+var config = require('./config');
+var logger = require('./logger');
+
 var path = require('path');
 var Q = require('q');
 
-var config = require('./config');
-var models = require('./join/models');
-var logger = require('./logger');
-
-var app = express();
-var server = app.listen(config.PORT);
-var io = socket.listen(server);
-
 
 // USE EXPRESS FOR SERVERING STATIC FILES
+var express = require('express');
+var app = express();
+var server = app.listen(config.PORT);
+
 app.use(function(request, result, next){
   logger.log('%s %s', request.method, request.url);
   next();
@@ -25,6 +22,10 @@ app.use(function(request, result) {
 
 
 // USE SOCKETS FOR EVERYTHING ELSE
+var socket = require('socket.io');
+var io = socket.listen(server);
+var models = require('./join/models');
+
 io.sockets.on('connection', function (socket) {
 
   // connection level state
