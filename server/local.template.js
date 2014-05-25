@@ -5,3 +5,7 @@
 exports.DB_PASSWORD = 'CHANGEME';
 exports.DB_USERNAME = 'CHANGEME';
 exports.PORT = 80;
+
+// global flag for controlling environment specific settings
+// is either 'DEV' for development settings or 'PROD' for production settings
+exports.ENV = 'DEV';
