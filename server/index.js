@@ -5,6 +5,7 @@ var Q = require('q');
 
 var config = require('./config');
 var models = require('./join/models');
+var logger = require('./logger');
 
 var app = express();
 var server = app.listen(config.PORT);
@@ -13,7 +14,7 @@ var io = socket.listen(server);
 
 // USE EXPRESS FOR SERVERING STATIC FILES
 app.use(function(request, result, next){
-  console.log('%s %s', request.method, request.url);
+  logger.log('%s %s', request.method, request.url);
   next();
 });
 app.use('/static', express.static(__dirname + '/../public'));
@@ -76,7 +77,7 @@ io.sockets.on('connection', function (socket) {
       });
     })
     .fail(function(error) {
-      console.error(error);
+      logger.error(error);
       acknowledge({error: "Unable to create player"});
     });
   }
@@ -92,7 +93,7 @@ io.sockets.on('connection', function (socket) {
       });
     })
     .fail(function(error) {
-      console.error(error);
+      logger.error(error);
       acknowledge({error: "Unable to create game"});
     });
   }
@@ -108,7 +109,7 @@ io.sockets.on('connection', function (socket) {
       });
     })
     .fail(function(error) {
-      console.error(error);
+      logger.error(error);
       acknowledge({error: "Unable to start game"});
     });
   }
@@ -119,7 +120,7 @@ io.sockets.on('connection', function (socket) {
       acknowledge(games);
     })
     .fail(function(error) {
-      console.error(error);
+      logger.error(error);
       acknowledge({error: "Unable retrieve open games"});
     });
   }
@@ -134,7 +135,7 @@ io.sockets.on('connection', function (socket) {
       });
     })
     .fail(function(error) {
-      console.error(error);
+      logger.error(error);
       acknowledge({error: "Unable get game players"});
     });
   }
@@ -154,7 +155,7 @@ io.sockets.on('connection', function (socket) {
       });
     })
     .fail(function(error) {
-      console.error(error);
+      logger.error(error);
       acknowledge({error: "Unable to join game"});
     });
   }
@@ -176,7 +177,7 @@ io.sockets.on('connection', function (socket) {
       });
     })
     .fail(function(error) {
-      console.error(error);
+      logger.error(error);
       acknowledge({error: "Unable to leave game"});
     });
   }
