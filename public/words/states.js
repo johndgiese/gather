@@ -6,7 +6,7 @@ angular.module('words')
   .state('game.words', {
     url: '/words',
     controller: 'WordsCtrl',
-    templateUrl: 'app/templates/landing.html',
+    templateUrl: '/static/app/templates/landing.html',
   });
 
 }]);

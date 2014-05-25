@@ -1,73 +1,69 @@
 SET foreign_key_checks = 0;
-DROP TABLE IF EXISTS tb_player_game, tb_player, tb_game;
+DROP TABLE IF EXISTS tbPlayerGame, tbPlayer, tbGame;
 SET foreign_key_checks = 1;
 
-CREATE TABLE tb_player (
-    id INT NOT NULL AUTO_INCREMENT,
-    name VARCHAR(255) NOT NULL,
-    created_on TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (id)
+CREATE TABLE tbPlayer (
+    pId INT NOT NULL AUTO_INCREMENT,
+    pName VARCHAR(255) NOT NULL,
+    pCreatedOn TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (pId)
 );
 
-CREATE TABLE tb_game (
-    id INT NOT NULL AUTO_INCREMENT,
-    name VARCHAR(255) NOT NULL,
-    created_on TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    created_by INT,
-    active_players INT NOT NULL DEFAULT FALSE,
-    open BOOLEAN NOT NULL DEFAULT TRUE,
-    PRIMARY KEY (id)
+CREATE TABLE tbGame (
+    gId INT NOT NULL AUTO_INCREMENT,
+    gName VARCHAR(255) NOT NULL,
+    gCreatedOn TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    gCreatedBy INT,
+    gActivePlayers INT NOT NULL DEFAULT FALSE,
+    gOpen BOOLEAN NOT NULL DEFAULT TRUE,
+    PRIMARY KEY (gId)
 );
 
-CREATE TABLE tb_player_game (
-    id INT NOT NULL AUTO_INCREMENT,
-    id_player INT NOT NULL,
-    id_game INT NOT NULL,
-    active BOOLEAN NOT NULL DEFAULT TRUE,
-    created_on TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (id)
+CREATE TABLE tbPlayerGame (
+    pgId INT NOT NULL AUTO_INCREMENT,
+    pId INT NOT NULL,
+    gId INT NOT NULL,
+    pgActive BOOLEAN NOT NULL DEFAULT TRUE,
+    pgCreatedOn TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (pgId)
 );
 
 
-ALTER TABLE tb_player_game
-    ADD CONSTRAINT fk_id_player
-    FOREIGN KEY (id_player) REFERENCES tb_player(id) 
+ALTER TABLE tbPlayerGame
+    ADD CONSTRAINT
+    FOREIGN KEY (pId) REFERENCES tbPlayer(pId) 
     ON DELETE CASCADE;
 
-ALTER TABLE tb_player_game
-    ADD CONSTRAINT fk_id_game
-    FOREIGN KEY (id_game) REFERENCES tb_game(id) 
+ALTER TABLE tbPlayerGame
+    ADD CONSTRAINT
+    FOREIGN KEY (gId) REFERENCES tbGame(gId) 
     ON DELETE CASCADE;
 
-ALTER TABLE tb_game 
-    ADD CONSTRAINT fk_created_by 
-    FOREIGN KEY (created_by) REFERENCES tb_player(id) 
+ALTER TABLE tbGame 
+    ADD CONSTRAINT
+    FOREIGN KEY (gCreatedBy) REFERENCES tbPlayer(pId) 
     ON DELETE CASCADE;
 
 
-
--- update game active player count using a trigger that is called when the
--- `tb_player_game` table is UPDATED or INSERTED
-
-DROP PROCEDURE IF EXISTS pr_update_game_active_players;
+DROP PROCEDURE IF EXISTS prUpdateGameActivePlayers;
 
 delimiter //
-CREATE PROCEDURE pr_update_game_active_players(id_game_ INT)
+CREATE PROCEDURE prUpdateGameActivePlayers(gId_ INT)
     BEGIN
-        DECLARE active_players_ INT;
-        SELECT COUNT(*) INTO active_players_ FROM tb_player_game
-            WHERE id_game = id_game_ AND active = TRUE;
-        UPDATE tb_game SET 
-            active_players = active_players_,
-            open = active_players_ > 0
-                WHERE id=id_game_;
+        DECLARE gActivePlayers_ INT;
+        SELECT COUNT(*) INTO gActivePlayers_ FROM tbPlayerGame
+            WHERE gId=gId_ AND pgActive=TRUE;
+        UPDATE tbGame SET 
+            gActivePlayers = gActivePlayers_,
+            gOpen = gActivePlayers_ > 0
+            WHERE gId=gId_;
     END;
 //
 delimiter ;
 
-CREATE TRIGGER tr_game_status_upd AFTER UPDATE ON tb_player_game 
-    FOR EACH ROW CALL pr_update_game_active_players(NEW.id_game);
+CREATE TRIGGER trGameStatusUpd AFTER UPDATE ON tbPlayerGame 
+    FOR EACH ROW CALL prUpdateGameActivePlayers(NEW.gId);
 
-CREATE TRIGGER tr_game_status_ins AFTER INSERT ON tb_player_game 
-    FOR EACH ROW CALL pr_update_game_active_players(NEW.id_game);
+CREATE TRIGGER trGameStatusIns AFTER INSERT ON tbPlayerGame 
+    FOR EACH ROW CALL prUpdateGameActivePlayers(NEW.gId);
 

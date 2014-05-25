@@ -1,1 +1,1 @@
-require('../../orm').modelLoader(__dirname, exports);
+require('../../orm').loader(__dirname, exports);

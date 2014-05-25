@@ -1,5 +1,7 @@
 var express = require('express');
 var socket = require('socket.io');
+var path = require('path');
+var Q = require('q');
 
 var config = require('./config');
 var models = require('./join/models');
@@ -14,14 +16,11 @@ app.use(function(request, result, next){
   console.log('%s %s', request.method, request.url);
   next();
 });
-app.use(express.static(__dirname + '/../public'));
-app.get("/new", serveSite);
-app.get("/search", serveSite);
-app.get("/", serveSite);
-
-function serveSite(request, result) {
-  result.sendfile(__dirname + '/../public/index.html');
-}
+app.use('/static', express.static(__dirname + '/../public'));
+app.use(function(request, result) {
+  var indexPagePath = path.resolve(__dirname, '../public/index.html');
+  result.sendfile(indexPagePath);
+});
 
 
 // USE SOCKETS FOR EVERYTHING ELSE
@@ -41,28 +40,68 @@ io.sockets.on('connection', function (socket) {
   socket.on('getOpenGames', getOpenGames);
 
   socket.on('disconnect', disconnect);
- 
+
+  function requirePlayer() {
+    return Q.fcall(function() {
+      return player.id;
+    });
+  }
+
+  function requireStartingPlayer() {
+    return Q.fcall(function() {
+      return player.id === game.createdBy;
+    });
+  }
+
+  function requirePlayerInGame() {
+    return Q.fcall(function() {
+      return game.isPlayerActive(player.id);
+    });
+  }
+
   function createPlayer(data, acknowledge) {
-    player = new models.Player(data.playerName);
-    player.save().then(function() {
+    player = new models.Player({name: data.playerName});
+    player.save()
+    .then(function() {
       acknowledge(player);
+    })
+    .fail(function(error) {
+      console.error(error);
+      acknowledge({error: "Unable to create player"});
     });
   }
 
   function createGame(data, acknowledge) {
-    var game = new models.Game({name: data.gameName, created_by: player.id});
-    game.save()
+    requirePlayer()
     .then(function() {
-      socket.broadcast.emit('gameOpen', game);
-      joinGame(game.id, acknowledge);
+      var game = new models.Game({name: data.gameName, createdBy: player.id});
+      return game.save()
+      .then(function() {
+        socket.broadcast.emit('gameOpen', game);
+        joinGame(game.id, acknowledge);
+      })
+      .done();
+    })
+    .fail(function(error) {
+      console.error(error);
+      acknowledge({error: "Unable to create game"});
     });
   }
 
   function startGame(data, acknowledge) {
-    game.close().then(function() {
-      socket.broadcast.emit('gameClosed', game);
-      socket.broadcast.to(game.id).emit('gameStart', true);
-      acknowledge();
+    requireStartingPlayer()
+    .then(function() {
+      return game.close()
+      .then(function() {
+        socket.broadcast.emit('gameClosed', game);
+        socket.broadcast.to(game.id).emit('gameStart', true);
+        acknowledge();
+      })
+      .done();
+    })
+    .fail(function(error) {
+      console.error(error);
+      acknowledge({error: "Unable to start game"});
     });
   }
 
@@ -70,40 +109,71 @@ io.sockets.on('connection', function (socket) {
     models.Game.getOpen()
     .then(function(games) {
       acknowledge(games);
+    })
+    .fail(function(error) {
+      console.error(error);
+      acknowledge({error: "Unable retrieve open games"});
     });
   }
 
+  // TODO add this to the game!
   function getGamePlayers(data, acknowledge) {
-    game.getState(player.id).then(function(state) {
-      acknowledge(state.players);
+    requirePlayerInGame()
+    .then(function() {
+      return game.getState(player.id)
+      .then(function(state) {
+        acknowledge(state.players);
+      })
+      .done();
+    })
+    .fail(function(error) {
+      console.error(error);
+      acknowledge({error: "Unable get game players"});
     });
   }
 
   function joinGame(gameId, acknowledge) {
-    models.Game.get(gameId)
-    .then(function(game_) {
-      game = game_;
-      player.join(game.id).then(function() {
+    requirePlayer()
+    .then(function() {
+      return models.Game.get(gameId)
+      .then(function(game_) {
+        game = game_;
+        return player.join(game.id);
+      })
+      .then(function() {
         socket.join(game.id);
         socket.broadcast.to(game.id).emit('playerJoined', player);
         acknowledge(game);
-      });
+      })
+      .done();
+    })
+    .fail(function(error) {
+      console.error(error);
+      acknowledge({error: "Unable to join game"});
     });
   }
 
   function leaveGame(gameId) {
-    player.leave(gameId)
+    requirePlayer()
     .then(function() {
-      socket.broadcast.to(gameId).emit('playerLeft', player);
-      socket.leave(gameId);
-      models.Game.get(gameId)
+      return player.leave(gameId)
+      .then(function() {
+        socket.broadcast.to(gameId).emit('playerLeft', player);
+        socket.leave(gameId);
+        return models.Game.get(gameId);
+      })
       .then(function(game) {
         if (!game.open) {
           socket.broadcast.emit('gameClosed', game);
         }
-      });
+        game = null;
+      })
+      .done();
+    })
+    .fail(function(error) {
+      console.error(error);
+      acknowledge({error: "Unable to leave game"});
     });
-    game = null;
   }
 
   function disconnect() {

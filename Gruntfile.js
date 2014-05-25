@@ -4,7 +4,7 @@ module.exports = function(grunt) {
 
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
-    src: [
+    clientSrc: [
 
       // defined modules in order
       'public/index.js',
@@ -29,7 +29,7 @@ module.exports = function(grunt) {
       'public/css/**/*.css',
       'public/_vendor/bootstrap/less/*.less'
     ],
-    externalSrc: [
+    externalClientSrc: [
       'public/modal/ui-bootstrap-modal-0.10.0.js',
       'public/modal/ui-bootstrap-modal-tpls-0.10.0.js',
       'public/_vendor/angular-ui-router/release/angular-ui-router.js',
@@ -43,18 +43,23 @@ module.exports = function(grunt) {
       },
       build: {
         dest: 'public/_dist/index.js',
-        src: ['<%= src %>', '<%= externalSrc %>']
+        src: ['<%= clientSrc %>', '<%= externalClientSrc %>']
       }
     },
 
     jshint: {
-      all: ['<%= src %>', '<%= serverSrc %>'],
+      client: '<%= clientSrc %>',
+      server: '<%= serverSrc %>',
     },
 
     watch: {
-      js: {
-        files: '<%= src %>',
+      client: {
+        files: '<%= clientSrc %>',
         tasks: ['jshint', 'uglify']
+      },
+      server: {
+        files: '<%= serverSrc %>',
+        tasks: ['jshint:server']
       },
       configFiles: {
         files: ['Gruntfile.js'],
@@ -64,22 +69,20 @@ module.exports = function(grunt) {
       },
       style: {
         files: '<%= lessSrc %>',
-        tasks: ['less:development'],
+        tasks: ['less'],
       }
     },
 
     less: {
-      development: {
-        options: {
-          paths: '<%= lessSrc %>',
-          sourceMap: true,
-          sourceMapFilename: 'public/_dist/index.map.css',
-          sourceMapURL: '/_dist/index.map.css',
-          strictImports: true
-        },
-        files: {
-          'public/_dist/index.css': 'public/css/index.less'
-        }
+      options: {
+        paths: '<%= lessSrc %>',
+        sourceMap: true,
+        sourceMapFilename: 'public/_dist/index.map.css',
+        sourceMapURL: '/_dist/index.map.css',
+        strictImports: true
+      },
+      files: {
+        'public/_dist/index.css': 'public/css/index.less'
       }
     }
 
@@ -91,6 +94,6 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-contrib-watch');
 
-  grunt.registerTask('default', ['jshint', 'less', 'uglify', 'watch']);
+  grunt.registerTask('default', ['jshint:server', 'jshint:client', 'less', 'uglify', 'watch']);
 
 };

@@ -1,23 +1,22 @@
-var Model = require('../../orm').Model;
+var orm = require('../../orm');
 var words = require('./words');
 
+var map = {
+  text: 'aText',
+  active: 'aActive'
+};
+var Answer = orm.define('tbAnswer', map, 'aId');
 exports.Model = Answer;
 
-var fields = ['word', 'active'];
-Answer.prototype = new Model('tb_answer', fields);
-function Answer(data) {
-  this.setFieldData(data);
-}
-
-Answer.create = function(word, tags, active) {
+Answer.create = function(text, tags, active) {
   if (active === undefined) {
     active = true;
   }
-  return new Answer({word: word, active: active})
+  return new Answer({text: text, active: active})
     .save()
     .then(function(answer) {
       return answer.addTags(tags);
     });
 };
 
-Answer.prototype.addTags = words.genAddTags('tb_answer_tag', 'id_answer');
+Answer.prototype.addTags = words.genAddTags('tbAnswerTag', Answer.idField);

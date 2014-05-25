@@ -1,14 +1,15 @@
-var Model = require('../../orm').Model;
+var orm = require('../../orm');
 var words = require('./words');
 var util = require('util');
 
-exports.Model = Question;
 
-var fields = ['text', 'type', 'active'];
-Question.prototype = new Model('tb_question', fields);
-function Question(data) {
-  this.setFieldData(data);
-}
+var fields = {
+  text: 'qText',
+  type: 'qType',
+  active: 'qActive'
+};
+var Question = orm.define('tbQuestion', fields, 'qId');
+exports.Model = Question;
 
 Question.isValidType = function(type) {
   var validTypes = [
@@ -33,4 +34,4 @@ Question.create = function(text, type, tags, active) {
     });
 };
 
-Question.prototype.addTags = words.genAddTags('tb_question_tag', 'id_question');
+Question.prototype.addTags = words.genAddTags('tbQuestionTag', Question.idField);

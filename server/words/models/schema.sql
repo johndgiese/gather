@@ -1,60 +1,61 @@
 SET foreign_key_checks = 0;
-DROP TABLE IF EXISTS tb_answer, tb_question, tb_tag, tb_answer_tag, tb_question_tag;
+DROP TABLE IF EXISTS tbAnswer, tbQuestion, tbTag, tbAnswerTag, tbQuestionTag;
 SET foreign_key_checks = 1;
 
-CREATE TABLE tb_answer (
-    id INT NOT NULL AUTO_INCREMENT,
-    word VARCHAR(255) NOT NULL,
-    active BOOLEAN NOT NULL DEFAULT TRUE,
-    PRIMARY KEY (id)
+CREATE TABLE tbAnswer (
+    aId INT NOT NULL AUTO_INCREMENT,
+    aText VARCHAR(255) NOT NULL,
+    aActive BOOLEAN NOT NULL DEFAULT TRUE,
+    PRIMARY KEY (aId)
 );
 
-CREATE TABLE tb_question (
-    id INT NOT NULL AUTO_INCREMENT,
-    text VARCHAR(255) NOT NULL,
-    type ENUM('fill', 'assoc', 'overhear') NOT NULL,
-    active BOOLEAN NOT NULL DEFAULT TRUE,
-    PRIMARY KEY (id)
+CREATE TABLE tbQuestion (
+    qId INT NOT NULL AUTO_INCREMENT,
+    qText VARCHAR(255) NOT NULL,
+    qType ENUM('fill', 'assoc', 'overhear') NOT NULL,
+    qActive BOOLEAN NOT NULL DEFAULT TRUE,
+    PRIMARY KEY (qId)
 );
 
-CREATE TABLE tb_tag (
-    id INT NOT NULL AUTO_INCREMENT,
-    text VARCHAR(255) NOT NULL,
-    PRIMARY KEY (id)
+CREATE TABLE tbTag (
+    tId INT NOT NULL AUTO_INCREMENT,
+    tText VARCHAR(255) NOT NULL,
+    PRIMARY KEY (tId)
 );
 
 
-CREATE TABLE tb_answer_tag (
-    id INT NOT NULL AUTO_INCREMENT,
-    id_answer INT NOT NULL,
-    id_tag INT NOT NULL,
-    PRIMARY KEY (id)
+CREATE TABLE tbAnswerTag (
+    atId INT NOT NULL AUTO_INCREMENT,
+    aId INT NOT NULL,
+    tId INT NOT NULL,
+    PRIMARY KEY (atId)
 );
 
-ALTER TABLE tb_answer_tag
+ALTER TABLE tbAnswerTag
     ADD CONSTRAINT
-    FOREIGN KEY (id_answer) REFERENCES tb_answer(id) 
+    FOREIGN KEY (aId) REFERENCES tbAnswer(aId)
     ON DELETE CASCADE;
 
-ALTER TABLE tb_answer_tag
+ALTER TABLE tbAnswerTag
     ADD CONSTRAINT
-    FOREIGN KEY (id_tag) REFERENCES tb_tag(id) 
+    FOREIGN KEY (tId) REFERENCES tbTag(tId)
     ON DELETE CASCADE;
 
 
-CREATE TABLE tb_question_tag (
-    id INT NOT NULL AUTO_INCREMENT,
-    id_question INT NOT NULL,
-    id_tag INT NOT NULL,
-    PRIMARY KEY (id)
+CREATE TABLE tbQuestionTag (
+    qtId INT NOT NULL AUTO_INCREMENT,
+    qId INT NOT NULL,
+    tId INT NOT NULL,
+    PRIMARY KEY (qtId)
 );
 
-ALTER TABLE tb_question_tag
+ALTER TABLE tbQuestionTag
     ADD CONSTRAINT
-    FOREIGN KEY (id_question) REFERENCES tb_question(id) 
+    FOREIGN KEY (qId) REFERENCES tbQuestion(qId)
     ON DELETE CASCADE;
 
-ALTER TABLE tb_question_tag
+ALTER TABLE tbQuestionTag
     ADD CONSTRAINT
-    FOREIGN KEY (id_tag) REFERENCES tb_tag(id) 
+    FOREIGN KEY (tId) REFERENCES tbTag(tId)
     ON DELETE CASCADE;
+

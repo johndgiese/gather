@@ -1,34 +1,32 @@
-var Model = require('../../orm').Model;
-var db = require('../db');
+var orm = require('../../orm');
+var db = require('../../db');
 
+var fields = {
+  name: 'pName'
+};
+var Player = orm.define('tbPlayer', fields, 'pId');
 exports.Model = Player;
 
-var fields = ['name'];
-Player.prototype = new Model('tb_player', fields);
-function Player(name) {
-  this.name = name;
-}
-
 Player.prototype.serialize = function() {
-  var fields = this.getFieldData();
-  return fields;
+  return {name: this.name};
 };
 
 Player.prototype.join = function(gameId) {
   var instance = this;
   var playerGame = {
-    player_id: instance.id,
-    game_id: gameId
+    pId: instance.id,
+    gId: gameId
   };
   var inserts = [playerGame];
-  return instance.query('INSERT tb_player_game SET ?', inserts)
-  .then(function(){
-    return instance;
-  });
+  return instance.query('INSERT tbPlayerGame SET ?', inserts)
+    .then(function(){
+      return instance;
+    });
 };
 
 Player.prototype.leave = function(gameId) {
   var inserts = [gameId, this.id];
-  var sql = 'UPDATE tb_player_game SET active=FALSE WHERE game_id = ? AND player_id = ?';
+  var sql = 'UPDATE tbPlayerGame SET pgActive = FALSE WHERE gId=? AND pId=?';
   return this.query(sql, inserts);
 };
+

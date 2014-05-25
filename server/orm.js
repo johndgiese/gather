@@ -2,69 +2,95 @@ var db = require('./db');
 var Q = require('q');
 var fs = require('fs');
 var path = require('path');
+var _ = require('underscore');
 
-
-function Model(table, fields) {
-  this.setTable(table);
-  this.setFields(fields);
-}
 
 exports.Model = Model;
+exports.define = define;
+exports.loader = loader;
 
-Model.prototype.getTable = function() {
-  return this._table;
-};
+function define(table, propFieldMap, idField) {
 
-Model.prototype.setTable = function(table) {
-  this._table = table;
-};
+  var map = _.extend(propFieldMap, {id: idField});
+  var props = _.keys(map);
+  var fields = _.values(map);
 
-Model.prototype.getFields = function() {
-  return this._fields;
-};
+  var M = function(data) {
+    this.M = M;
+    this.hydrate(data);
+  };
 
-Model.prototype.setFields = function(fieldNames) {
-  this._fields = fieldNames;
-  if (fieldNames.id === undefined) {
-    this._fields.push('id');
-  }
-};
+  // add row/instance functions
+  M.prototype = new Model(map);
+  
+  // add table/Model functions
+  M.M = M;
+  M.table = table;
+  M.idField = idField;
+  M.props = props;
+  M.fields = fields;
+  _.extend(M, Model);
 
-Model.prototype.getFieldData = function() {
-  var data = {};
-  var fields = this.getFields();
-  var field;
-  for (var i = 0, len = fields.length; i < len; i++) {
-    field = fields[i];
-    if (this[field]) {
-      data[field] = this[field];
-    }
-  }
-  return data;
-};
+  return M;
+}
 
-Model.prototype.setFieldData = function(data) {
-  var instance = this;
-  instance.getFields().forEach(function(field) {
-    if (data[field] !== undefined) {
-      instance[field] = data[field];
+function Model(map) {
+  var self = this;
+  _.each(map, function(field, prop) {
+    if (field !== prop) {
+      self.__defineGetter__(field, function() { return self[prop]; });
+      self.__defineSetter__(field, function(val) { self[prop] = val; });
     }
   });
-  return instance;
+}
+
+Model.prototype.hydrate = function(data) {
+  var keys = _.keys(data);
+  var self = this;
+
+  var allKeysAreFields = _.every(keys, function(k) {
+    return _.include(self.M.fields, k);
+  });
+
+  var allKeysAreProps = _.every(keys, function(k) {
+    return _.include(self.M.props, k);
+  });
+
+  if (allKeysAreFields || allKeysAreProps) {
+    _.extend(this, data);
+  } else {
+    console.log("Hydrating with %j", data);
+    throw new Error("Keys must be all fields or all properties");
+  }
 };
 
-// mysql query that uses a promise
-Model.prototype.query = function() {
-  var instance = this;
+Model.prototype.fieldData = function(fields) {
+  if (fields === undefined) {
+    fields = this.M.fields;
+  }
+  var fieldData = {};
+  for (var i = 0, len = fields.length; i < len; i++) {
+    var field = fields[i];
+    if (this[field] !== undefined) {
+      fieldData[field] = this[field];
+    }
+  }
+  return fieldData;
+};
+
+Model.raw = Model.prototype.raw = function() {
   var deferred = Q.defer();
   var after = function(error, result) {
     if (error !== null) {
+      console.log(error);
       deferred.reject(error);
     } else {
+      console.log(result);
       deferred.resolve(result);
     }
   };
 
+  console.log(arguments);
   if (arguments.length == 2) {
     db.query(arguments[0], arguments[1], after);
   } else if (arguments.length == 1) {
@@ -74,45 +100,71 @@ Model.prototype.query = function() {
   return deferred.promise;
 };
 
-// execute a query then return the original instance
-Model.prototype.queryThenSelf = function() {
-  var instance = this;
-  return Model.prototype.query.apply(instance, arguments)
+Model.query = function() {
+  var M = this.M;
+  M.raw(arguments)
+    .then(function(raw) {
+      if (_.isObject(result)) {
+         return new M(result);
+      } else {
+        objs = [];
+        for (var i = 0, len = result.length; i < len; i++) {
+          objs.push(new M(result[i]));
+        }
+        return objs;
+      }
+    });
+};
+
+// execute a query then return the original self
+Model.prototype.rawThenSelf = function() {
+  return this.raw.apply(self, arguments)
   .then(function() {
-    return instance;
+    return self;
   });
 };
 
 Model.prototype.save = function () {
-  var instance = this;
-  var inserts = [this.getTable(), this.getFieldData()];
-  return this.query('INSERT INTO ?? SET ?', inserts)
-  .then(function(result) {
-    instance.id = result.insertId;
-    return instance;
-  });
+  var deferred = Q.defer();
+  var self = this;
+  if (self.id === undefined) {
+    var data = self.fieldData();
+    if (_.isEmpty(data)) {
+      deferred.reject(new Error("Nothing to save"));
+    } else {
+      var inserts = [this.M.table, fieldData];
+      this.raw('INSERT INTO ?? SET ?', inserts)
+      .then(function(result) {
+        self.id = result.insertId;
+        deferred.resolve(self);
+      });
+    }
+  } else {
+    deferred.reject(new Error("Update part of saving not implemented yet"));
+  }
+  return deferred.promise;
 };
 
 Model.prototype.delete = function () {
-  var instance = this;
-  var inserts = [this.getTable(), this.id];
-  return this.query('DELETE FROM ?? WHERE id = ?', inserts)
-  .then(function(result) {
-    var success = result.affectedRows === 1;
-    if (success) {
-      return true;
-    } else {
-      var msg = "Unable to delete id = " + instance.id +
-                " from " + instance.getTable();
-      throw new Error(msg);
-    }
-  });
+  var self = this;
+  var inserts = [this.M.table, this.M.idField, this.id];
+  return this.raw('DELETE FROM ?? WHERE ??=?', inserts)
+    .then(function(result) {
+      var success = result.affectedRows === 1;
+      if (success) {
+        return true;
+      } else {
+        var msg = "Unable to delete id = " + self.id +
+                  " from " + self.M.table;
+        throw new Error(msg);
+      }
+    });
 };
 
 // Load Model classes from a folder, and expose them as a single module.
 // Grabs `Model` export from all modules in this folder that expose one; uses
 // the filename as the the module name
-exports.modelLoader = function(dir, exports) {
+function loader(dir, exports) {
   var allFileNames = fs.readdirSync(dir);
 
   var fileNames = allFileNames.filter(function(fileName) {
@@ -131,5 +183,5 @@ exports.modelLoader = function(dir, exports) {
       exports[modelName] = Model;
     }
   });
-};
+}
 

@@ -2,6 +2,8 @@ var fs = require('fs');
 var csv = require('fast-csv');
 var models = require('./models');
 var words = require('./models/words');
+var db = require('../db');
+var Q = require('q');
 
 // categories used in the google doc are too long for the database, so
 // translate them using this
@@ -12,6 +14,7 @@ var typeMap = {
   'Answer': 'answer',
 };
 
+var answerCount = 0, questionCount = 0, promises = [];
 var csvStream = csv({trim: true})
   .on("record", function(data) {
     var text = data[0];
@@ -25,11 +28,21 @@ var csvStream = csv({trim: true})
         });
     }
 
+    var p;
     if (type == "answer") {
-      models.Answer.create(text, tags);
+      p = models.Answer.create(text, tags);
+      answerCount++;
     } else {
-      models.Question.create(text, type, tags);
+      p = models.Question.create(text, type, tags);
+      questionCount++;
     }
+    promises.push(p);
+  }).on('end', function() {
+    console.log('Added %d answers and %d questions.', answerCount, questionCount);
+    Q.all(promises).then(function() {
+      db.end();
+    })
+    .done();
   });
 
 var wordFileName = process.argv[2];

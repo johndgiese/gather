@@ -13,10 +13,11 @@ var validTags = [
   'Sports',
   'Contemporary',
   'Literature',
+  'Viral Video',
 ];
 
 exports.genAddTags = function(joinTableName, wordColName) {
-  var sqlTemplate = 'INSERT %s (%s, id_tag) SELECT ?, id FROM tb_tag WHERE text IN (?)';
+  var sqlTemplate = 'INSERT %s (%s, tId) SELECT ?, tId FROM tbTag WHERE tText IN (?)';
   var sql = util.format(sqlTemplate, joinTableName, wordColName);
 
   return function(tags) {
@@ -42,7 +43,7 @@ function allValidTags(tags) {
 
 // TODO: eventually this shouldn't be done here, but it is easy for now
 exports.createTags = function() {
-  var sql = 'INSERT INTO tb_tag (text) VALUES (?)';
+  var sql = 'INSERT INTO tbTag (tText) VALUES (?)';
   validTags.forEach(function(tag) {
     db.query(sql, [tag]);
   });
