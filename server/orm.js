@@ -153,7 +153,7 @@ Model.prototype.save = function () {
     if (_.isEmpty(data)) {
       deferred.reject(new Error("Nothing to save"));
     } else {
-      var inserts = [this.M.table, fieldData];
+      var inserts = [this.M.table, data];
       this.raw('INSERT INTO ?? SET ?', inserts)
       .then(function(result) {
         self.id = result.insertId;
