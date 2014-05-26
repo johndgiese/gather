@@ -116,7 +116,7 @@ io.sockets.on('connection', function (socket) {
   }
 
   function getOpenGames(data, acknowledge) {
-    models.Game.getOpen()
+    models.Game.queryOpen()
     .then(function(games) {
       acknowledge(games);
     })

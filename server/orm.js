@@ -107,19 +107,34 @@ Model.raw = Model.prototype.raw = function() {
 };
 
 Model.query = function() {
-  var M = this.M;
-  return M.raw.apply(null, arguments)
+  var Model = this;
+  return Model.raw.apply(null, arguments)
   .then(function(raw) {
-    if (_.isObject(raw)) {
-      return new M(raw);
+    var objs = [];
+    for (var i = 0, len = raw.length; i < len; i++) {
+      objs.push(new Model(raw[i]));
+    }
+    return objs;
+  });
+};
+
+Model.queryOne = function() {
+  return this.query.apply(this, arguments)
+  .then(function(matches) {
+    if (matches.length === 0) {
+      throw new Error("No match found");
+    } else if (matches.length > 1) {
+      throw new Error("Multiple matches!");
     } else {
-      var objs = [];
-      for (var i = 0, len = raw.length; i < len; i++) {
-        objs.push(new M(raw[i]));
-      }
-      return objs;
+      return matches[0];
     }
   });
+};
+
+Model.queryOneId = function(id) {
+  inserts = [this.table, this.idField, id];
+  var sql = 'SELECT * from ?? where ??=?';
+  return this.queryOne(sql, inserts);
 };
 
 // execute a query then return the original self

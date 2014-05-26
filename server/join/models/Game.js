@@ -31,25 +31,14 @@ Game.prototype.close = function() {
 };
 
 Game.get = function(gameId) {
-  console.log(gameId);
-  return Game.query('SELECT * FROM tbGame WHERE gId=?', [gameId])
-    .then(function(games) {
-      console.log(games);
-      if (games.length === 0) {
-        throw new Error("No match found");
-      } else if (games.length > 1) {
-        throw new Error("Multiple matchs found");
-      } else {
-        return new Game(games[0]);
-      }
-    });
+  return Game.queryOneId(gameId);
 };
 
-Game.getActive = function() {
+Game.queryActive = function() {
   return Game.query('SELECT * FROM tbGame WHERE gActivePlayers > 0');
 };
 
-Game.getOpen = function() {
+Game.queryOpen = function() {
   return Game.query('SELECT * FROM tbGame WHERE gOpen=TRUE');
 };
 
