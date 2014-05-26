@@ -86,7 +86,7 @@ io.sockets.on('connection', function (socket) {
   function createGame(data, acknowledge) {
     requirePlayer()
     .then(function() {
-      var game = new models.Game({name: data.gameName, createdBy: player.id});
+      game = new models.Game({name: data.gameName, createdBy: player.id});
       return game.save()
       .then(function() {
         socket.broadcast.emit('gameOpen', game);
