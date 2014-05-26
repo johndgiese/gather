@@ -52,6 +52,17 @@ module.exports = function(grunt) {
       server: '<%= serverSrc %>',
     },
 
+    mochaTest: {
+      test: {
+        options: {
+          reporter: 'spec',
+          clearRequiredCache: true
+        },
+        src: ['server/**/*.spec.js']
+      }
+    },
+
+
     watch: {
       client: {
         files: '<%= clientSrc %>',
@@ -70,6 +81,13 @@ module.exports = function(grunt) {
       style: {
         files: '<%= lessSrc %>',
         tasks: ['less'],
+      },
+      orm: {
+        options: {
+          spawn: false,
+        },
+        files: ['server/orm.js', 'server/orm.spec.js'],
+        tasks: ['mochaTest'],
       }
     },
 
@@ -95,7 +113,9 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-contrib-watch');
+  grunt.loadNpmTasks('grunt-mocha-test');
 
-  grunt.registerTask('default', ['jshint:server', 'jshint:client', 'less', 'uglify', 'watch']);
+
+  grunt.registerTask('default', ['jshint:server', 'jshint:client', 'mochaTest', 'less', 'uglify', 'watch']);
 
 };
