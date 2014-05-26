@@ -24,7 +24,6 @@ function define(table, propFieldMap, idField) {
   M.prototype = new Model(map);
   
   // add table/Model functions
-  M.M = M;
   M.table = table;
   M.idField = idField;
   M.props = props;
