@@ -42,10 +42,10 @@ Game.queryOpen = function() {
   return Game.query('SELECT * FROM tbGame WHERE gOpen=TRUE');
 };
 
-Game.isPlayerActive = function(playerId) {
+Game.prototype.isPlayerActive = function(playerId) {
   var inserts = [this.id, playerId];
   var sql = 'SELECT count(*) ' +
-              'FROM tbGame NATURAL JOIN tbPlayerGame NATURAL JOIN tbGame ' +
+              'FROM tbGame NATURAL JOIN tbPlayerGame NATURAL JOIN tbPlayer ' +
               'WHERE gId=? AND pId=? AND pgActive=TRUE';
   var inGame = Game.raw(sql, inserts);
   return inGame[0] === 1;
