@@ -11,7 +11,7 @@ exports.loader = loader;
 
 function define(table, propFieldMap, idField) {
 
-  var map = _.extend(propFieldMap, {id: idField});
+  var map = _.extend(_.clone(propFieldMap), {id: idField});
   var props = _.keys(map);
   var fields = _.values(map);
 
@@ -38,8 +38,12 @@ function Model(map) {
   var self = this;
   _.each(map, function(field, prop) {
     if (field !== prop) {
-      self.__defineGetter__(field, function() { return self[prop]; });
-      self.__defineSetter__(field, function(val) { self[prop] = val; });
+      self.__defineGetter__(field, function() { 
+        return this[prop]; 
+      });
+      self.__defineSetter__(field, function(val) {
+        this[prop] = val; 
+      });
     }
   });
 }
@@ -57,7 +61,9 @@ Model.prototype.hydrate = function(data) {
   });
 
   if (allKeysAreFields || allKeysAreProps) {
-    _.extend(this, data);
+    for (var i = 0, len = keys.length; i < len; i++) {
+      this[keys[i]] = data[keys[i]];
+    }
   } else {
     console.log("Hydrating with %j", data);
     throw new Error("Keys must be all fields or all properties");
@@ -79,7 +85,7 @@ Model.prototype.fieldData = function(props) {
   return fieldData;
 };
 
-Model.raw = Model.prototype.raw = function() {
+Model.raw = function() {
   var deferred = Q.defer();
   var after = function(error, result) {
     if (error !== null) {
@@ -153,7 +159,7 @@ Model.prototype.save = function () {
       deferred.reject(new Error("Nothing to save"));
     } else {
       var inserts = [this.M.table, data];
-      this.raw('INSERT INTO ?? SET ?', inserts)
+      this.M.raw('INSERT INTO ?? SET ?', inserts)
       .then(function(result) {
         self.id = result.insertId;
         deferred.resolve(self);

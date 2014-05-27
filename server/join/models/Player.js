@@ -18,7 +18,7 @@ Player.prototype.join = function(gameId) {
     gId: gameId
   };
   var inserts = [playerGame];
-  return instance.query('INSERT tbPlayerGame SET ?', inserts)
+  return instance.M.raw('INSERT tbPlayerGame SET ?', inserts)
     .then(function(){
       return instance;
     });
@@ -27,6 +27,6 @@ Player.prototype.join = function(gameId) {
 Player.prototype.leave = function(gameId) {
   var inserts = [gameId, this.id];
   var sql = 'UPDATE tbPlayerGame SET pgActive = FALSE WHERE gId=? AND pId=?';
-  return this.query(sql, inserts);
+  return this.M.raw(sql, inserts);
 };
 
