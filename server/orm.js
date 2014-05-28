@@ -65,7 +65,6 @@ Model.prototype.hydrate = function(data) {
       this[keys[i]] = data[keys[i]];
     }
   } else {
-    console.log("Hydrating with %j", data);
     throw new Error("Keys must be all fields or all properties");
   }
 };
@@ -77,7 +76,7 @@ Model.prototype.fieldData = function(props) {
   var fieldData = {};
   for (var i = 0, len = props.length; i < len; i++) {
     var prop = props[i];
-    if (this[prop] !== undefined) {
+    if (this[prop] !== undefined && prop !== 'id') {
       var field = this.M.propFieldMap[prop];
       fieldData[field] = this[prop];
     }
@@ -89,15 +88,12 @@ Model.raw = function() {
   var deferred = Q.defer();
   var after = function(error, result) {
     if (error !== null) {
-      console.log(error);
       deferred.reject(error);
     } else {
-      console.log(result);
       deferred.resolve(result);
     }
   };
 
-  console.log(arguments);
   try {
     if (arguments.length == 2) {
       db.query(arguments[0], arguments[1], after);
@@ -144,31 +140,42 @@ Model.queryOneId = function(id) {
 
 // execute a query then return the original self
 Model.prototype.rawThenSelf = function() {
-  return this.raw.apply(self, arguments)
+  var self = this;
+  return this.M.raw.apply(self, arguments)
   .then(function() {
     return self;
   });
 };
 
 Model.prototype.save = function () {
-  var deferred = Q.defer();
   var self = this;
+  var data = self.fieldData();
+
   if (self.id === undefined) {
-    var data = self.fieldData();
+    var setId = function(result) {
+      self.id = result.insertId;
+      return self;
+    };
+
     if (_.isEmpty(data)) {
-      deferred.reject(new Error("Nothing to save"));
+      var inserts = [this.M.table, this.M.idField];
+      return this.M.raw('INSERT INTO ?? (??) VALUES (NULL)', inserts)
+      .then(setId);
     } else {
       var inserts = [this.M.table, data];
-      this.M.raw('INSERT INTO ?? SET ?', inserts)
-      .then(function(result) {
-        self.id = result.insertId;
-        deferred.resolve(self);
-      });
+      return this.M.raw('INSERT INTO ?? SET ?', inserts)
+      .then(setId);
     }
+
   } else {
-    deferred.reject(new Error("Update part of saving not implemented yet"));
+
+    if (_.isEmpty(data)) {
+      return Q.when(self);
+    } else {
+      var inserts = [this.M.table, data, this.M.idField, this.id];
+      return this.rawThenSelf('UPDATE ?? SET ? WHERE ??=?', inserts)
+    }
   }
-  return deferred.promise;
 };
 
 Model.prototype.delete = function () {

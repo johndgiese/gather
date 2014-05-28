@@ -10,7 +10,7 @@ describe('The orm', function() {
     var sql = '' +
       'CREATE TABLE A (' +
          'aId INT NOT NULL AUTO_INCREMENT, ' +
-         'aName VARCHAR(255) NOT NULL, ' +
+         'aName VARCHAR(255), ' +
          'aAge INT, ' +
          'PRIMARY KEY(aId) ' +
        ');';
@@ -52,7 +52,7 @@ describe('The orm', function() {
       expect(a.delete).not.to.be(undefined);
     });
 
-    it('should translate field names to properties', function() {
+    it('should be able to initialize with field names', function() {
       var a = new A({aName: 'hello', aAge: 43});
       expect(a.name).to.be('hello');
       expect(a.age).to.be(43);
@@ -62,18 +62,63 @@ describe('The orm', function() {
       expect(a.aAge).to.be(22);
     });
 
-    it('should handle ids', function(done) {
+    it('  or properties', function() {
+      var a = new A({name: 'hello', age: 43});
+      expect(a.name).to.be('hello');
+      expect(a.age).to.be(43);
+      a.name = 'goodbye';
+      expect(a.aName).to.be('goodbye');
+      a.aAge = 22;
+      expect(a.aAge).to.be(22);
+    });
+
+    it('  but not both', function() {
+      var initWithMix = function() {
+        var a = new A({name: 'hello', aAge: 43});
+      };
+      expect(initWithMix).to.throwError();
+    });
+
+    it('should attach auto ids upon saving', function(done) {
       var a = new A();
       expect(a.id).to.be(undefined);
       a.name = 'hello';
       a.save().then(function(){
         expect(a.id).not.to.be(undefined);
         done();
-      })
-      .fail(function(error) {
-        console.log(error);
       });
     });
+
+    it('  even when there is no data', function(done) {
+      var a = new A();
+      expect(a.id).to.be(undefined);
+      a.save().then(function(){
+        expect(a.id).not.to.be(undefined);
+        done();
+      });
+    });
+
+    it('should use an "update" when there is an id', function(done) {
+      var a = new A({age: 4, name: 'David'});
+      expect(a.id).to.be(undefined);
+      var origId;
+      a.save()
+      .then(function(){
+        origId = a.id;
+        expect(a.id).not.to.be(undefined);
+        a.age = 5;
+        return a.save()
+      })
+      .then(function(a) {
+        expect(a.id).to.be(origId);
+        done();
+      })
+      .fail(function(a) {
+        console.log(a);
+      });
+
+    });
+
   });
 
 });

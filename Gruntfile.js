@@ -83,9 +83,6 @@ module.exports = function(grunt) {
         tasks: ['less'],
       },
       orm: {
-        options: {
-          spawn: false,
-        },
         files: ['server/orm.js', 'server/orm.spec.js'],
         tasks: ['mochaTest'],
       }
