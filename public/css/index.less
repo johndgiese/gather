@@ -3,42 +3,106 @@
 @import "variables.less";
 
 @import "../_vendor/bootstrap/less/normalize.less";
-@import "../_vendor/bootstrap/less/type.less";
-@import "../_vendor/bootstrap/less/grid.less";
 @import "../_vendor/bootstrap/less/buttons.less";
 
 body {
     background-color: @brand-background;
+    color: @brand-primary;
+    position: fixed;
+    height: 100%;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    font-family: "Helvetica Neue", Helvetica, Arial;
+
+    @media (max-width: @screen-xs-max) {
+        font-size: 14px;
+    }
+
+    @media (min-width: @screen-sm-min) and (max-width: @screen-sm-max) {
+        font-size: 18px;
+    }
+
+    @media (min-width: @screen-md-min) and (max-width: @screen-md-max) {
+        font-size: 22px;
+    }
+
+    @media (min-width: @screen-lg-min) {
+        font-size: 26px;
+    }
 }
 
-header {
-    background-image: url('/img/logo.png');
+.main-instruction { 
+    font-size: 200%;
+    font-weight: bold;
+    text-align: center;
+    padding: 0 10%;
+}
+
+
+
+ul.highlight {
+    text-align: center;
+    font-size: 150%;
+    font-weight: bold;
+    color: #54c1bb;
+    list-style: none;
+}
+
+footer {
+    margin-bottom: 1%;
+
+    ul {
+        font-size: 100%;
+        text-align: center;
+        list-style: none;
+        li {
+            display: inline;
+            color: desaturate(darken(@brand-background, 30%), 50%);
+        }
+        li:not(:first-child):before {
+            content: " | ";
+            color: desaturate(darken(@brand-background, 15%), 50%);
+        }
+    }
+}
+
+.btn-w-instruction {
+    margin: auto;
+    p {
+        margin: auto;
+        margin-top: 5%;
+        font-weight: bold;
+        font-size: 120%;
+    }
+}
+
+a.login {
+    text-decoration: underline;
+}
+
+button.action {
+    font-family: "swingdancer", cursive;
+    .btn();
+    font-size: 300%;
+    padding-left: 20%;
+    padding-right: 20%;
+    background-color: @brand-primary;
+    color: @brand-highlight;
+
+    &:hover {
+        background-color: fadeout(@brand-primary, 10%);
+        color: @brand-highlight;
+    }
+}
+
+.logo-big {
+    margin-top: 5%;
+    background-image: url('/static/img/logo.png');
     background-repeat: no-repeat;
     background-position: center;
     background-size: contain;
     height: 72px;
 }
 
-btn.color-highlight:hover,
-.color-highlight {
-    color: @brand-highlight !important;
-}
-
-btn.color-accent:hover,
-.color-accent {
-    color: @brand-accent !important;
-}
-
-.action-button {
-    .btn();
-    font-size: 30px;
-    background-color: @brand-primary;
-
-    &:hover {
-        background-color: fadeout(@brand-primary, 10%);
-    }
-}
-
-.action-button:hover {
-    color: none;
-}

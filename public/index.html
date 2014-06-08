@@ -8,26 +8,13 @@
 
     <script src="/static/_vendor/angular/angular.min.js"></script>
     <link rel="stylesheet" type="text/css" href="/static/_dist/index.css">
+
+    <script type="text/javascript" src="//use.typekit.net/ggs8fjl.js"></script>
+    <script type="text/javascript">try{Typekit.load();}catch(e){}</script>
+
   </head>
 
-  <body ng-app="app" ng-cloak>
-    <div class="container-fluid" ng-controller="AppCtrl">
-
-      <header class="row">
-      </header>
-
-      <div class="row" ng-show="messages.length">
-        <ul class="message-list">
-          <li class="message" ng-repeat="m in messages">{{ m.message }}</li>
-        </ul>
-      </div>
-
-      <div class="row">
-        <div class="span12" ui-view>
-        </div>
-      </div>
-
-    </div>
+  <body ng-app="app" ng-cloak ng-controller="AppCtrl" ui-view>
   </body>
 
   <script src="/static/_dist/index.js"></script>
