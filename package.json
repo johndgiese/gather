@@ -4,22 +4,22 @@
   "description": "Realtime, local, tech-enabled games for people.",
   "main": "index.js",
   "dependencies": {
-    "express": "~4.1",
-    "socket.io": "~0.9",
-    "mysql": "~2.2",
-    "q": "~1.0",
-    "fast-csv": "~0.3.1",
-    "underscore": "~1.6.0",
-    "winston": "~0.7.3"
+    "express": "^4.1",
+    "socket.io": "^1.0",
+    "mysql": "^2.2",
+    "q": "^1.0",
+    "fast-csv": "^0.3",
+    "underscore": "^1.6",
+    "winston": "^0.7"
   },
   "devDependencies": {
-    "grunt": "~0.4",
-    "grunt-contrib-uglify": "~0.4",
-    "grunt-contrib-jshint": "~0.10.0",
-    "grunt-contrib-less": "~0.11.0",
-    "grunt-contrib-watch": "~0.6.1",
-    "grunt-mocha-test": "~0.10.2",
-    "expect.js": "~0.3.1"
+    "grunt": "^0.4",
+    "grunt-contrib-uglify": "^0.4",
+    "grunt-contrib-jshint": "^0.10.0",
+    "grunt-contrib-less": "^0.11.0",
+    "grunt-contrib-watch": "^0.6.1",
+    "grunt-mocha-test": "^0.10.2",
+    "expect.js": "^0.3.1"
   },
   "repository": "https://bitbucket.org/jdgiese/gather-games-word-association",
   "author": "",
