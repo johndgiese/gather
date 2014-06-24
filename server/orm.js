@@ -150,6 +150,7 @@ Model.prototype.rawThenSelf = function() {
 Model.prototype.save = function () {
   var self = this;
   var data = self.fieldData();
+  var inserts;
 
   if (self.id === undefined) {
     var setId = function(result) {
@@ -158,11 +159,11 @@ Model.prototype.save = function () {
     };
 
     if (_.isEmpty(data)) {
-      var inserts = [this.M.table, this.M.idField];
+      inserts = [this.M.table, this.M.idField];
       return this.M.raw('INSERT INTO ?? (??) VALUES (NULL)', inserts)
       .then(setId);
     } else {
-      var inserts = [this.M.table, data];
+      inserts = [this.M.table, data];
       return this.M.raw('INSERT INTO ?? SET ?', inserts)
       .then(setId);
     }
@@ -172,8 +173,8 @@ Model.prototype.save = function () {
     if (_.isEmpty(data)) {
       return Q.when(self);
     } else {
-      var inserts = [this.M.table, data, this.M.idField, this.id];
-      return this.rawThenSelf('UPDATE ?? SET ? WHERE ??=?', inserts)
+      inserts = [this.M.table, data, this.M.idField, this.id];
+      return this.rawThenSelf('UPDATE ?? SET ? WHERE ??=?', inserts);
     }
   }
 };

@@ -107,7 +107,7 @@ describe('The orm', function() {
         origId = a.id;
         expect(a.id).not.to.be(undefined);
         a.age = 5;
-        return a.save()
+        return a.save();
       })
       .then(function(a) {
         expect(a.id).to.be(origId);
