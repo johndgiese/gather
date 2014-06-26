@@ -1,7 +1,6 @@
 var orm = require('../../orm');
 
 var fields = {
-  name: 'gName',
   createdBy: 'gCreatedBy',
   activePlayer: 'gActivePlayers',
   open: 'gOpen',

@@ -1,6 +1,14 @@
+var fs = require('fs');
+
 serverConfig = require('./server/config');
 
 module.exports = function(grunt) {
+
+  grunt.loadNpmTasks('grunt-contrib-less');
+  grunt.loadNpmTasks('grunt-contrib-jshint');
+  grunt.loadNpmTasks('grunt-contrib-uglify');
+  grunt.loadNpmTasks('grunt-contrib-watch');
+  grunt.loadNpmTasks('grunt-mocha-test');
 
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
@@ -48,15 +56,16 @@ module.exports = function(grunt) {
     },
 
     jshint: {
-      client: '<%= clientSrc %>',
-      server: '<%= serverSrc %>',
+      all: {
+        src: ['<%= clientSrc %>', '<%= serverSrc %>'],
+      },
     },
 
     mochaTest: {
       test: {
         options: {
           reporter: 'spec',
-          clearRequiredCache: true
+          clearRequireCache: true
         },
         src: ['server/**/*.spec.js']
       }
@@ -64,13 +73,16 @@ module.exports = function(grunt) {
 
 
     watch: {
-      client: {
+      uglify: {
         files: '<%= clientSrc %>',
-        tasks: ['jshint', 'uglify']
+        tasks: ['uglify']
       },
-      server: {
-        files: '<%= serverSrc %>',
-        tasks: ['jshint:server']
+      jshint: {
+        files: ['<%= serverSrc %>', '<%= clientSrc %>'],
+        tasks: ['jshint'],
+        options: {
+          spawn: false,
+        },
       },
       configFiles: {
         files: ['Gruntfile.js'],
@@ -82,9 +94,12 @@ module.exports = function(grunt) {
         files: '<%= lessSrc %>',
         tasks: ['less'],
       },
-      orm: {
-        files: ['server/orm.js', 'server/orm.spec.js'],
-        tasks: ['mochaTest'],
+      tests: {
+        files: ['server/**/*.js'],
+        tasks: ['tests'],
+        options: {
+          spawn: false,
+        },
       }
     },
 
@@ -106,13 +121,33 @@ module.exports = function(grunt) {
 
   });
 
-  grunt.loadNpmTasks('grunt-contrib-less');
-  grunt.loadNpmTasks('grunt-contrib-jshint');
-  grunt.loadNpmTasks('grunt-contrib-uglify');
-  grunt.loadNpmTasks('grunt-contrib-watch');
-  grunt.loadNpmTasks('grunt-mocha-test');
+
+  grunt.event.on('watch', function(action, filepath, target) {
+    if (target == 'tests') {
+      var fileIsTest = !!filepath.match('spec.js$');
+      var fileHasTest, filepathOfTest;
+
+      if (!fileIsTest) {
+        filepathOfTest = filepath.slice(0, filepath.length - 3) + '.spec.js';
+        fileHasTest = fs.existsSync(filepathOfTest);
+      } else {
+        filepathOfTest = filepath;
+        fileHasTest = false;
+      }
+
+      if (fileIsTest || fileHasTest) {
+        grunt.config('mochaTest.test.src', filepathOfTest)
+      }
+    }
+
+    if (target == 'jshint') {
+      grunt.config('jshint.all.src', filepath)
+    }
+
+  });
 
 
-  grunt.registerTask('default', ['jshint:server', 'jshint:client', 'mochaTest', 'less', 'uglify', 'watch']);
+  grunt.registerTask('default', ['jshint', 'mochaTest', 'less', 'uglify']);
+  grunt.registerTask('tests', ['jshint', 'mochaTest']);
 
 };

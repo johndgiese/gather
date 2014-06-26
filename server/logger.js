@@ -1,9 +1,12 @@
 var winston = require('winston');
 var Logger = winston.Logger;
 
+
+// TODO: add code to create _var if it doesn't exist
 var logger = new Logger({
   transports: [
-    new winston.transports.Console({
+    new winston.transports.File({
+      filename: __dirname + '/_var/_log.txt',
       colorize: true,
       level: 'debug'
     })
