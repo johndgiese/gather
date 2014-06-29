@@ -73,9 +73,9 @@ describe('The join socket API', function() {
     });
     it('throws an error if the player is already in a game', function(done) {
       client.emitp('createGame', player.id, function(data) {
-        expect(data._error).to.be(undefined);
+        expectNoError(data);
         client.emit('createGame', player.id, function(data) {
-          expect(data._error).not.to.be(undefined);
+          expectError(data);
           done();
         });
       }).fail(done);
@@ -83,13 +83,13 @@ describe('The join socket API', function() {
     it('throws an error if there is no `createPlayer` call first', function(done) {
       var invalidPlayerId = 100;
       client.emitp('createGame', invalidPlayerId, function(data) {
-        expect(data._error).not.to.be(undefined);
+        expectError(data);
         done();
       }).fail(done);
     });
     it('throws an error if given a playerid that doesn\'t match', function(done) {
       client.emitp('createGame', player.id + 1, function(data) {
-        expect(data._error).not.to.be(undefined);
+        expectError(data);
         done();
       }).fail(done);
     });
