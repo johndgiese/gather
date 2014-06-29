@@ -16,7 +16,8 @@ var logger = new Logger({
     new winston.transports.File({
       filename: logFile,
       colorize: true,
-      level: 'debug'
+      level: 'debug',
+      json: false, 
     })
   ]
 });
