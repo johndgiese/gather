@@ -23,9 +23,9 @@ Player.prototype.join = function(gameId) {
   });
 };
 
-Player.prototype.leave = function(gameId) {
-  var inserts = [gameId, this.id];
-  var sql = 'UPDATE tbPlayerGame SET pgActive = FALSE WHERE gId=? AND pId=?';
+Player.prototype.leave = function(playerGameId) {
+  var inserts = [playerGameId];
+  var sql = 'UPDATE tbPlayerGame SET pgActive = FALSE WHERE pgId=?';
   return this.M.raw(sql, inserts);
 };
 

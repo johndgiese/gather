@@ -17,10 +17,10 @@ exports.setup = function(socket) {
   socket.on('createPlayer', createPlayer);
   socket.on('createGame', createGame);
   socket.on('joinGame', joinGame);
-  socket.on('startGame', startGame);
   socket.on('leaveGame', leaveGame);
 
-  socket.on('getGameState', getGameState);
+  //socket.on('startGame', startGame);
+  //socket.on('getGameState', getGameState);
 
   socket.on('disconnect', disconnect);
 
@@ -29,6 +29,13 @@ exports.setup = function(socket) {
     if (!validPlayer) {
       var msg = util.format('socket pid = %s, provided pid = %s', playerId, player.id);
       throw new Error(msg);
+    }
+  }
+
+  function requirePlayerInGame() {
+    var playerInGame = game !== null && playerGameId !== null;
+    if (!playerInGame) {
+      throw new Error('Player is not in a game');
     }
   }
 
@@ -59,10 +66,6 @@ exports.setup = function(socket) {
 
   function requireStartingPlayer() {
     return player.id === game.createdBy;
-  }
-
-  function requirePlayerInGame() {
-    return game.isPlayerActive(player.id);
   }
 
   function createPlayer(name, acknowledge) {
@@ -127,63 +130,59 @@ exports.setup = function(socket) {
     });
   }
 
-  function startGame(data, acknowledge) {
-    requireStartingPlayer()
-    .then(function() {
-      return game.close()
-      .then(function() {
-        socket.broadcast.emit('gameClosed', game);
-        socket.broadcast.to(game.id).emit('gameStart', true);
-        acknowledge();
-      });
+  //function startGame(data, acknowledge) {
+    //requireStartingPlayer()
+    //.then(function() {
+      //return game.close()
+      //.then(function() {
+        //socket.broadcast.emit('gameClosed', game);
+        //socket.broadcast.to(game.id).emit('gameStart', true);
+        //acknowledge();
+      //});
+    //})
+    //.fail(function(error) {
+      //logger.error(error);
+      //acknowledge({_error: "Unable to start game"});
+    //});
+  //}
+
+  //function getGameState(data, acknowledge) {
+    //requirePlayerInGame()
+    //.then(function() {
+      //return game.getState(player.id)
+      //.then(function(state) {
+        //acknowledge(state.players);
+      //});
+    //})
+    //.fail(function(error) {
+      //logger.error(error);
+      //acknowledge({error: "Unable get game players"});
+    //});
+  //}
+
+
+  function leaveGame() {
+    Q.fcall(function() {
+      requirePlayerInGame();
     })
-    .fail(function(error) {
-      logger.error(error);
-      acknowledge({_error: "Unable to start game"});
-    });
-  }
-
-  function getGameState(data, acknowledge) {
-    requirePlayerInGame()
     .then(function() {
-      return game.getState(player.id)
-      .then(function(state) {
-        acknowledge(state.players);
-      });
-    })
-    .fail(function(error) {
-      logger.error(error);
-      acknowledge({error: "Unable get game players"});
-    });
-  }
-
-
-  function leaveGame(gameId) {
-    requirePlayer()
-    .then(function() {
-      return player.leave(gameId)
+      return player.leave(playerGameId)
       .then(function() {
-        socket.broadcast.to(gameId).emit('playerLeft', player);
-        socket.leave(gameId);
-        return models.Game.get(gameId);
-      })
-      .then(function(game) {
-        if (!game.open) {
-          socket.broadcast.emit('gameClosed', game);
-        }
+        socket.broadcast.to(game.id).emit('playerLeft', player.id);
+        socket.leave(game.id);
         game = null;
+        playerGameId = null;
+        acknowledge(true);
       });
     })
     .fail(function(error) {
       logger.error(error);
-      acknowledge({error: "Unable to leave game"});
+      acknowledge({_error: "Unable to leave game"});
     });
   }
 
   function disconnect() {
-    if (player && game) {
-      leaveGame(game.id);
-    }
+    leaveGame();
   }
 
 };

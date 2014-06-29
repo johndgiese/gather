@@ -4,7 +4,7 @@ var logger = require('../../logger');
 
 var fields = {
   createdBy: 'gCreatedBy',
-  activePlayer: 'gActivePlayers',
+  activePlayers: 'gActivePlayers',
   open: 'gOpen',
   hash: 'gHash',
   createdOn: 'gCreatedOn',
