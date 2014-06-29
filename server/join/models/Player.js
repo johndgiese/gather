@@ -12,16 +12,15 @@ Player.prototype.serialize = function() {
 };
 
 Player.prototype.join = function(gameId) {
-  var instance = this;
-  var playerGame = {
-    pId: instance.id,
+  var playerGameData = {
+    pId: this.id,
     gId: gameId
   };
-  var inserts = [playerGame];
-  return instance.M.raw('INSERT tbPlayerGame SET ?', inserts)
-    .then(function(){
-      return instance;
-    });
+  var inserts = [playerGameData];
+  return this.M.raw('INSERT tbPlayerGame SET ?', inserts)
+  .then(function(result) {
+    return result.insertId;  // the playerGameId
+  });
 };
 
 Player.prototype.leave = function(gameId) {

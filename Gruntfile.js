@@ -62,7 +62,7 @@ module.exports = function(grunt) {
     },
 
     mochaTest: {
-      test: {
+      all: {
         options: {
           reporter: 'spec',
           clearRequireCache: true
@@ -147,7 +147,7 @@ module.exports = function(grunt) {
   });
 
 
-  grunt.registerTask('default', ['jshint', 'mochaTest', 'less', 'uglify']);
+  grunt.registerTask('default', ['jshint', 'mochaTest', 'less', 'uglify', 'watch']);
   grunt.registerTask('tests', ['jshint', 'mochaTest']);
 
 };

@@ -2,62 +2,76 @@ var models = require('./models');
 var _ = require('underscore');
 var logger = require('../logger');
 var Q = require('Q');
+var util = require('util');
 
 exports.setup = function(socket) {
 
-  // connection level state
-  var player = null;
+  // null if no player has been created or logged into
+  var player = null;  
+
+  // both of these are null if player hasn't joined a game
+  // for now a single connection can only be attached to one game at a time
   var game = null;
-  var playerGameIds = [];
+  var playerGameId = null;
 
   socket.on('createPlayer', createPlayer);
   socket.on('createGame', createGame);
   socket.on('joinGame', joinGame);
-  socket.on('leaveGame', leaveGame);
   socket.on('startGame', startGame);
+  socket.on('leaveGame', leaveGame);
 
-  socket.on('getGamePlayers', getGamePlayers);
-  socket.on('getOpenGames', getOpenGames);
+  socket.on('getGameState', getGameState);
 
   socket.on('disconnect', disconnect);
 
   function requirePlayer(playerId) {
-    return Q.fcall(function() {
-      console.log(playerId);
-      console.log(player.id);
-      return playerId !== null && playerId === player.id;
-    });
+    var validPlayer = playerId !== null && playerId === player.id;
+    if (!validPlayer) {
+      var msg = util.format('socket pid = %s, provided pid = %s', playerId, player.id);
+      throw new Error(msg);
+    }
   }
 
-  function requireStartingPlayer() {
-    return Q.fcall(function() {
-      return player.id === game.createdBy;
-    });
+  function requirePlayerNotInGame() {
+    var playerNotInGame = game === null && playerGameId === null;
+    if (!playerNotInGame) {
+      throw new Error('Player is already in a game');
+    }
   }
 
-  function requirePlayerInGame() {
-    return Q.fcall(function() {
-      return game.isPlayerActive(player.id);
-    });
+  function requireNoPlayerEstablished() {
+    if (player !== null) {
+      throw new Error("Player already established");
+    }
   }
 
   function requireValidPlayerName(name) {
-    return Q.fcall(function() {
-
-      var validName = _.isString(name) && name.length >= 1 && name.length <= 100;
-
-      if (!validName) {
-        throw new Error("Invalid nickname");
-      } else {
-        return true;
-      }
-    });
+    var validName = _.isString(name) && name.length >= 1 && name.length <= 100;
+    if (!validName) {
+      throw new Error("Invalid nickname");
+    }
   }
 
-  function createPlayer(nickname, acknowledge) {
-    requireValidPlayerName(nickname)
+  function requireGameOwnership(playerId) {
+    // TODO: implement accounts and payment system
+    return true;
+  }
+
+  function requireStartingPlayer() {
+    return player.id === game.createdBy;
+  }
+
+  function requirePlayerInGame() {
+    return game.isPlayerActive(player.id);
+  }
+
+  function createPlayer(name, acknowledge) {
+    Q.fcall(function() {
+      requireNoPlayerEstablished();
+      requireValidPlayerName(name);
+    })
     .then(function() {
-      player = new models.Player({name: nickname});
+      player = new models.Player({name: name});
       return player.save()
       .then(function() {
         acknowledge(player);
@@ -70,17 +84,46 @@ exports.setup = function(socket) {
   }
 
   function createGame(playerId, acknowledge) {
-    requirePlayer(playerId)
+    Q.fcall(function() {
+      requirePlayer(playerId);
+      requirePlayerNotInGame();
+      requireGameOwnership(playerId);
+    })
     .then(function() {
-      game = new models.Game({createBy: playerId});
+      // the connection-state game reference is set in `joinGame`
+      var game = new models.Game({createdBy: playerId});
       return game.save()
       .then(function() {
-        joinGame(game.id, acknowledge);
+        joinGame({hash: game.hash, playerId: playerId}, acknowledge);
       });
     })
     .fail(function(error) {
       logger.error(error);
       acknowledge({_error: "Unable to create game"});
+    });
+  }
+
+  function joinGame(data, acknowledge) {
+    Q.fcall(function() {
+      requirePlayer(data.playerId);
+      requirePlayerNotInGame();
+    })
+    .then(function() {
+      return models.Game.getByHash(data.hash)
+      .then(function(game_) {
+        game = game_;
+        return player.join(game.id);
+      })
+      .then(function(playerGameId_) {
+        playerGameId = playerGameId_;
+        socket.join(game.id);
+        socket.broadcast.to(game.id).emit('playerJoined', player);
+        acknowledge({game: game, playerGameId: playerGameId});
+      });
+    })
+    .fail(function(error) {
+      logger.error(error);
+      acknowledge({_error: "Unable to join game"});
     });
   }
 
@@ -100,19 +143,7 @@ exports.setup = function(socket) {
     });
   }
 
-  function getOpenGames(data, acknowledge) {
-    models.Game.queryOpen()
-    .then(function(games) {
-      acknowledge(games);
-    })
-    .fail(function(error) {
-      logger.error(error);
-      acknowledge({error: "Unable retrieve open games"});
-    });
-  }
-
-  // TODO add this to the game!
-  function getGamePlayers(data, acknowledge) {
+  function getGameState(data, acknowledge) {
     requirePlayerInGame()
     .then(function() {
       return game.getState(player.id)
@@ -126,25 +157,6 @@ exports.setup = function(socket) {
     });
   }
 
-  function joinGame(gameId, acknowledge) {
-    requirePlayer()
-    .then(function() {
-      return models.Game.get(gameId)
-      .then(function(game_) {
-        game = game_;
-        return player.join(game.id);
-      })
-      .then(function() {
-        socket.join(game.id);
-        socket.broadcast.to(game.id).emit('playerJoined', player);
-        acknowledge(game);
-      });
-    })
-    .fail(function(error) {
-      logger.error(error);
-      acknowledge({_error: "Unable to join game"});
-    });
-  }
 
   function leaveGame(gameId) {
     requirePlayer()
