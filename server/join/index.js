@@ -1,6 +1,7 @@
 var models = require('./models');
 var _ = require('underscore');
 var logger = require('../logger');
+var Q = require('Q');
 
 exports.setup = function(socket) {
 
@@ -20,9 +21,11 @@ exports.setup = function(socket) {
 
   socket.on('disconnect', disconnect);
 
-  function requirePlayer() {
+  function requirePlayer(playerId) {
     return Q.fcall(function() {
-      return player.id;
+      console.log(playerId);
+      console.log(player.id);
+      return playerId !== null && playerId === player.id;
     });
   }
 
@@ -67,7 +70,7 @@ exports.setup = function(socket) {
   }
 
   function createGame(playerId, acknowledge) {
-    requirePlayer()
+    requirePlayer(playerId)
     .then(function() {
       game = new models.Game({createBy: playerId});
       return game.save()

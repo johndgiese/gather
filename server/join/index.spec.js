@@ -45,7 +45,6 @@ describe('The join socket API', function() {
 
     it('requires the id of the player to be set in the socket', function(done) {
       client.emit('createPlayer', 'david', function(player) {
-        console.log(player);
         expect(player.id).to.be.a('number');
         client.emit('createGame', player.id, function(playerGameId) {
           expect(playerGameId).to.be.a('number');

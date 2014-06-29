@@ -2,7 +2,6 @@ var config = require('./config');
 var logger = require('./logger');
 
 var path = require('path');
-var Q = require('q');
 
 
 // USE EXPRESS FOR SERVERING STATIC FILES

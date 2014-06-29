@@ -1,12 +1,20 @@
 var winston = require('winston');
 var Logger = winston.Logger;
+var fs = require('fs');
+var mkdirp = require('mkdirp');
+var path = require('path');
 
 
-// TODO: add code to create _var if it doesn't exist
+var logFile = __dirname + '/_var/log.txt';
+var logDir = path.dirname(logFile);
+if (!fs.existsSync(logDir)) {
+  mkdirp.sync(logDir);
+}
+
 var logger = new Logger({
   transports: [
     new winston.transports.File({
-      filename: __dirname + '/_var/_log.txt',
+      filename: logFile,
       colorize: true,
       level: 'debug'
     })
