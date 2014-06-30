@@ -24,7 +24,7 @@ describe('The join socket API', function() {
 
   describe('provides a way to create players', function() {
     it('returns a player object on succsess', function(done) {
-      client.emitp('createPlayer', 'test player', function(data) {
+      client.emitp('createPlayer', {name: 'test player'}, function(data) {
         expect(data.id).not.to.be(undefined);
         done();
       }).fail(done);
@@ -37,15 +37,15 @@ describe('The join socket API', function() {
     });
     it('returns an error if the name is too long', function(done) {
       var longName = new Array(101 + 1).join('a');
-      client.emitp('createPlayer', longName, function(data) {
+      client.emitp('createPlayer', {name: longName}, function(data) {
         tu.expectError(data);
         done();
       }).fail(done);
     });
     it('returns an error if already attached to a player', function(done) {
-      client.emitp('createPlayer', 'david', function(data) {
+      client.emitp('createPlayer', {name: 'david'}, function(data) {
         tu.expectNoError(data);
-        client.emit('createPlayer', 'david', function(data) {
+        client.emit('createPlayer', {name: 'david'}, function(data) {
           tu.expectError(data);
           done();
         });
@@ -56,14 +56,14 @@ describe('The join socket API', function() {
   describe('provides a way of creating games', function() {
     var player;
     beforeEach(function(done) {
-      client.emit('createPlayer', 'david', function(player_) {
+      client.emit('createPlayer', {name: 'david'}, function(player_) {
         player = player_;
         done();
       });
     });
 
     it('returns the playerGameId and game object', function(done) {
-      client.emitp('createGame', player.id, function(data) {
+      client.emitp('createGame', {playerId: player.id}, function(data) {
         expect(data.playerGameId).to.be.a('number');
         expect(data.game.id).to.be.a('number');
         expect(_.isString(data.game.hash)).to.be(true);
@@ -74,9 +74,9 @@ describe('The join socket API', function() {
       done();
     });
     it('throws an error if the player is already in a game', function(done) {
-      client.emitp('createGame', player.id, function(data) {
+      client.emitp('createGame', {playerId: player.id}, function(data) {
         tu.expectNoError(data);
-        client.emit('createGame', player.id, function(data) {
+        client.emit('createGame', {playerId: player.id}, function(data) {
           tu.expectError(data);
           done();
         });
@@ -84,13 +84,13 @@ describe('The join socket API', function() {
     });
     it('throws an error if there is no `createPlayer` call first', function(done) {
       var invalidPlayerId = 100;
-      client.emitp('createGame', invalidPlayerId, function(data) {
+      client.emitp('createGame', {playerId: invalidPlayerId}, function(data) {
         tu.expectError(data);
         done();
       }).fail(done);
     });
     it('throws an error if given a playerid that doesn\'t match', function(done) {
-      client.emitp('createGame', player.id + 1, function(data) {
+      client.emitp('createGame', {playerId: player.id + 1}, function(data) {
         tu.expectError(data);
         done();
       }).fail(done);
@@ -105,7 +105,7 @@ describe('The join socket API', function() {
       tu.setupPlayers(clients)
       .then(function(players_) {
         players = players_;
-        clients[0].emitp('createGame', players[0].id, function(data) {
+        clients[0].emitp('createGame', {playerId: players[0].id}, function(data) {
           game = data.game;
           done();
         });

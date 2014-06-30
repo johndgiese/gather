@@ -68,13 +68,13 @@ exports.setup = function(socket) {
     return player.id === game.createdBy;
   }
 
-  function createPlayer(name, acknowledge) {
+  function createPlayer(data, acknowledge) {
     Q.fcall(function() {
       requireNoPlayerEstablished();
-      requireValidPlayerName(name);
+      requireValidPlayerName(data.name);
     })
     .then(function() {
-      var p = new models.Player({name: name});
+      var p = new models.Player({name: data.name});
       return p.save()
       .then(function() {
         player = p;
@@ -89,16 +89,16 @@ exports.setup = function(socket) {
 
   function createGame(playerId, acknowledge) {
     Q.fcall(function() {
-      requirePlayer(playerId);
+      requirePlayer(data.playerId);
       requirePlayerNotInGame();
-      requireGameOwnership(playerId);
+      requireGameOwnership(data.playerId);
     })
     .then(function() {
       // the connection-state game reference is set in `joinGame`
-      var game = new models.Game({createdBy: playerId});
+      var game = new models.Game({createdBy: data.playerId});
       return game.save()
       .then(function() {
-        joinGame({hash: game.hash, playerId: playerId}, acknowledge);
+        joinGame({hash: game.hash, playerId: data.playerId}, acknowledge);
       });
     })
     .fail(function(error) {

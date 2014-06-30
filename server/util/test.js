@@ -55,7 +55,7 @@ exports.setupPlayers = function(clients) {
   var count = 0;
   var players = _.map(clients, function(client) {
     var name = 'player' + String(count++);
-    return client.emitp('createPlayer', name, function(player) {
+    return client.emitp('createPlayer', {name: name}, function(player) {
       return player;
     });
   });
