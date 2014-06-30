@@ -97,7 +97,7 @@ describe('The join socket API', function() {
     });
   });
 
-  describe('provides a way to join existing games', function() {
+  describe('provides a way to join and leave existing games', function() {
 
     var clients, players, game;
     beforeEach(function(done) {
@@ -206,7 +206,15 @@ describe('The join socket API', function() {
       })
       .fail(done);
     });
+  });
 
+  describe('should never change state if there is an error', function() {
+    it('that means the database shouldn\'t be altered', function() {});
+    it('and neither should the connection-level state (e.g. `game`, `player`, or `gamePlayerId`', function() {});
+    // but I don't know how to tests these things
+    // except to look for them
+    // and they currently aren't true at all, although some types of errors are very unlikley
+    // TODO: make sure these items are true
   });
 
 });

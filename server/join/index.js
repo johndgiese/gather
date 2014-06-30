@@ -74,10 +74,11 @@ exports.setup = function(socket) {
       requireValidPlayerName(name);
     })
     .then(function() {
-      player = new models.Player({name: name});
-      return player.save()
+      var p = new models.Player({name: name});
+      return p.save()
       .then(function() {
-        acknowledge(player);
+        player = p;
+        acknowledge(p);
       });
     })
     .fail(function(error) {
@@ -107,7 +108,7 @@ exports.setup = function(socket) {
   }
 
   function joinGame(data, acknowledge) {
-    Q.fcall(function() {
+    return Q.fcall(function() {
       requirePlayer(data.playerId);
       requirePlayerNotInGame();
     })
