@@ -24,11 +24,9 @@ exports.setup = function(socket) {
 
   socket.on('disconnect', disconnect);
 
-  function requirePlayer(playerId) {
-    var validPlayer = playerId !== null && playerId === player.id;
-    if (!validPlayer) {
-      var msg = util.format('socket pid = %s, provided pid = %s', playerId, player.id);
-      throw new Error(msg);
+  function requirePlayer() {
+    if (player === null) {
+      throw new Error('No player connected to socket');
     }
   }
 
@@ -59,7 +57,7 @@ exports.setup = function(socket) {
     }
   }
 
-  function requireGameOwnership(playerId) {
+  function requireGameOwnership() {
     // TODO: implement accounts and payment system
     return true;
   }
@@ -68,6 +66,9 @@ exports.setup = function(socket) {
     return player.id === game.createdBy;
   }
 
+  /**
+   * Create a new player and attach it to the socket.
+   */
   function createPlayer(data, acknowledge) {
     Q.fcall(function() {
       requireNoPlayerEstablished();
@@ -87,18 +88,21 @@ exports.setup = function(socket) {
     });
   }
 
-  function createGame(playerId, acknowledge) {
+  /**
+   * Create a new game and attach it to the socket.
+   */
+  function createGame(data, acknowledge) {
     Q.fcall(function() {
-      requirePlayer(data.playerId);
+      requirePlayer();
       requirePlayerNotInGame();
-      requireGameOwnership(data.playerId);
+      requireGameOwnership();
     })
     .then(function() {
       // the connection-state game reference is set in `joinGame`
-      var game = new models.Game({createdBy: data.playerId});
+      var game = new models.Game({createdBy: player.id});
       return game.save()
       .then(function() {
-        joinGame({hash: game.hash, playerId: data.playerId}, acknowledge);
+        joinGame({hash: game.hash}, acknowledge);
       });
     })
     .fail(function(error) {
@@ -107,9 +111,15 @@ exports.setup = function(socket) {
     });
   }
 
+  /**
+   * Join an existing game.
+   * Must be called even when creating a new one; places a link between the
+   * player and the game in the database, and attaches the id to this link to
+   * the socket.
+   */
   function joinGame(data, acknowledge) {
     return Q.fcall(function() {
-      requirePlayer(data.playerId);
+      requirePlayer();
       requirePlayerNotInGame();
     })
     .then(function() {
@@ -162,6 +172,11 @@ exports.setup = function(socket) {
   //}
 
 
+  /**
+   * Leave the current game.
+   * Marks the player-game connection as inactive at the database level, and
+   * clears out the socket state.
+   */
   function leaveGame() {
     Q.fcall(function() {
       requirePlayerInGame();

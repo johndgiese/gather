@@ -11,14 +11,14 @@ var SOCKET_URL = "http://localhost:" + config.PORT;
 
 describe('The join socket API', function() {
 
-  var options = {
+  var SOCKET_OPTIONS = {
     transports: ['websocket'],
     'force new connection': true,
   };
   var client;
 
   beforeEach(function(done) {
-    client = tu.setupClient(SOCKET_URL, options);
+    client = tu.setupClient(SOCKET_URL, SOCKET_OPTIONS);
     client.once('connect', done);
   });
 
@@ -63,7 +63,7 @@ describe('The join socket API', function() {
     });
 
     it('returns the playerGameId and game object', function(done) {
-      client.emitp('createGame', {playerId: player.id}, function(data) {
+      client.emitp('createGame', {}, function(data) {
         expect(data.playerGameId).to.be.a('number');
         expect(data.game.id).to.be.a('number');
         expect(_.isString(data.game.hash)).to.be(true);
@@ -74,23 +74,17 @@ describe('The join socket API', function() {
       done();
     });
     it('throws an error if the player is already in a game', function(done) {
-      client.emitp('createGame', {playerId: player.id}, function(data) {
+      client.emitp('createGame', {}, function(data) {
         tu.expectNoError(data);
-        client.emit('createGame', {playerId: player.id}, function(data) {
+        client.emit('createGame', {}, function(data) {
           tu.expectError(data);
           done();
         });
       }).fail(done);
     });
     it('throws an error if there is no `createPlayer` call first', function(done) {
-      var invalidPlayerId = 100;
-      client.emitp('createGame', {playerId: invalidPlayerId}, function(data) {
-        tu.expectError(data);
-        done();
-      }).fail(done);
-    });
-    it('throws an error if given a playerid that doesn\'t match', function(done) {
-      client.emitp('createGame', {playerId: player.id + 1}, function(data) {
+      var client = tu.setupClient(SOCKET_URL, SOCKET_OPTIONS);
+      client.emitp('createGame', {}, function(data) {
         tu.expectError(data);
         done();
       }).fail(done);
@@ -101,11 +95,11 @@ describe('The join socket API', function() {
 
     var clients, players, game;
     beforeEach(function(done) {
-      clients = tu.setupClients(3, SOCKET_URL, options);
+      clients = tu.setupClients(3, SOCKET_URL, SOCKET_OPTIONS);
       tu.setupPlayers(clients)
       .then(function(players_) {
         players = players_;
-        clients[0].emitp('createGame', {playerId: players[0].id}, function(data) {
+        clients[0].emitp('createGame', {}, function(data) {
           game = data.game;
           done();
         });
@@ -113,11 +107,6 @@ describe('The join socket API', function() {
     });
 
     it('it broadcasts the event to other players in the game', function(done) {
-      var joinRequestData = {
-        playerId: players[1].id,
-        hash: game.hash,
-      };
-
       var joinEventBroadcastTo1 = false;
       var client0promise = clients[0].oncep('playerJoined', function(player) {
         joinEventBroadcastTo1 = true;
@@ -129,7 +118,7 @@ describe('The join socket API', function() {
         done(new Error("player 2 shouldn't receive a request"));
       });
 
-      clients[1].emitp('joinGame', joinRequestData, function(data) {
+      clients[1].emitp('joinGame', {hash: game.hash}, function(data) {
         expect(data.playerGameId).to.be.a('number');
         expect(data.game.id).to.be.a('number');
         expect(_.isString(data.game.hash)).to.be(true);
@@ -144,11 +133,7 @@ describe('The join socket API', function() {
     });
 
     it('throws an error if given an invalid hash', function(done) {
-      var joinRequestData = {
-        playerId: players[1].id,
-        hash: 'AAAAAA',
-      };
-      clients[1].emitp('joinGame', joinRequestData, function(data) {
+      clients[1].emitp('joinGame', {hash: 'AAAAAA'}, function(data) {
         tu.expectError(data);
         done();
       }).fail(done);
@@ -160,7 +145,7 @@ describe('The join socket API', function() {
         expect(game.activePlayers).to.be(1);
       })
       .then(function() {
-        return tu.joinGame(clients[1], players[1].id, game.hash);
+        return tu.joinGame(clients[1], game.hash);
       })
       .then(function() {
         return models.Game.getByHash(game.hash);
@@ -169,7 +154,7 @@ describe('The join socket API', function() {
         expect(game.activePlayers).to.be(2);
       })
       .then(function() {
-        return tu.joinGame(clients[2], players[2].id, game.hash);
+        return tu.joinGame(clients[2], game.hash);
       })
       .then(function() {
         return models.Game.getByHash(game.hash);

@@ -62,9 +62,8 @@ exports.setupPlayers = function(clients) {
   return Q.all(players);
 };
 
-exports.joinGame = function(client, playerId, hash) {
-  var joinRequestData = {playerId: playerId, hash: hash};
-  return client.emitp('joinGame', joinRequestData, function(data) {
+exports.joinGame = function(client, hash) {
+  return client.emitp('joinGame', {hash: hash}, function(data) {
     return data;
   });
 };
