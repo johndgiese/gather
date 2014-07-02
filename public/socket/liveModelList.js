@@ -13,8 +13,7 @@
  */
 angular.module('socket')
 .factory('liveModelList', function() {
-  return function(scopedSocket, setupEvent, addEvent, removeEvent) {
-    var list = [];
+  return function(scopedSocket, list, addEvent, removeEvent) {
     var lookup = {};
 
     function add(item) {
@@ -46,8 +45,6 @@ angular.module('socket')
       });
 
     });
-
-    return list;
 
   };
 

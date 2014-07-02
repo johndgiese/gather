@@ -1,17 +1,21 @@
 angular.module('join')
 .controller('CreatePlayerCtrl', [
-  '$scope', '$state', 'playerService', 'ScopedSocket',
-  function($scope, $state, playerService, ScopedSocket) {
+  '$scope', '$state', '$stateParams', 'playerService', 'ScopedSocket', 'stateStack', 
+  function($scope, $state, $stateParams, playerService, ScopedSocket, stateStack) {
     var socket = new ScopedSocket($scope);
+
+    // this state is only ever traversed via a redirect, hence we need a way of
+    // knowing the next state
+    $scope.nextState = stateStack.pop() || 'landing';
 
     $scope.playerName = "";
 
     $scope.createPlayer = function() {
       socket.emit('createPlayer', {
-        playerName: $scope.playerName,
+        name: $scope.playerName,
       }, function(player) {
         playerService.set(player);
-        $state.go('search');
+        $state.go($scope.nextState);
       });
     };
 

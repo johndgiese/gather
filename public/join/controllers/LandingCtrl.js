@@ -8,13 +8,9 @@ angular.module('join')
     $scope.createGame = function() {
       $state.go('createGame');
     };
-
-    $scope.searchForGames = function() {
-      if (playerService.get() === null) {
-        $state.go('createPlayer');
-      } else {
-        $state.go('search');
-      }
+    
+    $scope.joinGame = function() {
+      $state.go('joinGame');
     };
   }
 ]);

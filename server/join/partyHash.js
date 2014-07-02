@@ -1,6 +1,6 @@
 var crypto = require('crypto');
 
-exports.gamehash = function(playerId) {
+module.exports = function(playerId) {
   var millisecsSinceUTC = (new Date()).valueOf();
   var str = String(millisecsSinceUTC) + String(playerId);
   return hash(str, 6);

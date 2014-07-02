@@ -1,0 +1,9 @@
+<p ng-show="!joinedGame" class="main-instruction">Joining Game ...</p>
+<p ng-show="joinedGame && !creator" class="main-instruction">
+  The game will start once <span class"highlight">{{ creator.nickname }}</span> clicks begin!
+</p>
+
+
+<div class="btn-w-instruction">
+  <button type="button" class="action" ng-click="startPlayer()" ng-disabled="form.$invalid">Continue</button>
+</div>

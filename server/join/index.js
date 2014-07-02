@@ -9,20 +9,16 @@ exports.setup = function(socket) {
   // null if no player has been created or logged into
   var player = null;  
 
-  // both of these are null if player hasn't joined a game
-  // for now a single connection can only be attached to one game at a time
-  var game = null;
-  var playerGameId = null;
+  // null if the player isn't in a party
+  var party = null;
 
   socket.on('createPlayer', createPlayer);
   socket.on('createGame', createGame);
   socket.on('joinGame', joinGame);
-  socket.on('leaveGame', leaveGame);
+  socket.on('leaveParty', leaveParty);
+  socket.on('disconnect', leaveParty);
 
   //socket.on('startGame', startGame);
-  //socket.on('getGameState', getGameState);
-
-  socket.on('disconnect', disconnect);
 
   function requirePlayer() {
     if (player === null) {
@@ -30,23 +26,27 @@ exports.setup = function(socket) {
     }
   }
 
-  function requirePlayerInGame() {
-    var playerInGame = game !== null && playerGameId !== null;
-    if (!playerInGame) {
-      throw new Error('Player is not in a game');
-    }
-  }
-
-  function requirePlayerNotInGame() {
-    var playerNotInGame = game === null && playerGameId === null;
-    if (!playerNotInGame) {
-      throw new Error('Player is already in a game');
-    }
-  }
-
-  function requireNoPlayerEstablished() {
+  function requireNoPlayer() {
     if (player !== null) {
       throw new Error("Player already established");
+    }
+  }
+
+  function requirePlayerInParty() {
+    if (party === null) {
+      throw new Error('Player is not in a party');
+    }
+  }
+
+  function requirePlayerNotInParty() {
+    if (party !== null) {
+      throw new Error('Player is already in a party');
+    }
+  }
+
+  function requireSameParty(party_) {
+    if (party !== null && party !== party_) {
+      throw new Error("Can't join another party until leaving the current one");
     }
   }
 
@@ -71,7 +71,7 @@ exports.setup = function(socket) {
    */
   function createPlayer(data, acknowledge) {
     Q.fcall(function() {
-      requireNoPlayerEstablished();
+      requireNoPlayer();
       requireValidPlayerName(data.name);
     })
     .then(function() {
@@ -89,20 +89,25 @@ exports.setup = function(socket) {
   }
 
   /**
-   * Create a new game and attach it to the socket.
+   * Create a new game and send back its party hash.
+   * Note: this is separate from joining the game, which most be done separately
+   * and in addition to creating it.
+   * Note: if the player is already in a party, this will create the game
+   * within that party, otherwise it will create a new "party".
    */
   function createGame(data, acknowledge) {
     Q.fcall(function() {
       requirePlayer();
-      requirePlayerNotInGame();
       requireGameOwnership();
     })
     .then(function() {
-      // the connection-state game reference is set in `joinGame`
       var game = new models.Game({createdBy: player.id});
+      if (party !== null) {
+        game.party = party;
+      }
       return game.save()
       .then(function() {
-        joinGame({hash: game.hash}, acknowledge);
+        acknowledge({party: game.party});
       });
     })
     .fail(function(error) {
@@ -112,27 +117,26 @@ exports.setup = function(socket) {
   }
 
   /**
-   * Join an existing game.
-   * Must be called even when creating a new one; places a link between the
+   * Join the current game for a specified party.
+   * Must be called even when creating a new game; places a link between the
    * player and the game in the database, and attaches the id to this link to
-   * the socket.
+   * the socket.  Returns the session state.
    */
   function joinGame(data, acknowledge) {
     return Q.fcall(function() {
       requirePlayer();
-      requirePlayerNotInGame();
+      requireSameParty(data.party);
     })
     .then(function() {
-      return models.Game.getByHash(data.hash)
-      .then(function(game_) {
-        game = game_;
-        return player.join(game.id);
-      })
-      .then(function(playerGameId_) {
-        playerGameId = playerGameId_;
-        socket.join(game.id);
-        socket.broadcast.to(game.id).emit('playerJoined', player);
-        acknowledge({game: game, playerGameId: playerGameId});
+      return models.Game.getByParty(data.party)
+      .then(function(game) {
+        party = game.party;
+        socket.join(game.party);
+        player.join(game.id)
+        .then(function(playerGameId) {
+          socket.broadcast.to(party).emit('playerJoined', player);
+          acknowledge({game: game});
+        });
       });
     })
     .fail(function(error) {
@@ -146,8 +150,7 @@ exports.setup = function(socket) {
     //.then(function() {
       //return game.close()
       //.then(function() {
-        //socket.broadcast.emit('gameClosed', game);
-        //socket.broadcast.to(game.id).emit('gameStart', true);
+        //socket.broadcast.to(game.party).emit('gameStart', true);
         //acknowledge();
       //});
     //})
@@ -157,37 +160,21 @@ exports.setup = function(socket) {
     //});
   //}
 
-  //function getGameState(data, acknowledge) {
-    //requirePlayerInGame()
-    //.then(function() {
-      //return game.getState(player.id)
-      //.then(function(state) {
-        //acknowledge(state.players);
-      //});
-    //})
-    //.fail(function(error) {
-      //logger.error(error);
-      //acknowledge({error: "Unable get game players"});
-    //});
-  //}
-
-
   /**
-   * Leave the current game.
+   * Leave the current party.
    * Marks the player-game connection as inactive at the database level, and
    * clears out the socket state.
    */
-  function leaveGame() {
+  function leaveParty() {
     Q.fcall(function() {
-      requirePlayerInGame();
+      requirePlayerInParty();
     })
     .then(function() {
-      return player.leave(playerGameId)
+      return player.leave(party)
       .then(function() {
-        socket.broadcast.to(game.id).emit('playerLeft', player.id);
-        socket.leave(game.id);
-        game = null;
-        playerGameId = null;
+        socket.broadcast.to(party).emit('playerLeft', player.id);
+        socket.leave(party);
+        party = null;
         acknowledge(true);
       });
     })
@@ -198,7 +185,7 @@ exports.setup = function(socket) {
   }
 
   function disconnect() {
-    leaveGame();
+    leaveParty();
   }
 
 };

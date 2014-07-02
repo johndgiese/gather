@@ -1,12 +1,11 @@
 var orm = require('../../orm');
-var hash = require('../hash');
+var partyHash = require('../partyHash');
 var logger = require('../../logger');
 
 var fields = {
   createdBy: 'gCreatedBy',
-  activePlayers: 'gActivePlayers',
   open: 'gOpen',
-  hash: 'gHash',
+  party: 'gParty',
   createdOn: 'gCreatedOn',
 };
 var Game = orm.define('tbGame', fields, 'gId');
@@ -36,18 +35,25 @@ Game.get = function(gameId) {
   return Game.queryOneId(gameId);
 };
 
-Game.getByHash = function(hash) {
-  inserts = [this.table, hash];
-  var sql = 'SELECT * from ?? where gHash=?';
+Game.getByParty = function(party) {
+  inserts = [this.table, party];
+  var sql = 'SELECT * from ?? where gParty=?';
   return this.queryOne(sql, inserts);
-};
-
-Game.queryActive = function() {
-  return Game.query('SELECT * FROM tbGame WHERE gActivePlayers > 0');
 };
 
 Game.queryOpen = function() {
   return Game.query('SELECT * FROM tbGame WHERE gOpen=TRUE');
+};
+
+Game.prototype.activePlayers = function() {
+  var inserts = [this.id];
+  var sql = 'SELECT count(*) AS activePlayers ' +
+              'FROM tbGame NATURAL JOIN tbPlayerGame ' +
+              'WHERE gId=? AND pgActive=TRUE';
+  return Game.raw(sql, inserts)
+  .then(function(result) {
+    return result[0].activePlayers;
+  });
 };
 
 Game.prototype.isPlayerActive = function(playerId) {
@@ -62,7 +68,7 @@ Game.prototype.isPlayerActive = function(playerId) {
 var MAX_HASH_ATTEMPTS = 10;
 Game.prototype._save = Game.prototype.save;
 Game.prototype.save = function() {
-  if (this.id === undefined) {  // first save
+  if (this.party === undefined) {
     if (this.createdBy === undefined) {
       throw new Error("Must provide player id before creating a game");
     }
@@ -70,14 +76,14 @@ Game.prototype.save = function() {
     var attempts = 0;
     while (attempts < MAX_HASH_ATTEMPTS) {
       attempts++;
-      this.hash = hash.gamehash(this.createdBy);
+      this.party = partyHash(this.createdBy);
       try {
         return this._save();
       } catch (e) {
         logger.warn(e);
       }
     }
-    throw new Error("Unable to find a unique hash for the game");
+    throw new Error("Unable to find a unique party hash for the game");
   } else {
     return this._save();
   }

@@ -11,10 +11,9 @@ CREATE TABLE tbPlayer (
 
 CREATE TABLE tbGame (
     gId INT NOT NULL AUTO_INCREMENT,
-    gHash VARCHAR(255) UNIQUE,
+    gParty VARCHAR(255) NOT NULL,
     gCreatedOn TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     gCreatedBy INT,
-    gActivePlayers INT NOT NULL DEFAULT FALSE,
     gOpen BOOLEAN NOT NULL DEFAULT TRUE,
     PRIMARY KEY (gId)
 );
@@ -43,27 +42,4 @@ ALTER TABLE tbGame
     ADD CONSTRAINT
     FOREIGN KEY (gCreatedBy) REFERENCES tbPlayer(pId) 
     ON DELETE CASCADE;
-
-
-DROP PROCEDURE IF EXISTS prUpdateGameActivePlayers;
-
-delimiter //
-CREATE PROCEDURE prUpdateGameActivePlayers(gId_ INT)
-    BEGIN
-        DECLARE gActivePlayers_ INT;
-        SELECT COUNT(*) INTO gActivePlayers_ FROM tbPlayerGame
-            WHERE gId=gId_ AND pgActive=TRUE;
-        UPDATE tbGame SET 
-            gActivePlayers = gActivePlayers_,
-            gOpen = gActivePlayers_ > 0
-            WHERE gId=gId_;
-    END;
-//
-delimiter ;
-
-CREATE TRIGGER trGameStatusUpd AFTER UPDATE ON tbPlayerGame 
-    FOR EACH ROW CALL prUpdateGameActivePlayers(NEW.gId);
-
-CREATE TRIGGER trGameStatusIns AFTER INSERT ON tbPlayerGame 
-    FOR EACH ROW CALL prUpdateGameActivePlayers(NEW.gId);
 

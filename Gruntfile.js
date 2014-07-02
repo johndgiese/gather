@@ -41,13 +41,14 @@ module.exports = function(grunt) {
       'public/modal/ui-bootstrap-modal-0.10.0.js',
       'public/modal/ui-bootstrap-modal-tpls-0.10.0.js',
       'public/_vendor/angular-ui-router/release/angular-ui-router.js',
-      'public/_vendor/socket.io-client/dist/socket.io.js',
+      'public/_vendor/socket.io-client/socket.io.js',
     ],
 
     uglify: {
       options: {
         banner: '/*! <%= pkg.name %> <%= grunt.template.today("yyyy-mm-dd") %> */\n',
-        sourceMap: true
+        sourceMap: true,
+        mangle: false
       },
       build: {
         dest: 'public/_dist/index.js',

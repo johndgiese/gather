@@ -1,23 +1,23 @@
 angular.module('join')
-.factory('gameService', ['socket', function(socket) {
-  var game = null;
+.factory('gameService', ['socket', '$q', function(socket, $q) {
+  var state = null;
 
   return {
-    set: setGame,
-    get: getGame
+    set: setGameState,
+    get: getGameState
   };
 
-  function getGame() {
-    return game;
+  function getGameState() {
+    return state;
   }
 
-  function setGame(newGame) { 
-    var gameId = game && game.id;
-    var newGameId = newGame && newGame.id;
-    if (gameId !== newGameId && game !== null) {
-      socket.emit('leaveGame', game.id);
+  function setGameState(newState) { 
+    var gameId = state && state.game.id;
+    var newGameId = newState && newState.game.id;
+    if (gameId !== newGameId && state !== null) {
+      socket.emit('leaveGame', gameId);
     }
-    game = newGame;
+    state = newState;
   }
 
 }]);

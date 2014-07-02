@@ -9,46 +9,31 @@ angular.module('join')
     templateUrl: '/static/join/templates/landing.html',
   })
 
-  // create a new game
+  // create a new game and session
   .state('createGame', {
     url: '/new',
     controller: 'CreateGameCtrl',
     templateUrl: '/static/join/templates/create-game.html',
   })
 
-  // create a player
   .state('createPlayer', {
-    url: '/signin',
+    url: '/login',
     controller: 'CreatePlayerCtrl',
     templateUrl: '/static/join/templates/create-player.html',
   })
 
-  // created a game, waiting for users to join
+  // join an existing game session
+  .state('joinGame', {
+    url: '/join',
+    controller: 'JoinGameCtrl',
+    templateUrl: '/static/join/templates/join.html',
+  })
+
+  // staging ground for a game session (you are now leaving the `join` app)
   .state('staging', {
-    url: '/staging',
+    url: '/:hash',
     controller: 'StagingCtrl',
-    templateUrl: '/static/join/templates/staging.html',
-  })
-
-  // search for an existing game
-  .state('search', {
-    url: '/search',
-    controller: 'SearchCtrl',
-    templateUrl: '/static/join/templates/search.html',
-  })
-
-  // joined an existing game, but waiting for it to start
-  .state('waiting', {
-    url: '/waiting',
-    controller: 'WaitingCtrl',
-    templateUrl: '/static/join/templates/waiting.html',
-  })
-
-  // parent controller for the actual game
-  .state('game', {
-    url: '/game',
-    controller: 'GameCtrl',
-    templateUrl: '/static/join/templates/game.html',
+    templateUrl: '/static/words/templates/staging.html',
   });
 
 }]);

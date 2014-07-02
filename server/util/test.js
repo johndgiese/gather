@@ -2,6 +2,7 @@ var expect = require('expect.js');
 var io = require('socket.io-client');
 var _ = require('underscore');
 var Q = require('Q');
+var models = require('../join/models');
 
 
 exports.expectError = function(data) {
@@ -62,9 +63,15 @@ exports.setupPlayers = function(clients) {
   return Q.all(players);
 };
 
-exports.joinGame = function(client, hash) {
-  return client.emitp('joinGame', {hash: hash}, function(data) {
+exports.joinGame = function(client, party) {
+  return client.emitp('joinGame', {party: party}, function(data) {
     return data;
   });
 };
 
+exports.activePlayers = function(party) {
+  return models.Game.getByParty(party)
+  .then(function(game) {
+    return game.activePlayers();
+  });
+};

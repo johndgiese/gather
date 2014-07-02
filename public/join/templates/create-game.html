@@ -1,9 +1,1 @@
-<h1>Create Game</h1>
-
-<form novalidation name="form">
-  <p ng-show="!playerCreated">Player Name <input type="text" name="playerName" ng-model="playerName" ng-required="!playerCreated"></input></p>
-  <p>Game Name <input type="text" name="gameName" ng-model="gameName" required></input></p>
-  <button type="button" ng-click="create()" ng-disabled="form.$invalid">Create</button>
-</form>
-
-<button class="cancel" type="button" ng-click="home()">Cancel</button>
+<p class="main-instruction">Creating Game...</p>
