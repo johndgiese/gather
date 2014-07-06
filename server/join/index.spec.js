@@ -63,7 +63,7 @@ describe('The join socket API', function() {
     });
 
     it('returns the party party', function(done) {
-      client.emitp('createGame', {}, function(data) {
+      client.emitp('createGame', {type: 'words'}, function(data) {
         expect(_.isString(data.party)).to.be(true);
         done();
       }).fail(done);
@@ -73,7 +73,7 @@ describe('The join socket API', function() {
     });
     it('throws an error if there is no `createPlayer` call first', function(done) {
       var client = tu.setupClient(SOCKET_URL, SOCKET_OPTIONS);
-      client.emitp('createGame', {}, function(data) {
+      client.emitp('createGame', {type: 'words'}, function(data) {
         tu.expectError(data);
         done();
       }).fail(done);
@@ -88,7 +88,7 @@ describe('The join socket API', function() {
       tu.setupPlayers(clients)
       .then(function(players_) {
         players = players_;
-        clients[0].emitp('createGame', {}, function(data) {
+        clients[0].emitp('createGame', {type: 'words'}, function(data) {
           party = data.party;
         })
         .then(function() {
@@ -112,6 +112,7 @@ describe('The join socket API', function() {
       });
 
       clients[1].emitp('joinGame', {party: party}, function(data) {
+        console.log(data);
         expect(data.game.id).to.be.a('number');
         expect(_.isString(data.game.party)).to.be(true);
       })
@@ -155,8 +156,8 @@ describe('The join socket API', function() {
         expect(activePlayers).to.be(3);
       })
       .then(function() {
-        var promise = clients[0].oncep('playerLeft', function(playerId) {
-          expect(playerId).to.be(players[1].id);
+        var promise = clients[0].oncep('playerLeft', function(leavingPlayer) {
+          expect(leavingPlayer.id).to.be(players[1].id);
         }).fail(done);
         clients[1].disconnect();
         return promise;
@@ -168,8 +169,8 @@ describe('The join socket API', function() {
         expect(activePlayers).to.be(2);
       })
       .then(function() {
-        var promise = clients[2].oncep('playerLeft', function(playerId) {
-          expect(playerId).to.be(players[0].id);
+        var promise = clients[2].oncep('playerLeft', function(leavingPlayer) {
+          expect(leavingPlayer.id).to.be(players[0].id);
         }).fail(done);
         clients[0].emit('leaveParty');
         return promise;

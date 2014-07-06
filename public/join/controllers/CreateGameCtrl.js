@@ -6,12 +6,13 @@ angular.module('join')
 
     var player = playerService.get();
     if (player === null) {
-      stateStack.push('createGame');
+      stateStack.push({name: 'createGame'});
       $state.go('createPlayer');
     } else {
-      socket.emit('createGame', {}, function(gameState) {
-        gameService.set(gameState);
-        $state.go('staging', {hash: gameState.game.hash});
+      // move on to the next state
+      // eventually game setup code will go here
+      socket.emit('createGame', {type: 'words'}, function(data) {
+        $state.go('staging', {party: data.party});
       });
     }
 

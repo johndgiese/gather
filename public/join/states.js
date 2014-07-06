@@ -17,23 +17,28 @@ angular.module('join')
   })
 
   .state('createPlayer', {
-    url: '/login',
+    url: '/login?party',
     controller: 'CreatePlayerCtrl',
     templateUrl: '/static/join/templates/create-player.html',
   })
 
   // join an existing game session
   .state('joinGame', {
-    url: '/join',
+    url: '/join?invalid',
     controller: 'JoinGameCtrl',
     templateUrl: '/static/join/templates/join.html',
   })
 
   // staging ground for a game session (you are now leaving the `join` app)
   .state('staging', {
-    url: '/:hash',
+    url: '/:party',
     controller: 'StagingCtrl',
-    templateUrl: '/static/words/templates/staging.html',
+    templateUrl: '/static/join/templates/staging.html',
+  })
+
+  .state('game', {
+    controller: 'GameCtrl',
+    templateUrl: '/static/join/templates/game.html',
   });
 
 }]);

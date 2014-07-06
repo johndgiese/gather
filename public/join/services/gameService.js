@@ -12,11 +12,6 @@ angular.module('join')
   }
 
   function setGameState(newState) { 
-    var gameId = state && state.game.id;
-    var newGameId = newState && newState.game.id;
-    if (gameId !== newGameId && state !== null) {
-      socket.emit('leaveGame', gameId);
-    }
     state = newState;
   }
 

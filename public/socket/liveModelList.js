@@ -32,18 +32,12 @@ angular.module('socket')
       list.splice(index, 1);
     }
 
-    scopedSocket.emit(setupEvent, null, function(initialItems) {
+    scopedSocket.on(addEvent, function(item) {
+      add(item);
+    });
 
-      initialItems.forEach(add);
-
-      scopedSocket.on(addEvent, function(item) {
-        add(item);
-      });
-
-      scopedSocket.on(removeEvent, function(item) {
-        remove(item);
-      });
-
+    scopedSocket.on(removeEvent, function(item) {
+      remove(item);
     });
 
   };

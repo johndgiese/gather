@@ -42,6 +42,7 @@ module.exports = function(grunt) {
       'public/modal/ui-bootstrap-modal-tpls-0.10.0.js',
       'public/_vendor/angular-ui-router/release/angular-ui-router.js',
       'public/_vendor/socket.io-client/socket.io.js',
+      'public/_vendor/underscore/underscore.js',
     ],
 
     uglify: {
@@ -95,13 +96,6 @@ module.exports = function(grunt) {
         files: '<%= lessSrc %>',
         tasks: ['less'],
       },
-      tests: {
-        files: ['server/**/*.js'],
-        tasks: ['tests'],
-        options: {
-          spawn: false,
-        },
-      }
     },
 
     less: {

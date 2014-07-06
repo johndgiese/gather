@@ -1,7 +1,18 @@
-<h3>Staging Game</h3>
-<button type="button" ng-click="startGame()">Start Game</button>
-<ul>
-  <li ng-repeat="p in players">{{ p.name }}</li>
-</ul>
+<p ng-show="!joinedGame" class="main-instruction">Joining Game ...</p>
 
-<button class="cancel" type="button" ng-click="home()">Cancel</button>
+<p ng-show="joinedGame && !isCreator" class="main-instruction">
+  The game will start once <span class"highlight">{{ creator.name }}</span> clicks begin!
+</p>
+
+<div class="btn-w-instruction" ng-show="joinedGame && isCreator">
+  <p>Wait for everyone to join then</p>
+  <button type="button" class="action" ng-click="startGame()" ng-disabled="form.$invalid">Begin Game</button>
+</div>
+
+<div>
+  <p>Currently in game:</p>
+  <ul>
+    <li ng-repeat="p in players">{{ p.name }}</li>
+  </ul>
+</div>
+

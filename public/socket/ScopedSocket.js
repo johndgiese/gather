@@ -3,7 +3,7 @@
  * removes listeners when the scope is destroyed; useful in controllers.
  */
 angular.module('socket')
-.factory('ScopedSocket', ['socket', '$rootScope', function(socket, $rootScope) {
+.factory('ScopedSocket', ['socket', '$rootScope', '$q', function(socket, $rootScope, $q) {
   function ScopedSocket($scope) {
     var instance = this;
     this.$scope = $scope;
@@ -36,6 +36,22 @@ angular.module('socket')
         }
       });
     });
+  };
+
+  /**
+   * Emit an event, and return a promise for the acknowledged data.
+   * NOTE: not tied into the scope at all!
+   */
+  ScopedSocket.prototype.emitp = function(event, data) {
+    var deferred = $q.defer();
+    socket.emit(event, data, function(response) {
+      if (response._error !== undefined) {
+        deferred.reject(response._error);
+      } else {
+        deferred.resolve(response);
+      }
+    });
+    return deferred.promise;
   };
 
   ScopedSocket.prototype.removeAllListeners = function() {

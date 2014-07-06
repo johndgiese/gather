@@ -4,23 +4,24 @@ var logger = require('../../logger');
 
 var fields = {
   createdBy: 'gCreatedBy',
-  open: 'gOpen',
   party: 'gParty',
+  type: 'gType',
   createdOn: 'gCreatedOn',
 };
 var Game = orm.define('tbGame', fields, 'gId');
 exports.Model = Game;
 
 Game.prototype.getState = function(playerId) {
-  var instance = this;
+  var self = this;
 
-  var sql = 'SELECT pgId AS id, pName AS name ' +
+  var sql = 'SELECT pId AS id, pName AS name ' +
               'FROM tbPlayer NATURAL JOIN tbPlayerGame ' +
               'WHERE gId=? AND pgActive=TRUE';
 
   return Game.raw(sql, [this.id])
     .then(function(players) {
       return {
+        game: self.serialize(),
         players: players
       };
     });
@@ -83,7 +84,9 @@ Game.prototype.save = function() {
         logger.warn(e);
       }
     }
-    throw new Error("Unable to find a unique party hash for the game");
+    var msg = "Unable to find a unique party hash for the game";
+    logger.error(msg);
+    throw new Error(msg);
   } else {
     return this._save();
   }

@@ -6,7 +6,7 @@ angular.module('join')
 
     // this state is only ever traversed via a redirect, hence we need a way of
     // knowing the next state
-    $scope.nextState = stateStack.pop() || 'landing';
+    $scope.nextState = stateStack.pop() || {name: 'landing'};
 
     $scope.playerName = "";
 
@@ -15,7 +15,7 @@ angular.module('join')
         name: $scope.playerName,
       }, function(player) {
         playerService.set(player);
-        $state.go($scope.nextState);
+        $state.go($scope.nextState.name, $scope.nextState.params);
       });
     };
 

@@ -86,6 +86,13 @@ Model.prototype.fieldData = function(props) {
   return fieldData;
 };
 
+Model.prototype.serialize = function(props) {
+  if (props === undefined) {
+    props = this.M.props;
+  }
+  return _.pick(this, props);
+};
+
 Model.raw = function() {
   var deferred = Q.defer();
   var after = function(error, result) {

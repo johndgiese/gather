@@ -6,44 +6,51 @@ angular.module('join')
 
     var player = playerService.get();
     if (player === null) {
-      stateStack.push('staging');
-      $state.go('createPlayer');
+      stateStack.push({name: 'staging', params: {party: $stateParams.party}});
+      return $state.go('createPlayer');
     }
 
-    var stateProm, state = gameService.get();
-    var joinedGame = state !== null;
-    if (joinedGame) {
-      stateProm = $q.when(state);
-    } else {
-      var deferred = $q.defer();
-      var hash = $stateParams.hash;
-      socket.emit('joinGame', {hash: hash}, function(state) {
-        gameService.set(state);
-        joinedGame = true;
-        $q.resolve(state);
-        // TODO: handle failure
-      });
-    }
-
+    $scope.joinedGame = false;
     $scope.isCreator = false;
-    $scope.creator = {};
+    $scope.creator = null;
     $scope.players = [];
 
-    stateProm.then(function(state_) {
-      state = state_;
-      var creatorId = state.game.createdBy;
-      isCreator = creatorId === player.id;
-      $scope.creator = state.game.players[creatorId];
+    $q.when(gameService.get())
+    .then(function(gameState) {
+      if (gameState !== null) {
+        return gameState;
+      } else {
+        return socket.emitp('joinGame', {party: $stateParams.party});
+      }
+    })
+    .then(function(gameState) {
+      $scope.joinedGame = true;
+      gameService.set(gameState); // IMPROVE
 
-      $scope.players = state.players;
+      var creatorId = gameState.game.createdBy;
+      $scope.isCreator = creatorId === player.id;
+      $scope.creator = _.find(gameState.players, function(p) {return p.id === creatorId;});
+      $scope.players = gameState.players;
       liveModelList(socket, $scope.players, 'playerJoined', 'playerLeft');
+    })
+    .catch(function(reason) {
+      $state.go('joinGame', {invalid: $stateParams.party});
     });
 
+
     $scope.startGame = function() {
-      socket.emit('startGame', {}, function(data) {
+      socket.emitp('startGame', {})
+      .then(function(data) {
         $state.go('game');
+      })
+      .fail(function(reason) {
+        alert(reason);
       });
     };
+
+    socket.on('gameStarted', function() {
+      $state.go('game');
+    });
 
   }
 ]);

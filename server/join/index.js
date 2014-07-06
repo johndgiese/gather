@@ -3,6 +3,7 @@ var _ = require('underscore');
 var logger = require('../logger');
 var Q = require('Q');
 var util = require('util');
+var debug = require('debug')('gather:join');
 
 exports.setup = function(socket) {
 
@@ -18,7 +19,11 @@ exports.setup = function(socket) {
   socket.on('leaveParty', leaveParty);
   socket.on('disconnect', leaveParty);
 
-  //socket.on('startGame', startGame);
+  socket.on('startGame', startGame);
+  
+  function debugSocketState() {
+    debug('socket state:\nplayer=%j\nparty=%s', player, party);
+  }
 
   function requirePlayer() {
     if (player === null) {
@@ -57,13 +62,18 @@ exports.setup = function(socket) {
     }
   }
 
-  function requireGameOwnership() {
+  function requireGameOwnership(gameType) {
     // TODO: implement accounts and payment system
-    return true;
+    if (gameType == "words") {
+      return true;
+    } else {
+      return true;
+    }
   }
 
   function requireStartingPlayer() {
-    return player.id === game.createdBy;
+    // TODO: actually enforce this
+    return true;
   }
 
   /**
@@ -71,6 +81,7 @@ exports.setup = function(socket) {
    */
   function createPlayer(data, acknowledge) {
     Q.fcall(function() {
+      debugSocketState();
       requireNoPlayer();
       requireValidPlayerName(data.name);
     })
@@ -97,11 +108,12 @@ exports.setup = function(socket) {
    */
   function createGame(data, acknowledge) {
     Q.fcall(function() {
+      debugSocketState();
       requirePlayer();
-      requireGameOwnership();
+      requireGameOwnership(data.type);
     })
     .then(function() {
-      var game = new models.Game({createdBy: player.id});
+      var game = new models.Game({createdBy: player.id, type: data.type});
       if (party !== null) {
         game.party = party;
       }
@@ -124,18 +136,24 @@ exports.setup = function(socket) {
    */
   function joinGame(data, acknowledge) {
     return Q.fcall(function() {
+      debugSocketState();
       requirePlayer();
       requireSameParty(data.party);
     })
     .then(function() {
+      // TODO: add throttling to help prevent people from joining other
+      // people's parties by guessing the party code
       return models.Game.getByParty(data.party)
       .then(function(game) {
         party = game.party;
         socket.join(game.party);
         player.join(game.id)
-        .then(function(playerGameId) {
+        .then(function() {
+          return game.getState();
+        })
+        .then(function(gameState) {
           socket.broadcast.to(party).emit('playerJoined', player);
-          acknowledge({game: game});
+          acknowledge(gameState);
         });
       });
     })
@@ -145,20 +163,24 @@ exports.setup = function(socket) {
     });
   }
 
-  //function startGame(data, acknowledge) {
-    //requireStartingPlayer()
-    //.then(function() {
-      //return game.close()
-      //.then(function() {
-        //socket.broadcast.to(game.party).emit('gameStart', true);
-        //acknowledge();
-      //});
-    //})
-    //.fail(function(error) {
-      //logger.error(error);
-      //acknowledge({_error: "Unable to start game"});
-    //});
-  //}
+  /**
+   * Start the current game.
+   */
+  function startGame(data, acknowledge) {
+    Q.fcall(function() {
+      debugSocketState();
+      requireStartingPlayer();
+      requirePlayerInParty();
+    })
+    .then(function() {
+      socket.broadcast.to(party).emit('gameStarted', {});
+      acknowledge({});
+    })
+    .fail(function(error) {
+      logger.error(error);
+      acknowledge({_error: "Unable to start game"});
+    });
+  }
 
   /**
    * Leave the current party.
@@ -167,12 +189,13 @@ exports.setup = function(socket) {
    */
   function leaveParty() {
     Q.fcall(function() {
+      debugSocketState();
       requirePlayerInParty();
     })
     .then(function() {
       return player.leave(party)
       .then(function() {
-        socket.broadcast.to(party).emit('playerLeft', player.id);
+        socket.broadcast.to(party).emit('playerLeft', player);
         socket.leave(party);
         party = null;
         acknowledge(true);
