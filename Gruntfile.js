@@ -9,8 +9,10 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-mocha-test');
+  grunt.loadNpmTasks('grunt-shell');
 
   grunt.initConfig({
+    config: serverConfig,
     pkg: grunt.file.readJSON('package.json'),
     clientSrc: [
 
@@ -111,8 +113,26 @@ module.exports = function(grunt) {
           'public/_dist/index.css': 'public/css/index.less'
         }
       }
-    }
+    },
 
+    shell: {
+      setupDirectories: {
+        command: 'mkdir _var',
+        options: {
+          failOnError: false,
+        }
+      },
+      setupDatabase: {
+        command: [
+          'cd server',
+          'mysql -u<%= config.DB_USERNAME %> -p<%= config.DB_PASSWORD %> gather < schema.sql',
+          'cd -'
+        ].join('&&')
+      },
+      loadWords: {
+        command: 'node server/words/data/loadWords server/words/data/words.csv'
+      }
+    }
 
   });
 
@@ -144,5 +164,6 @@ module.exports = function(grunt) {
 
   grunt.registerTask('default', ['jshint', 'mochaTest', 'less', 'uglify', 'watch']);
   grunt.registerTask('tests', ['jshint', 'mochaTest']);
+  grunt.registerTask('setup', ['shell:setupDirectories', 'shell:setupDatabase', 'shell:loadWords', 'less', 'uglify']);
 
 };

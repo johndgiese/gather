@@ -3,13 +3,10 @@ var Logger = winston.Logger;
 var fs = require('fs');
 var mkdirp = require('mkdirp');
 var path = require('path');
+var debug = require('debug')('gather:log');
 
 
 var logFile = __dirname + '/_var/log.txt';
-var logDir = path.dirname(logFile);
-if (!fs.existsSync(logDir)) {
-  mkdirp.sync(logDir);
-}
 
 var logger = new Logger({
   transports: [
@@ -31,6 +28,7 @@ function expandErrors(logger) {
     if (args.length >= 2 && args[1] instanceof Error) {
       args[1] = args[1].stack;
     }
+    debug(args[1]);
     return oldLogFunc.apply(this, args);
   };
   return logger;

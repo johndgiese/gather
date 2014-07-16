@@ -16,30 +16,12 @@ bower install
 npm install
 ```
 
-## Setup Database
+## Setup Database and static files
 
 ```bash
 cp server/local.template.js server/_local.js
 vim server/_local.js  # fill in details
-echo "CREATE DATABASE gather" | mysql -u USERNAME -p
-cd server
-mysql -u USERNAME -p gather < schema.sql
-cd -
-```
-
-## Static Files
-
-Minify and compress less:
-
-```bash
-grunt less
-grunt uglify
-```
-
-Watch source files and re-run using the default task:
-
-```bash
-grunt
+grunt setup
 ```
 
 ## Run Server
