@@ -4,8 +4,6 @@ var fs = require('fs');
 var path = require('path');
 var _ = require('underscore');
 
-var debugRaw = require('debug')('orm:raw');
-
 
 exports.Model = Model;
 exports.define = define;
@@ -93,30 +91,7 @@ Model.prototype.serialize = function(props) {
   return _.pick(this, props);
 };
 
-Model.raw = function() {
-  var deferred = Q.defer();
-  var after = function(error, result) {
-    if (error !== null) {
-      deferred.reject(error);
-    } else {
-      deferred.resolve(result);
-    }
-  };
-
-  try {
-    if (arguments.length == 2) {
-      debugRaw(db.format(arguments[0], arguments[1]));
-      db.query(arguments[0], arguments[1], after);
-    } else if (arguments.length == 1) {
-      debugRaw(arguments[0]);
-      db.query(arguments[0], after);
-    }
-  } catch(e) {
-    return Q.when(e);
-  }
-
-  return deferred.promise;
-};
+Model.raw = db.raw;
 
 Model.query = function() {
   var Model = this;
