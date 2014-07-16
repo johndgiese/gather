@@ -28,7 +28,7 @@ exports.genAddTags = function(joinTableName, wordColName) {
     if (allValidTags(tags)) {
       var instance = this;
       var inserts = [instance.id, tags];
-      return this.queryThenSelf(sql, inserts);
+      return this.rawThenSelf(sql, inserts);
     } else {
       throw new Error(util.format("Invalid tags present: %j", tags));
     }

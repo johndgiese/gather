@@ -9,10 +9,10 @@ describe('The orm', function() {
   beforeEach(function(done) {
     var sql = '' +
       'CREATE TABLE A (' +
-         'aId INT NOT NULL AUTO_INCREMENT, ' +
+         'resId INT NOT NULL AUTO_INCREMENT, ' +
          'aName VARCHAR(255), ' +
          'aAge INT, ' +
-         'PRIMARY KEY(aId) ' +
+         'PRIMARY KEY(resId) ' +
        ');';
     db.query(sql, [], done);
 
@@ -20,7 +20,7 @@ describe('The orm', function() {
       name: 'aName',
       age: 'aAge',
     };
-    A = orm.define('A', fields, 'aId');
+    A = orm.define('A', fields, 'resId');
   });
 
   afterEach(function(done) {
@@ -38,7 +38,7 @@ describe('The orm', function() {
 
     it('should contain some import self knowledge', function() {
       expect(A.table).to.equal('A');
-      expect(A.idField).to.equal('aId');
+      expect(A.idField).to.equal('resId');
       expect(A.fields.length).to.equal(3);
     });
 
