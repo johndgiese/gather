@@ -112,9 +112,6 @@ describe('The orm', function() {
       .then(function(a) {
         expect(a.id).to.be(origId);
         done();
-      })
-      .fail(function(a) {
-        console.log(a);
       });
 
     });

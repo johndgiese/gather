@@ -3,26 +3,40 @@ var io = require('socket.io-client');
 var _ = require('underscore');
 var Q = require('Q');
 var models = require('../join/models');
+var config = require('../config');
 
+var SOCKET_URL = "http://localhost:" + config.PORT;
+var SOCKET_OPTIONS = {
+  transports: ['websocket'],
+  'force new connection': true,
+};
 
 exports.expectError = function(data) {
-  expect(data._error).not.to.be(undefined);
+  if (data._error === undefined) {
+    expect().fail('Expected an error in the response!');
+  } else {
+    expect(true).to.be(true);
+  }
 };
 
 exports.expectNoError = function(data) {
-  expect(data._error).to.be(undefined);
+  if (data._error !== undefined) {
+    expect().fail('Expected no error, recieved: ' + data._error);
+  } else {
+    expect(true).to.be(true);
+  }
 };
 
-exports.setupClients = function(num, url, options) {
+exports.setupClients = function(num) {
   var clients = [];
   for(var i = 0; i < num; i++) {
-    clients[i] = setupClient(url, options);
+    clients[i] = setupClient();
   }
   return clients;
 };
 
-exports.setupClient = setupClient = function(url, options) {
-  var client = io.connect(url, options);
+exports.setupClient = setupClient = function() {
+  var client = io.connect(SOCKET_URL, SOCKET_OPTIONS);
   client.emitp = emitPromise;
   client.oncep = oncePromise;
   return client;
@@ -63,7 +77,7 @@ exports.setupPlayers = function(clients) {
   return Q.all(players);
 };
 
-exports.joinGame = function(client, party) {
+var joinGame = exports.joinGame = function(client, party) {
   return client.emitp('joinGame', {party: party}, function(data) {
     return data;
   });
@@ -74,4 +88,17 @@ exports.activePlayers = function(party) {
   .then(function(game) {
     return game.activePlayers();
   });
+};
+
+exports.setupGame = function(client, type) {
+  return client.emitp('createGame', {type: type}, function(data) {
+    return data.party;
+  });
+};
+
+exports.allJoinGame = function(clients, party) {
+  var joined = _.map(clients, function(client) {
+    return joinGame(client, party);
+  });
+  return Q.all(joined);
 };

@@ -105,7 +105,7 @@ CREATE TABLE tbCard (
     rId INT DEFAULT NULL, -- round when card is played; NULL --> in hand
     pgId INT NOT NULL,
     cCreatedOn TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, -- when the card was distributed
-    cPlayedOn TIMESTAMP, -- when the card was played
+    cPlayedOn TIMESTAMP DEFAULT 0 ON UPDATE CURRENT_TIMESTAMP, -- when the card was played
     PRIMARY KEY (cId)
 );
 

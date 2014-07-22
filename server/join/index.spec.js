@@ -7,18 +7,12 @@ var models = require('./models');
 
 var server = require('../index').server;
 
-var SOCKET_URL = "http://localhost:" + config.PORT;
-
 describe('The join socket API', function() {
 
-  var SOCKET_OPTIONS = {
-    transports: ['websocket'],
-    'force new connection': true,
-  };
   var client;
 
   beforeEach(function(done) {
-    client = tu.setupClient(SOCKET_URL, SOCKET_OPTIONS);
+    client = tu.setupClient();
     client.once('connect', done);
   });
 
@@ -62,8 +56,8 @@ describe('The join socket API', function() {
       });
     });
 
-    it('returns the party party', function(done) {
-      client.emitp('createGame', {type: 'words'}, function(data) {
+    it('returns the party promise', function(done) {
+      client.emitp('createGame', {type: 'dummy'}, function(data) {
         expect(_.isString(data.party)).to.be(true);
         done();
       }).fail(done);
@@ -72,8 +66,8 @@ describe('The join socket API', function() {
       done();
     });
     it('throws an error if there is no `createPlayer` call first', function(done) {
-      var client = tu.setupClient(SOCKET_URL, SOCKET_OPTIONS);
-      client.emitp('createGame', {type: 'words'}, function(data) {
+      var client = tu.setupClient();
+      client.emitp('createGame', {type: 'dummy'}, function(data) {
         tu.expectError(data);
         done();
       }).fail(done);
@@ -84,11 +78,11 @@ describe('The join socket API', function() {
 
     var clients, players, party;
     beforeEach(function(done) {
-      clients = tu.setupClients(3, SOCKET_URL, SOCKET_OPTIONS);
+      clients = tu.setupClients(3);
       tu.setupPlayers(clients)
       .then(function(players_) {
         players = players_;
-        clients[0].emitp('createGame', {type: 'words'}, function(data) {
+        clients[0].emitp('createGame', {type: 'dummy'}, function(data) {
           party = data.party;
         })
         .then(function() {
@@ -112,7 +106,6 @@ describe('The join socket API', function() {
       });
 
       clients[1].emitp('joinGame', {party: party}, function(data) {
-        console.log(data);
         expect(data.game.id).to.be.a('number');
         expect(_.isString(data.game.party)).to.be(true);
       })

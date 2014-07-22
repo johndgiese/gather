@@ -45,13 +45,24 @@ connection.raw = function() {
  * @returns - promise for the return value of the argument
  */
 connection.withinTransaction = function(func) {
+
+  // start the transaction
   return connection.raw('START TRANSACTION')
+
+  // call the function that should be executed in a single transaction
   .then(function() {
     return Q.fcall(func);
   })
+
+  // commit and then return a promise for the original value
   .then(function(value) {
-    return db.raw('COMMIT');
+    return connection.raw('COMMIT')
+    .then(function() {
+      return Q.when(value);
+    });
   })
+  
+  // if error in `func` or during the commit, then rollback
   .fail(function(reason) {
     connection.query('ROLLBACK', function() {
       throw reason;

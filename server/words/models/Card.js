@@ -12,12 +12,12 @@ var Card = orm.define('tbCard', fields, 'cId');
 exports.Model = Card;
 
 
-Card.queryHand = function(playerGameId) {
+Card.serializeHand = function(playerGameId) {
   var sql = 'SELECT cId, resText FROM tbCard ' +
     'NATURAL JOIN tbPlayerGame ' + 
     'NATURAL JOIN tbResponse ' + 
-    'WHERE rId=NULL AND pgId=?';
+    'WHERE rId IS NULL AND pgId=?';
 
   var inserts = [playerGameId];
-  return Card.query(sql, inserts);
+  return Card.raw(sql, inserts);
 };

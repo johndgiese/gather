@@ -12,6 +12,7 @@ exports.setup = function(socket) {
 
   // null if the player isn't in a party
   var party = null;
+  var game = null;
 
   socket.on('createPlayer', createPlayer);
   socket.on('createGame', createGame);
@@ -113,11 +114,15 @@ exports.setup = function(socket) {
       requireGameOwnership(data.type);
     })
     .then(function() {
-      var game = new models.Game({createdBy: player.id, type: data.type});
+      game = new models.Game({createdBy: player.id, type: data.type});
       if (party !== null) {
         game.party = party;
       }
       return game.save()
+      .then(function() {
+        var gameModule = require('../' + game.type);
+        return gameModule.create(game);
+      })
       .then(function() {
         acknowledge({party: game.party});
       });
@@ -135,7 +140,7 @@ exports.setup = function(socket) {
    * the socket.  Returns the session state.
    */
   function joinGame(data, acknowledge) {
-    return Q.fcall(function() {
+    Q.fcall(function() {
       debugSocketState();
       requirePlayer();
       requireSameParty(data.party);
@@ -143,14 +148,33 @@ exports.setup = function(socket) {
     .then(function() {
       // TODO: add throttling to help prevent people from joining other
       // people's parties by guessing the party code
+      // TODO: teardown any listeners from previous games
+      // TODO: make this more efficient for the person making the game (who
+      // already has the game reference)
       return models.Game.getByParty(data.party)
-      .then(function(game) {
+      .then(function(game_) {
+        game = game_;
         party = game.party;
         socket.join(game.party);
-        player.join(game.id)
-        .then(function() {
-          return game.getState();
+        return player.join(game.id)
+
+        // setup listeners etc. for the appropriate game module
+        .then(function(playerGameId) {
+          var gameModule = require('../' + game.type);
+          return gameModule.join(socket, player, game, playerGameId);
         })
+
+        // then build up the game state using custom data returned from the
+        // game module setup function
+        .then(function(customGameState) {
+          debug("custom game state: %j", customGameState);
+          return game.getState()
+          .then(function(gameState) {
+            gameState.custom = customGameState;
+            return gameState;
+          });
+        })
+
         .then(function(gameState) {
           socket.broadcast.to(party).emit('playerJoined', player);
           acknowledge(gameState);
@@ -173,8 +197,12 @@ exports.setup = function(socket) {
       requirePlayerInParty();
     })
     .then(function() {
-      socket.broadcast.to(party).emit('gameStarted', {});
-      acknowledge({});
+      var gameModule = require('../' + game.type);
+      return gameModule.startGame(socket, player, game)
+      .then(function() {
+        socket.broadcast.to(party).emit('gameStarted', {});
+        acknowledge({});
+      });
     })
     .fail(function(error) {
       logger.error(error);
@@ -198,6 +226,7 @@ exports.setup = function(socket) {
         socket.broadcast.to(party).emit('playerLeft', player);
         socket.leave(party);
         party = null;
+        game = null;
         acknowledge(true);
       });
     })
