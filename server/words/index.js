@@ -164,22 +164,24 @@ exports.join = function(socket, player, party, game, playerGameId) {
 };
 
 function requireCardInHand(playerGameId, cardId) {
-  var sql = 'SELECT cId FROM tbCard WHERE pgId=? AND cId=?';
-  var inserts = [playerGameId, cardId];
-  return models.Card.raw(sql, inserts)
-  .then(function(data) {
-    return data.length === 1;
+  return models.Card.queryOneId(cardId)
+  .then(function(card) {
+    if (card.owner !== playerGameId) {
+      throw "The played card is not in your hand!";
+    }
   });
 }
 
 function requireNotPlayedThisRound(playerGameId, gameId) {
-  var sql = 'SELECT cId FROM tbCard NATURAL JOIN tbRound WHERE ' +
-    'rId=(SELECT rId FROM tbRound WHERE gId=? ORDER BY rCreatedOn DESC LIMIT 1) ' +
-    'AND pgId=?';
+  var sql = 'SELECT cId FROM tbCard JOIN tbRound ON tbCard.rId=tbRound.rId WHERE ' +
+    'tbRound.rId=(SELECT rId FROM tbRound WHERE gId=? ORDER BY rCreatedOn DESC LIMIT 1) ' +
+    'AND tbCard.pgId=?';
   var inserts = [gameId, playerGameId];
   return models.Card.raw(sql, inserts)
   .then(function(data) {
-    return data.length === 0;
+    if (data.length !== 0) {
+      throw "You have already played this round!";
+    }
   });
 }
 
