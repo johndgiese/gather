@@ -26,7 +26,7 @@ exports.startGame = function(socket, player, game) {
       round.forApi()
       .then(function(roundData) {
         socket.emit('roundStarted', {round: roundData});
-        socket.broadcast.to(party).emit('roundStarted', {round: roundData});
+        socket.broadcast.to(game.party).emit('roundStarted', {round: roundData});
       });
     }, INTER_ROUND_DELAY);
   })
