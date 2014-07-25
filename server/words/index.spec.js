@@ -64,6 +64,33 @@ describe('The words socket API', function() {
     it('everything progresses', function(done) {
 
       Q.when({})
+
+      // setup game state listeners
+      //.then(function() {
+        //_.forEach(_.zip(gameStates, clients), function(data) {
+          //var gameState = data[0];
+          //var client = data[1];
+
+          //client.on('roundStarted', function(data) {
+            //console.log("here");
+            //gameState.custom.choices = [];
+            //gameState.custom.votes = [];
+            //gameState.rounds.push(data.round);
+          //});
+
+          //client.on('cardChoosen', function(data) {
+            //gameState.custom.choices.push(data);
+          //});
+
+          //client.on('voteMade', function(data) {
+            //gameState.custom.votes.push(data);
+          //});
+
+        //});
+        //return Q.when({});
+      //})
+
+
       .then(function() {
         tu.msg(3, "After the `gameStarted` there is a delay, and then a " +
                     "`roundStarted` is emmitted");
@@ -72,10 +99,9 @@ describe('The words socket API', function() {
 
         clients[1].oncep('gameStarted', function() {
           clients[0].oncep('roundStarted', function(data) {
+            console.log("here");
             var round = data.round;
-            _.forEach(gameStates, function(gs) {
-              gs.custom.rounds.push(round);
-            });
+
             expect(round.number).to.be(1);
             expect(round.reader).to.be(gameStates[0].players[0].id);
             expect(round.prompt).to.be.a('string');
@@ -216,16 +242,16 @@ describe('The words socket API', function() {
 
 
       .then(function() {
-        tu.msg(3, "Then each player makes a choice");
+        tu.msg(3, "Then each player makes a vote");
         var testRound = Q.defer();
 
-        clients[0].oncep('cardChoosen', function(data) {
+        clients[0].oncep('voteMade', function(data) {
           expect(data.player).to.equal(gameStates[0].players[2].id);
           testRound.resolve();
         });
 
         var card = gameStates[2].custom.hand[0];
-        clients[2].emitp('chooseCard', {
+        clients[2].emitp('makeVote', {
           card: card.id,
           round: gameStates[2].custom.rounds[0].id
         }, tu.expectNoError);

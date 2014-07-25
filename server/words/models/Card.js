@@ -21,8 +21,8 @@ Card.play = function(cardId, roundId) {
 
 Card.serializeHand = function(playerGameId) {
   var sql = 'SELECT cId AS id, resText AS text FROM tbCard ' +
-    'NATURAL JOIN tbPlayerGame ' + 
-    'NATURAL JOIN tbResponse ' + 
+    'NATURAL JOIN tbPlayerGame ' +
+    'NATURAL JOIN tbResponse ' +
     'WHERE rId IS NULL AND pgId=?';
 
   var inserts = [playerGameId];
@@ -31,8 +31,8 @@ Card.serializeHand = function(playerGameId) {
 
 Card.forApi = function(cardId) {
   var sql = 'SELECT cId, resText FROM tbCard ' +
-    'NATURAL JOIN tbPlayerGame ' + 
-    'NATURAL JOIN tbResponse ' + 
+    'NATURAL JOIN tbPlayerGame ' +
+    'NATURAL JOIN tbResponse ' +
     'WHERE cId=?';
 
   var inserts = [cardId];

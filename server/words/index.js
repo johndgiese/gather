@@ -137,11 +137,16 @@ exports.join = function(socket, player, party, game, playerGameId) {
 
   function voteForChoice(data, acknowledge) {
     Q.fcall(function() {
-      // TODO: check that vote id is correct for the round
-      // TODO: check that vote is not for their own card
+      return requireValidVote(data.card, playerGameId, gameId);
     })
     .then(function() {
-      // TODO: save vote to DB
+      return new models.Vote({
+        voter: playerGameId,
+        card: data.card,
+      })
+      .save();
+    })
+    .then(function(vote) {
       socket.broadcast.to(party).emit('voteCast', {player: playerGameId});
       // TODO: if last vote, then broadcast `roundOver` and setup timer for `roundStart`
       acknowledge({});
@@ -168,8 +173,8 @@ function requireCardInHand(playerGameId, cardId) {
 }
 
 function requireNotPlayedThisRound(playerGameId, gameId) {
-  var sql = 'SELECT cId FROM tbCard NATURAL JOIN tbRound WHERE ' + 
-    'rId=(SELECT rId FROM tbRound WHERE gId=? ORDER BY rCreatedOn DESC LIMIT 1) ' + 
+  var sql = 'SELECT cId FROM tbCard NATURAL JOIN tbRound WHERE ' +
+    'rId=(SELECT rId FROM tbRound WHERE gId=? ORDER BY rCreatedOn DESC LIMIT 1) ' +
     'AND pgId=?';
   var inserts = [gameId, playerGameId];
   return models.Card.raw(sql, inserts)
@@ -187,9 +192,29 @@ function requireReader(playerGameId, gameId) {
   });
 }
 
+function requireValidVote(cardId, playerGameId, gameId) {
+  return Q.all([
+    models.Card.queryOneById(cardId),
+    models.Round.queryLatestById(gameId)
+  ])
+  .then(function(data) {
+    var card = data[0];
+    var round = data[1];
+    if (card.round !== round.id) {
+      throw "You are voting for a card that is not in the current round!";
+    }
+    else if (card.owner === playerGameId) {
+      throw "You can not vote for your own card!";
+    }
+  });
+}
+
 exports.leave = function(socket) {
-    // TODO: remove all event listeners associated with this game, as a single
-    // socket can only be playin a single game at once
+  // TODO: remove all event listeners associated with this game, as a single
+  // socket can only be playin a single game at once
+
+  // TODO: if leaving player is the reader, promote another player
+  // TODO: if leaving player is the last voter, then send the `doneVoting` event
 };
 
 /**
