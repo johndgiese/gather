@@ -3,6 +3,7 @@ var _ = require('underscore');
 var logger = require('../logger');
 var Q = require('Q');
 var util = require('util');
+var db = require('../db');
 var debug = require('debug')('gather:join');
 
 exports.setup = function(socket) {
@@ -152,7 +153,7 @@ exports.setup = function(socket) {
       // TODO: make this more efficient for the person making the game (who
       // already has the game reference)
       return models.Game.getByParty(data.party)
-      .then(function(game_) {
+      .then(db.withinTransaction(function(game_) {
         game = game_;
         party = game.party;
         socket.join(game.party);
@@ -179,7 +180,7 @@ exports.setup = function(socket) {
           socket.broadcast.to(party).emit('playerJoined', player);
           acknowledge(gameState);
         });
-      });
+      }));
     })
     .fail(function(error) {
       logger.error(error);

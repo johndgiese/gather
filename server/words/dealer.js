@@ -44,26 +44,24 @@ var DEAL_CARDS_SQL = 'INSERT INTO tbCard (resId, pgId) ' +
  * @returns {Promise<words.models.Response[]>}
  */
 exports.dealResponses = function(playerGameId, gameId) {
-  return db.withinTransaction(function() {
-    // TODO: avoid making so many DB calls
-    return models.Card.serializeHand(playerGameId)
-    .then(function(cards) {
-      var fullHand = cards.length === CARDS_IN_HAND;
-      var emptyHand = cards.length === 0;
+  // TODO: avoid making so many DB calls
+  return models.Card.serializeHand(playerGameId)
+  .then(function(cards) {
+    var fullHand = cards.length === CARDS_IN_HAND;
+    var emptyHand = cards.length === 0;
 
-      if (fullHand) {
-        return Q.when(cards);
-      } else if (emptyHand) {
+    if (fullHand) {
+      return Q.when(cards);
+    } else if (emptyHand) {
 
-        var inserts = [playerGameId, gameId, CARDS_IN_HAND];
-        return db.raw(DEAL_CARDS_SQL, inserts)
-        .then(function() {
-          return models.Card.serializeHand(playerGameId);
-        });
-      } else {
-        throw new Error(util.format('Bad hand state: %j', cards));
-      }
-    });
+      var inserts = [playerGameId, gameId, CARDS_IN_HAND];
+      return db.raw(DEAL_CARDS_SQL, inserts)
+      .then(function() {
+        return models.Card.serializeHand(playerGameId);
+      });
+    } else {
+      throw new Error(util.format('Bad hand state: %j', cards));
+    }
   });
 };
 
