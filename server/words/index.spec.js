@@ -66,29 +66,28 @@ describe('The words socket API', function() {
       Q.when({})
 
       // setup game state listeners
-      //.then(function() {
-        //_.forEach(_.zip(gameStates, clients), function(data) {
-          //var gameState = data[0];
-          //var client = data[1];
+      .then(function() {
+        _.forEach(_.zip(gameStates, clients), function(data) {
+          var gameState = data[0];
+          var client = data[1];
 
-          //client.on('roundStarted', function(data) {
-            //console.log("here");
-            //gameState.custom.choices = [];
-            //gameState.custom.votes = [];
-            //gameState.rounds.push(data.round);
-          //});
+          client.on('roundStarted', function(data) {
+            gameState.custom.choices = [];
+            gameState.custom.votes = [];
+            gameState.custom.rounds.push(data.round);
+          });
 
-          //client.on('cardChoosen', function(data) {
-            //gameState.custom.choices.push(data);
-          //});
+          client.on('cardChoosen', function(data) {
+            gameState.custom.choices.push(data);
+          });
 
-          //client.on('voteMade', function(data) {
-            //gameState.custom.votes.push(data);
-          //});
+          client.on('voteMade', function(data) {
+            gameState.custom.votes.push(data);
+          });
 
-        //});
-        //return Q.when({});
-      //})
+        });
+        return Q.when({});
+      })
 
 
       .then(function() {
@@ -258,7 +257,6 @@ describe('The words socket API', function() {
 
         return testRound.promise;
       })
-
 
       .then(function() { done(); })
       .fail(done);
