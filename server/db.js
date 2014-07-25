@@ -54,33 +54,40 @@ connection.rawOne = function() {
 
 
 /**
- * Execute the provided function within a single transaction.
- * @arg {Function} - executes in a single transaction
- * @returns - promise for the return value of the argument
+ * Decorator that ensures the provided function executes within a single transaction.
+ * NOTE: the decorated function must return a promise (and not use callbacks),
+ * otherwise there is no way to ensure that the transaction will "surround" any
+ * intermittent database calls
+ * @arg {Function}
+ * @returns {Function}
  */
 connection.withinTransaction = function(func) {
+  return function() {
+    var self = this;
+    var args = arguments;
 
-  // start the transaction
-  return connection.raw('START TRANSACTION')
+    // start the transaction
+    connection.raw('START TRANSACTION')
 
-  // call the function that should be executed in a single transaction
-  .then(function() {
-    return Q.fcall(func);
-  })
-
-  // commit and then return a promise for the original value
-  .then(function(value) {
-    return connection.raw('COMMIT')
+    // call the function that should be executed in a single transaction
     .then(function() {
-      return Q.when(value);
-    });
-  })
+      return func.apply(self, args);
+    })
+
+    // commit and then return a promise for the original value
+    .then(function(value) {
+      return connection.raw('COMMIT')
+      .then(function() {
+        return Q.when(value);
+      });
+    })
   
-  // if error in `func` or during the commit, then rollback
-  .fail(function(reason) {
-    connection.query('ROLLBACK', function() {
-      throw reason;
+    // if error in `func` or during the commit, then rollback
+    .fail(function(reason) {
+      connection.query('ROLLBACK', function() {
+        throw reason;
+      });
     });
-  });
+  };
 };
 
