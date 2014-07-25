@@ -96,10 +96,13 @@ exports.join = function(socket, player, party, game, playerGameId) {
         return models.Card.forApi(data.card);
       })
       .then(function(card) {
-        socket.broadcast.to(party).emit('cardChoosen', {
+        var sendData = {
           player: playerGameId,
           card: card
-        });
+        };
+
+        socket.emit('cardChoosen', sendData);
+        socket.broadcast.to(party).emit('cardChoosen', sendData);
 
         return dealer.dealResponse(game.id, playerGameId)
         .then(function(card) {
@@ -126,7 +129,9 @@ exports.join = function(socket, player, party, game, playerGameId) {
       });
     })
     .then(function(round) {
-      socket.broadcast.to(party).emit('readingChoicesDone', data.roundId);
+      var sendData = data.roundId;
+      socket.emit('readingChoicesDone', sendData);
+      socket.broadcast.to(party).emit('readingChoicesDone', sendData);
       acknowledge({});
     })
     .fail(function(error) {
@@ -147,7 +152,9 @@ exports.join = function(socket, player, party, game, playerGameId) {
       .save();
     })
     .then(function(vote) {
-      socket.broadcast.to(party).emit('voteCast', {player: playerGameId});
+      var sendData = {player: playerGameId};
+      socket.emit('voteCast', sendData);
+      socket.broadcast.to(party).emit('voteCast', sendData);
       // TODO: if last vote, then broadcast `roundOver` and setup timer for `roundStart`
       acknowledge({});
     })
