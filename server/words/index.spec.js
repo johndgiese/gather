@@ -218,14 +218,13 @@ describe('The words socket API', function() {
         tu.msg(3, "Then each player makes a vote");
         var testRound = Q.defer();
 
-        clients[0].oncep('voteMade', function(data) {
+        clients[0].oncep('voteCast', function(data) {
           expect(data.player).to.equal(gameStates[0].players[2].id);
           testRound.resolve();
         });
 
-        var card = gameStates[2].custom.hand[0];
-        clients[2].emitp('makeVote', {
-          card: card.id,
+        clients[2].emitp('castVote', {
+          card: gameStates[2].custom.choices[0].card.id,
           round: gameStates[2].custom.rounds[0].id
         }, tu.expectNoError);
 

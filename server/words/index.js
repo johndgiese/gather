@@ -47,7 +47,7 @@ exports.join = function(socket, player, party, game, playerGameId) {
   socket.on('doneReadingPrompt', doneReadingPrompt);
   socket.on('chooseCard', chooseCard);
   socket.on('doneReadingChoices', doneReadingChoices);
-  socket.on('voteForChoice', voteForChoice);
+  socket.on('castVote', castVote);
 
   return Q.all([
     dealer.dealResponses(playerGameId, game.id),
@@ -140,11 +140,12 @@ exports.join = function(socket, player, party, game, playerGameId) {
     });
   }
 
-  function voteForChoice(data, acknowledge) {
+  function castVote(data, acknowledge) {
     Q.fcall(function() {
-      return requireValidVote(data.card, playerGameId, gameId);
+      return requireValidVote(data.card, playerGameId, game.id);
     })
     .then(function() {
+      console.log('DEBUG');
       return new models.Vote({
         voter: playerGameId,
         card: data.card,
@@ -203,7 +204,7 @@ function requireReader(playerGameId, gameId) {
 
 function requireValidVote(cardId, playerGameId, gameId) {
   return Q.all([
-    models.Card.queryOneById(cardId),
+    models.Card.queryOneId(cardId),
     models.Round.queryLatestById(gameId)
   ])
   .then(function(data) {
