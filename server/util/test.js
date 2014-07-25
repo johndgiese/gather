@@ -5,6 +5,8 @@ var Q = require('Q');
 var models = require('../join/models');
 var config = require('../config');
 
+var debug = require('debug')('gather:test');
+
 var SOCKET_URL = "http://localhost:" + config.PORT;
 var SOCKET_OPTIONS = {
   transports: ['websocket'],
@@ -77,9 +79,66 @@ exports.setupPlayers = function(clients) {
   return Q.all(players);
 };
 
+
+// joing game setup game state listeners
+// TODO: modularize and include in front end
 var joinGame = exports.joinGame = function(client, party) {
-  return client.emitp('joinGame', {party: party}, function(data) {
-    return data;
+  return client.emitp('joinGame', {party: party}, function(gameState) {
+
+    if (gameState._error !== undefined) {
+      throw gameState._error;
+    }
+
+    client.on('roundStarted', function(data) {
+      debug('roundStarted: %j', data);
+      gameState.custom.choices = [];
+      gameState.custom.votes = [];
+      gameState.custom.rounds.push(data.round);
+      console.log(gameState.players);
+    });
+
+    client.on('cardChoosen', function(data) {
+      debug('cardChoosen: %j', data);
+      gameState.custom.choices.push(data);
+      console.log(gameState.custom.choices);
+    });
+
+    client.on('voteCast', function(data) {
+      debug('voteCast: %j', data);
+      gameState.custom.votes.push(data);
+      console.log(gameState.custom.votes);
+    });
+
+    // TODO: figure out error handling on this stuff
+    client.on('playerLeft', function(player) {
+      debug('playerLeft: %j', player);
+      var playerInListAlready = _.find(gameState.players, function(p) {
+        return p.id === player.id;
+      }) !== undefined;
+
+      if (!playerInListAlready) {
+        throw "Inconsistent State: removing player that doesn't exist";
+      } else {
+        _.reject(gameState.players, function(p) {
+          return p.id === player.id;
+        });
+      }
+    });
+
+    client.on('playerJoined', function(player) {
+      debug('playerJoined: %j', player);
+      var playerInListAlready = _.find(gameState.players, function(p) {
+        return p.id === player.id;
+      }) !== undefined;
+
+      if (playerInListAlready) {
+        throw "Inconsistent State: adding player that already exists";
+      } else {
+        gameState.players.push(player);
+      }
+    });
+
+    return gameState;
   });
 };
 

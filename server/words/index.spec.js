@@ -47,7 +47,7 @@ describe('The words socket API', function() {
 
   describe.only('facilitates playing the game', function() {
 
-    var party, gameStates;
+    var party, gameStates = [];
     beforeEach(function(done) {
       tu.setupGame(clients[0], 'words')
       .then(function(party_) {
@@ -62,34 +62,7 @@ describe('The words socket API', function() {
     });
 
     it('everything progresses', function(done) {
-
       Q.when({})
-
-      // setup game state listeners
-      .then(function() {
-        _.forEach(_.zip(gameStates, clients), function(data) {
-          var gameState = data[0];
-          var client = data[1];
-
-          client.on('roundStarted', function(data) {
-            gameState.custom.choices = [];
-            gameState.custom.votes = [];
-            gameState.custom.rounds.push(data.round);
-          });
-
-          client.on('cardChoosen', function(data) {
-            gameState.custom.choices.push(data);
-          });
-
-          client.on('voteMade', function(data) {
-            gameState.custom.votes.push(data);
-          });
-
-        });
-        return Q.when({});
-      })
-
-
       .then(function() {
         tu.msg(3, "After the `gameStarted` there is a delay, and then a " +
                     "`roundStarted` is emmitted");
@@ -97,6 +70,7 @@ describe('The words socket API', function() {
         var testRound = Q.defer();
 
         clients[1].oncep('gameStarted', function() {
+          console.log("here");
           clients[0].oncep('roundStarted', function(data) {
             console.log("here");
             var round = data.round;
