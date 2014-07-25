@@ -101,7 +101,7 @@ exports.join = function(socket, player, party, game, playerGameId) {
           card: card
         };
 
-        socket.emit('cardChoosen', sendData);
+        // don't send to self, because you can't vote for your self
         socket.broadcast.to(party).emit('cardChoosen', sendData);
 
         return dealer.dealResponse(game.id, playerGameId)
