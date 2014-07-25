@@ -102,3 +102,8 @@ exports.allJoinGame = function(clients, party) {
   });
   return Q.all(joined);
 };
+
+exports.msg = function(indents, msg) {
+  var buffer = Array(indents + 1).join("  ");
+  console.log(buffer + msg);
+};

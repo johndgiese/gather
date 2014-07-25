@@ -92,6 +92,7 @@ Model.prototype.serialize = function(props) {
 };
 
 Model.raw = db.raw;
+Model.rawOne = db.rawOne;
 
 Model.query = function() {
   var Model = this;

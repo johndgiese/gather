@@ -38,6 +38,20 @@ connection.raw = function() {
   return deferred.promise;
 };
 
+/**
+ * Execute a query for one row and return a promise for the result.
+ */
+connection.rawOne = function() {
+  return connection.raw.apply(connection, arguments)
+  .then(function(data) {
+    if (data.length !== 1) {
+      throw "Expected one row and got " + data.length;
+    } else {
+      return data[0];
+    }
+  });
+};
+
 
 /**
  * Execute the provided function within a single transaction.

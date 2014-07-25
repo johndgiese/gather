@@ -2,6 +2,7 @@ var models = require('./models');
 var dealer = require('./dealer');
 var Q = require('Q');
 var debug = require('debug')('gather:words');
+var logger = require('../logger');
 
 /**
  * Run any initial setup code for a game.
@@ -22,8 +23,11 @@ exports.startGame = function(socket, player, game) {
   models.Round.newByGame(game.id)
   .then(function(round) {
     setTimeout(function() {
-      socket.emit('roundStarted', {round: round});
-      socket.broadcast.to(game.party).emit('roundStarted', {round: round});
+      round.forApi()
+      .then(function(roundData) {
+        socket.emit('roundStarted', {round: roundData});
+        socket.broadcast.to(party).emit('roundStarted', {round: roundData});
+      });
     }, INTER_ROUND_DELAY);
   })
   .fail(function(reason) {
@@ -37,7 +41,7 @@ exports.startGame = function(socket, player, game) {
  * Setup listeners for the game.
  * @returns {Promise<Object>} - promise for any custom game state
  */
-exports.join = function(socket, player, game, playerGameId) {
+exports.join = function(socket, player, party, game, playerGameId) {
 
   socket.on('gameStarted', setupRoundStart);
   socket.on('doneReadingPrompt', doneReadingPrompt);
@@ -47,7 +51,7 @@ exports.join = function(socket, player, game, playerGameId) {
 
   return Q.all([
     dealer.dealResponses(playerGameId, game.id),
-    models.Round.queryByParty(game.party),
+    models.Round.forApiByParty(party),
   ])
   .then(function(data) {
     return {
@@ -56,17 +60,22 @@ exports.join = function(socket, player, game, playerGameId) {
     };
   });
 
-  // TODO: record when this happens (prob on the round row)
   function doneReadingPrompt(data, acknowledge) {
     Q.fcall(function() {
-      // TODO: ensure the current person is the reader 
-      // TODO: ensure now is an appropriate time for this event
+      return Q.all([
+        requireReader(playerGameId),
+      ]);
       // TODO: ensure that the provided roundId is correct
     })
     .then(function() {
-      // TODO: record that the game is closed until next round
-      socket.broadcast.to(party).emit('readingPromptDone', data.roundId);
-      acknowledge({});
+      return models.Round.queryLatestByParty(party)
+      .then(function(round) {
+        return round.markDoneReadingPrompt();
+      })
+      .then(function(round) {
+        socket.broadcast.to(party).emit('readingPromptDone', {roundId: round.id});
+        acknowledge({});
+      });
     })
     .fail(function(error) {
       logger.error(error);
@@ -76,16 +85,27 @@ exports.join = function(socket, player, game, playerGameId) {
 
   function chooseCard(data, acknowledge) {
     Q.fcall(function() {
-      // TODO: ensure the current person hasn't choosen already this round
-      // TODO: ensure the card choosen is in their hand
+      return Q.all([
+        requireCardInHand(playerGameId, data.card),
+        requireNotPlayedThisRound(playerGameId, game.id)
+      ]);
     })
     .then(function() {
-      socket.broadcast.to(party).emit('cardChoosen', {
-        // TODO: add data here
-      });
+      return models.Card.play(data.card, data.round)
+      .then(function() {
+        return models.Card.forApi(data.card);
+      })
+      .then(function(card) {
+        socket.broadcast.to(party).emit('cardChoosen', {
+          player: playerGameId,
+          card: card
+        });
 
-      var newCard = dealCard(data.playerGameId);
-      acknowledge(newCard.serialize());
+        return dealer.dealResponse(game.id, playerGameId)
+        .then(function(card) {
+          acknowledge(models.Card.forApi(card.id));
+        });
+      });
     })
     .fail(function(error) {
       logger.error(error);
@@ -93,14 +113,19 @@ exports.join = function(socket, player, game, playerGameId) {
     });
   }
 
-  // TODO: record when this happens (prob on the round row)
   function doneReadingChoices(data, acknowledge) {
     Q.fcall(function() {
-      // TODO: ensure the current person is the reader 
-      // TODO: ensure now is an appropriate time for this event
-      // TODO: ensure that the provided roundId is correct
+      return Q.all([
+        requireReader(playerGameId),
+      ]);
     })
     .then(function() {
+      return models.Round.queryLatestByParty(party)
+      .then(function(round) {
+        return round.markDoneReadingChoices();
+      });
+    })
+    .then(function(round) {
       socket.broadcast.to(party).emit('readingChoicesDone', data.roundId);
       acknowledge({});
     })
@@ -133,6 +158,34 @@ exports.join = function(socket, player, game, playerGameId) {
 
 };
 
+function requireCardInHand(playerGameId, cardId) {
+  var sql = 'SELECT cId FROM tbCard WHERE pgId=? AND cId=?';
+  var inserts = [playerGameId, cardId];
+  return models.Card.raw(sql, inserts)
+  .then(function(data) {
+    return data.length === 1;
+  });
+}
+
+function requireNotPlayedThisRound(playerGameId, gameId) {
+  var sql = 'SELECT cId FROM tbCard NATURAL JOIN tbRound WHERE ' + 
+    'rId=(SELECT rId FROM tbRound WHERE gId=? ORDER BY rCreatedOn DESC LIMIT 1) ' + 
+    'AND pgId=?';
+  var inserts = [gameId, playerGameId];
+  return models.Card.raw(sql, inserts)
+  .then(function(data) {
+    return data.length === 0;
+  });
+}
+
+function requireReader(playerGameId, gameId) {
+  return models.Round.queryLatestById(gameId)
+  .then(function(round) {
+    if (round.reader !== playerGameId) {
+      throw "This endpoint requires the rounds reader";
+    }
+  });
+}
 
 exports.leave = function(socket) {
     // TODO: remove all event listeners associated with this game, as a single

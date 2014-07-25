@@ -12,8 +12,15 @@ var Card = orm.define('tbCard', fields, 'cId');
 exports.Model = Card;
 
 
+Card.play = function(cardId, roundId) {
+  var sql = 'UPDATE ?? SET rId=? WHERE ??=?';
+  var inserts = [this.table, roundId, this.idField, cardId];
+  return this.raw(sql, inserts);
+};
+
+
 Card.serializeHand = function(playerGameId) {
-  var sql = 'SELECT cId, resText FROM tbCard ' +
+  var sql = 'SELECT cId AS id, resText AS text FROM tbCard ' +
     'NATURAL JOIN tbPlayerGame ' + 
     'NATURAL JOIN tbResponse ' + 
     'WHERE rId IS NULL AND pgId=?';
@@ -21,3 +28,14 @@ Card.serializeHand = function(playerGameId) {
   var inserts = [playerGameId];
   return Card.raw(sql, inserts);
 };
+
+Card.forApi = function(cardId) {
+  var sql = 'SELECT cId, resText FROM tbCard ' +
+    'NATURAL JOIN tbPlayerGame ' + 
+    'NATURAL JOIN tbResponse ' + 
+    'WHERE cId=?';
+
+  var inserts = [cardId];
+  return Card.rawOne(sql, inserts);
+};
+

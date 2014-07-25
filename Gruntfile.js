@@ -98,6 +98,10 @@ module.exports = function(grunt) {
         files: '<%= lessSrc %>',
         tasks: ['less'],
       },
+      tests: {
+        files: ['<%= serverSrc %>'],
+        tasks: ['tests']
+      }
     },
 
     less: {

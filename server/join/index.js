@@ -18,7 +18,7 @@ exports.setup = function(socket) {
   socket.on('createGame', createGame);
   socket.on('joinGame', joinGame);
   socket.on('leaveParty', leaveParty);
-  socket.on('disconnect', leaveParty);
+  socket.on('disconnect', disconnect);
 
   socket.on('startGame', startGame);
   
@@ -161,7 +161,7 @@ exports.setup = function(socket) {
         // setup listeners etc. for the appropriate game module
         .then(function(playerGameId) {
           var gameModule = require('../' + game.type);
-          return gameModule.join(socket, player, game, playerGameId);
+          return gameModule.join(socket, player, party, game, playerGameId);
         })
 
         // then build up the game state using custom data returned from the
@@ -215,7 +215,7 @@ exports.setup = function(socket) {
    * Marks the player-game connection as inactive at the database level, and
    * clears out the socket state.
    */
-  function leaveParty() {
+  function leaveParty(data, acknowledge) {
     Q.fcall(function() {
       debugSocketState();
       requirePlayerInParty();
@@ -237,7 +237,7 @@ exports.setup = function(socket) {
   }
 
   function disconnect() {
-    leaveParty();
+    leaveParty({}, function() {});
   }
 
 };

@@ -14,7 +14,7 @@ exports.Model = Game;
 Game.prototype.getState = function(playerId) {
   var self = this;
 
-  var sql = 'SELECT pId AS id, pName AS name ' +
+  var sql = 'SELECT pgId AS id, pName AS name ' +
               'FROM tbPlayer NATURAL JOIN tbPlayerGame ' +
               'WHERE gId=? AND pgActive=TRUE';
 
@@ -22,7 +22,7 @@ Game.prototype.getState = function(playerId) {
     .then(function(players) {
       return {
         game: self.serialize(),
-        players: players
+        players: players,
       };
     });
 };

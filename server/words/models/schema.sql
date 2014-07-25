@@ -76,6 +76,8 @@ CREATE TABLE tbRound (
     pgId INT NOT NULL, -- the reader
     rNumber INT NOT NULL, -- round number
     rCreatedOn TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    rDoneReadingPrompt TIMESTAMP NULL,
+    rDoneReadingChoices TIMESTAMP NULL,
     PRIMARY KEY (rId)
 );
 
@@ -105,7 +107,7 @@ CREATE TABLE tbCard (
     rId INT DEFAULT NULL, -- round when card is played; NULL --> in hand
     pgId INT NOT NULL,
     cCreatedOn TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, -- when the card was distributed
-    cPlayedOn TIMESTAMP DEFAULT 0 ON UPDATE CURRENT_TIMESTAMP, -- when the card was played
+    cPlayedOn TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP, -- when the card was played
     PRIMARY KEY (cId)
 );
 
