@@ -7,7 +7,8 @@ var connection = module.exports = mysql.createConnection({
   host: 'localhost',
   user: config.DB_USERNAME,
   password: config.DB_PASSWORD,
-  database: 'gather'
+  database: 'gather',
+  multipleStatements: true,
 });
 
 /**
@@ -53,6 +54,11 @@ connection.rawOne = function() {
 };
 
 
+var ISOLATE_SERIALIZABLE = connection.ISOLATE_SERIALIZABLE = 4;
+var ISOLATE_REPEATABLE_READ = connection.ISOLATE_REPEATABLE_READ = 3;
+var ISOLATE_READ_COMMITTED = connection.ISOLATE_READ_COMMITTED = 2;
+var ISOLATE_READ_UNCOMMITTED = connection.ISOLATE_READ_UNCOMMITTED = 1;
+
 /**
  * Decorator that ensures the provided function executes within a single transaction.
  * NOTE: the decorated function must return a promise (and not use callbacks),
@@ -61,15 +67,34 @@ connection.rawOne = function() {
  * @arg {Function}
  * @returns {Function}
  */
-connection.withinTransaction = function(func) {
+connection.withinTransaction = function(func, isolationLevel) {
   return function() {
     var self = this;
     var args = arguments;
 
-    // start the transaction
-    connection.raw('START TRANSACTION')
+    var startTransaction;
+    switch(isolationLevel) {
+      case undefined:
+        startTransaction = connection.raw('START TRANSACTION');
+        break;
+      case ISOLATE_SERIALIZABLE:
+        startTransaction = connection.raw('SET TRANSACTION ISOLATION LEVEL SERIALIZABLE; START TRANSACTION');
+        break;
+      case ISOLATE_READ_COMMITTED:
+        startTransaction = connection.raw('SET TRANSACTION ISOLATION LEVEL REEATABLE-READ; START TRANSACTION');
+        break;
+      case ISOLATE_READ_COMMITTED:
+        startTransaction = connection.raw('SET TRANSACTION ISOLATION LEVEL READ-COMMITTED; START TRANSACTION');
+        break;
+      case ISOLATE_READ_UNCOMMITTED:
+        startTransaction = connection.raw('SET TRANSACTION ISOLATION LEVEL READ-UNCOMMITTED; START TRANSACTION');
+        break;
+      default:
+        throw "Invalid isolation level";
+    }
 
     // call the function that should be executed in a single transaction
+    startTransaction
     .then(function() {
       return func.apply(self, args);
     })
