@@ -160,6 +160,21 @@ exports.allJoinGame = function(clients, party) {
     return joinGame(client, party);
   });
   return Q.all(joined);
+  
+  //var gameStates = [];
+  //return joinGame(clients[0], party)
+  //.then(function(gs) {
+    //gameStates.push(gs);
+    //return joinGame(clients[1], party)
+    //.then(function(gs) {
+      //gameStates.push(gs);
+      //return joinGame(clients[2], party)
+      //.then(function(gs) {
+        //gameStates.push(gs);
+        //return Q.when(gameStates);
+      //});
+    //});
+  //});
 };
 
 exports.msg = function(indents, msg) {

@@ -13,6 +13,7 @@ exports.setup = function(socket) {
 
   // null if the player isn't in a party
   var party = null;
+  var playerGameId = null;
   var game = null;
 
   socket.on('createPlayer', createPlayer);
@@ -160,7 +161,8 @@ exports.setup = function(socket) {
         return player.join(game.id)
 
         // setup listeners etc. for the appropriate game module
-        .then(function(playerGameId) {
+        .then(function(playerGameId_) {
+          playerGameId = playerGameId_;
           var gameModule = require('../' + game.type);
           return gameModule.join(socket, player, party, game, playerGameId);
         })
@@ -177,10 +179,13 @@ exports.setup = function(socket) {
         })
 
         .then(function(gameState) {
-          socket.broadcast.to(party).emit('playerJoined', player);
+          socket.broadcast.to(party).emit('playerJoined', {
+            name: player.name,
+            id: playerGameId
+          });
           acknowledge(gameState);
         });
-      }));
+      }, db.ISOLATE_SERIALIZABLE));
     })
     .fail(function(error) {
       logger.error(error);
@@ -224,9 +229,13 @@ exports.setup = function(socket) {
     .then(function() {
       return player.leave(party)
       .then(function() {
-        socket.broadcast.to(party).emit('playerLeft', player);
+        socket.broadcast.to(party).emit('playerLeft', {
+          name: player.name,
+          id: playerGameId
+        });
         socket.leave(party);
         party = null;
+        playerGameId = null;
         game = null;
         acknowledge(true);
       });
@@ -241,4 +250,5 @@ exports.setup = function(socket) {
     leaveParty({}, function() {});
   }
 
+};
 };
