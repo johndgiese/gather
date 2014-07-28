@@ -70,9 +70,7 @@ describe('The words socket API', function() {
         var testRound = Q.defer();
 
         clients[1].oncep('gameStarted', function() {
-          console.log("here");
           clients[0].oncep('roundStarted', function(data) {
-            console.log("here");
             var round = data.round;
 
             expect(round.number).to.be(1);

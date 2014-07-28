@@ -145,7 +145,6 @@ exports.join = function(socket, player, party, game, playerGameId) {
       return requireValidVote(data.card, playerGameId, game.id);
     })
     .then(function() {
-      console.log('DEBUG');
       return new models.Vote({
         voter: playerGameId,
         card: data.card,

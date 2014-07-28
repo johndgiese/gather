@@ -94,19 +94,16 @@ var joinGame = exports.joinGame = function(client, party) {
       gameState.custom.choices = [];
       gameState.custom.votes = [];
       gameState.custom.rounds.push(data.round);
-      console.log(gameState.players);
     });
 
     client.on('cardChoosen', function(data) {
       debug('cardChoosen: %j', data);
       gameState.custom.choices.push(data);
-      console.log(gameState.custom.choices);
     });
 
     client.on('voteCast', function(data) {
       debug('voteCast: %j', data);
       gameState.custom.votes.push(data);
-      console.log(gameState.custom.votes);
     });
 
     // TODO: figure out error handling on this stuff
@@ -160,21 +157,6 @@ exports.allJoinGame = function(clients, party) {
     return joinGame(client, party);
   });
   return Q.all(joined);
-  
-  //var gameStates = [];
-  //return joinGame(clients[0], party)
-  //.then(function(gs) {
-    //gameStates.push(gs);
-    //return joinGame(clients[1], party)
-    //.then(function(gs) {
-      //gameStates.push(gs);
-      //return joinGame(clients[2], party)
-      //.then(function(gs) {
-        //gameStates.push(gs);
-        //return Q.when(gameStates);
-      //});
-    //});
-  //});
 };
 
 exports.msg = function(indents, msg) {
