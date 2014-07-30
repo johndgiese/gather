@@ -90,25 +90,21 @@ var joinGame = exports.joinGame = function(client, party) {
     }
 
     client.on('roundStarted', function(data) {
-      debug('roundStarted: %j', data);
       gameState.custom.choices = [];
       gameState.custom.votes = [];
       gameState.custom.rounds.push(data.round);
     });
 
     client.on('cardChoosen', function(data) {
-      debug('cardChoosen: %j', data);
       gameState.custom.choices.push(data);
     });
 
     client.on('voteCast', function(data) {
-      debug('voteCast: %j', data);
       gameState.custom.votes.push(data);
     });
 
     // TODO: figure out error handling on this stuff
     client.on('playerLeft', function(player) {
-      debug('playerLeft: %j', player);
       var playerInListAlready = _.find(gameState.players, function(p) {
         return p.id === player.id;
       }) !== undefined;
@@ -123,7 +119,6 @@ var joinGame = exports.joinGame = function(client, party) {
     });
 
     client.on('playerJoined', function(player) {
-      debug('playerJoined: %j', player);
       var playerInListAlready = _.find(gameState.players, function(p) {
         return p.id === player.id;
       }) !== undefined;
@@ -159,7 +154,12 @@ exports.allJoinGame = function(clients, party) {
   return Q.all(joined);
 };
 
-exports.msg = function(indents, msg) {
-  var buffer = Array(indents + 1).join("  ");
-  console.log(buffer + msg);
+exports.castVote = function(client, gameState) {
+  return client.emitp('castVote', {
+    card: gameState.custom.choices[0].card.id,
+    round: gameState.custom.rounds[0].id
+  }, function(data) {
+    return Q.when(data);
+  });
 };
+
