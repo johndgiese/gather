@@ -7,10 +7,6 @@ var fields = {
 var Player = orm.define('tbPlayer', fields, 'pId');
 exports.Model = Player;
 
-Player.prototype.serialize = function() {
-  return {name: this.name};
-};
-
 Player.prototype.join = function(gameId) {
   var playerGameData = {
     pId: this.id,
