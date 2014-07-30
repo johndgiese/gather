@@ -58,11 +58,22 @@ describe('The words socket API', function() {
       })
       .then(function(party_) {
         party = party_;
-        return tu.allJoinGame(clients, party);
-      })
-      .then(function(gameStates_) {
-        gameStates = gameStates_;
-        done();
+
+        // make players join in order, so we know how clients map to player
+        // roles during a round; i.e. clients[0] is the first reader
+        return tu.joinGame(clients[0], party)
+        .then(function(gs) {
+          gameStates.push(gs);
+          return tu.joinGame(clients[1], party);
+        })
+        .then(function(gs) {
+          gameStates.push(gs);
+          return tu.joinGame(clients[2], party);
+        })
+        .then(function(gs) {
+          gameStates.push(gs);
+          done();
+        });
       })
       .fail(done);
     });
