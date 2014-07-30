@@ -105,7 +105,7 @@ CREATE TABLE tbCard (
     cId INT NOT NULL AUTO_INCREMENT,
     resId INT NOT NULL, -- the response
     rId INT DEFAULT NULL, -- round when card is played; NULL --> in hand
-    pgId INT NOT NULL,
+    pgId INT NOT NULL, -- owner of the card
     cCreatedOn TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, -- when the card was distributed
     cPlayedOn TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP, -- when the card was played
     PRIMARY KEY (cId)
