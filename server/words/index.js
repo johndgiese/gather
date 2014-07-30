@@ -164,8 +164,6 @@ exports.join = function(socket, player, party, game, playerGameId) {
       acknowledge({_error: "Unable to register vote"});
     });
   }
-
-
 };
 
 
