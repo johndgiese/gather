@@ -239,7 +239,7 @@ exports.setup = function(socket) {
         party = null;
         playerGameId = null;
         game = null;
-        acknowledge(true);
+        acknowledge(null);
       });
     })
     .fail(function(error) {
