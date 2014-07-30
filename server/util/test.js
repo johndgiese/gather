@@ -81,6 +81,8 @@ exports.setupPlayers = function(clients) {
 
 
 // joing game setup game state listeners
+// IMPORTANT: this code has a near identical copy in public/words/controllers/WordsCtrl.js
+// UPDATES DONE HERE SHOULD LIKLEY BE UPDATED IN BOTH PLACES
 // TODO: modularize and include in front end
 var joinGame = exports.joinGame = function(client, party) {
   return client.emitp('joinGame', {party: party}, function(gameState) {
@@ -129,6 +131,8 @@ var joinGame = exports.joinGame = function(client, party) {
         gameState.players.push(player);
       }
     });
+
+    // IMPORTANT: see note above
 
     return gameState;
   });
