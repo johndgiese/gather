@@ -94,25 +94,21 @@ describe('The join socket API', function() {
     });
 
     it('it broadcasts the event to other players in the party', function(done) {
-      var joinEventBroadcastTo1 = false;
+      var gameState;
+
       var client0promise = clients[0].oncep('playerJoined', function(player) {
-        joinEventBroadcastTo1 = true;
-        expect(player.id).to.be.eql(players[1].id);
-        return true;
+        return player;
       });
 
-      clients[2].once('playerJoined', function(player) {
-        done(new Error("player 2 shouldn't receive a request"));
-      });
-
-      clients[1].emitp('joinGame', {party: party}, function(data) {
-        expect(data.game.id).to.be.a('number');
-        expect(_.isString(data.game.party)).to.be(true);
-      })
-      .then(function() {
+      clients[1].emitp('joinGame', {party: party}, function(gameState_) {
+        gameState = gameState_;
+        expect(gameState.game.id).to.be.a('number');
+        expect(_.isString(gameState.game.party)).to.be(true);
         return client0promise;
       })
-      .then(function() {
+      .then(function(broadcastPlayer) {
+        var playerInGameState = gameState.players[1];
+        expect(broadcastPlayer).to.eql(playerInGameState);
         done();
       })
       .fail(done);
@@ -126,6 +122,7 @@ describe('The join socket API', function() {
     });
 
     it('should record the state as players come and go', function(done) {
+      var gameState;
       tu.activePlayers(party)
       .then(function(activePlayers) {
         expect(activePlayers).to.be(1);
@@ -142,7 +139,8 @@ describe('The join socket API', function() {
       .then(function() {
         return tu.joinGame(clients[2], party);
       })
-      .then(function() {
+      .then(function(gameState_) {
+        gameState = gameState_;
         return tu.activePlayers(party);
       })
       .then(function(activePlayers) {
@@ -150,7 +148,7 @@ describe('The join socket API', function() {
       })
       .then(function() {
         var promise = clients[0].oncep('playerLeft', function(leavingPlayer) {
-          expect(leavingPlayer.id).to.be(players[1].id);
+          expect(leavingPlayer).to.eql(gameState.players[1]);
         }).fail(done);
         clients[1].disconnect();
         return promise;
@@ -163,7 +161,7 @@ describe('The join socket API', function() {
       })
       .then(function() {
         var promise = clients[2].oncep('playerLeft', function(leavingPlayer) {
-          expect(leavingPlayer.id).to.be(players[0].id);
+          expect(leavingPlayer).to.eql(gameState.players[0]);
         }).fail(done);
         clients[0].emit('leaveParty');
         return promise;
