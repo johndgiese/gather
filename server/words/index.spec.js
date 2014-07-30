@@ -11,16 +11,17 @@ var dealer = require('./dealer');
 
 describe('The words socket API', function() {
 
-  var clients, players, party;
-  beforeEach(function(done) {
-    clients = tu.setupClients(3);
-    tu.setupPlayers(clients).then(function(players_) {
-      players = players_;
-      done();
-    });
-  });
-
   describe('exposes some standard API call to the join module:', function() {
+
+    var clients, players, party;
+    beforeEach(function(done) {
+      clients = tu.setupClients(3);
+      tu.setupPlayers(clients).then(function(players_) {
+        players = players_;
+        done();
+      });
+    });
+
     it('the `create` method doesn\'t do anything at the moment', function() {
       expect(true).to.be(true);  // don't see a good way to test
     });
@@ -43,13 +44,18 @@ describe('The words socket API', function() {
     });
   });
 
+  describe('exposes custom stuff for the words game', function() {
 
+    var clients, players, party, gameStates = [];
 
-  describe.only('facilitates playing the game', function() {
-
-    var party, gameStates = [];
-    beforeEach(function(done) {
-      tu.setupGame(clients[0], 'words')
+    it('after setting up the game', function(done) {
+      clients = tu.setupClients(3);
+      tu.setupPlayers(clients).then(function(players_) {
+        players = players_;
+      })
+      .then(function() {
+        return tu.setupGame(clients[0], 'words');
+      })
       .then(function(party_) {
         party = party_;
         return tu.allJoinGame(clients, party);
@@ -61,183 +67,210 @@ describe('The words socket API', function() {
       .fail(done);
     });
 
-    it('everything progresses', function(done) {
-      Q.when({})
-      .then(function() {
-        tu.msg(3, "After the `gameStarted` there is a delay, and then a " +
-                    "`roundStarted` is emmitted");
+    it("`gameStarted` is emmitted, there is a delay, and then a `roundStarted` is emmitted", function(done) {
+      clients[1].oncep('gameStarted', function() {
+        clients[0].oncep('roundStarted', function(data) {
+          var round = data.round;
 
-        var testRound = Q.defer();
-
-        clients[1].oncep('gameStarted', function() {
-          clients[0].oncep('roundStarted', function(data) {
-            var round = data.round;
-
-            expect(round.number).to.be(1);
-            expect(round.reader).to.be(gameStates[0].players[0].id);
-            expect(round.prompt).to.be.a('string');
-            testRound.resolve();
-          });
+          expect(round.number).to.be(1);
+          expect(round.reader).to.be(gameStates[0].players[0].id);
+          expect(round.prompt).to.be.a('string');
+          done();
         });
-
-        clients[0].emit('startGame', {}, tu.expectNoError);
-
-        return testRound.promise;
       })
-
-
-      .then(function() {
-        tu.msg(3, "Then the reader must submit `readingPromptDone`");
-        var testRound = Q.defer();
-        var roundId = gameStates[0].custom.rounds[0].id;
-
-        clients[1].oncep('readingPromptDone', function(data) {
-          expect(data.roundId).to.equal(roundId);
-          testRound.resolve();
-        })
-        .fail(done);
-
-        var doneTestingRoundUpdate = models.Round.queryOneId(roundId)
-        .then(function(round) {
-          expect(round.doneReadingPrompt).to.be(null);
-        })
-        .then(function() {
-          return clients[0].emitp('doneReadingPrompt', {}, function (data) {
-            tu.expectNoError(data);
-            return Q.when({});
-          });
-        })
-        .then(function() {
-          return models.Round.queryOneId(roundId)
-          .then(function(round) {
-            expect(round.doneReadingPrompt).not.to.be(null);
-          });
-        });
-
-        return Q.all([testRound.promise, doneTestingRoundUpdate]);
-      })
-
-
-      .then(function() {
-        tu.msg(3, "Then each player makes a choice");
-        var testRound = Q.defer();
-
-        clients[0].oncep('cardChoosen', function(data) {
-          expect(data.player).to.equal(gameStates[0].players[2].id);
-          testRound.resolve();
-        });
-
-        var card = gameStates[2].custom.hand[0];
-        clients[2].emitp('chooseCard', {
-          card: card.id,
-          round: gameStates[2].custom.rounds[0].id
-        }, tu.expectNoError);
-
-        return testRound.promise;
-      })
-
-
-      .then(function() {
-        tu.msg(3, "Making a second choice results in an error");
-        var testRound = Q.defer();
-
-        var card = gameStates[2].custom.hand[0];
-        clients[2].emit('chooseCard', {
-          card: card.id,
-          round: gameStates[2].custom.rounds[0].id
-        }, function(data) {
-          tu.expectError(data);
-          testRound.resolve();
-        });
-        return testRound.promise;
-      })
-
-
-      .then(function() {
-        tu.msg(3, "Playing a card that is not in your hand results in an error");
-        var testRound = Q.defer();
-
-        var highestIdCard = _.max(gameStates[1].custom.hand, function(c) {
-          return c.id;
-        });
-
-        // submit bad card
-        clients[1].emitp('chooseCard', {
-          card: highestIdCard.id + 1,
-          round: gameStates[2].custom.rounds[0].id
-        }, function(data) {
-          tu.expectError(data);
-        })
-        .then(function() {
-          // actually submit card now
-          return clients[1].emitp('chooseCard', {
-            card: highestIdCard.id,
-            round: gameStates[2].custom.rounds[0].id
-          }, function(data) {
-            tu.expectNoError(data);
-            testRound.resolve();
-          });
-        });
-        return testRound.promise;
-      })
-
-
-      .then(function() {
-        tu.msg(3, "Not all players need to choose before progressing, this is to avoid stalling from logouts");
-        var testRound = Q.defer();
-        var roundId = gameStates[0].custom.rounds[0].id;
-
-        clients[1].oncep('readingChoicesDone', function() {
-          testRound.resolve();
-        });
-
-        var doneTestingRoundUpdate = models.Round.queryOneId(roundId)
-        .then(function(round) {
-          expect(round.doneReadingChoices).to.be(null);
-        })
-        .then(function() {
-          return clients[0].emitp('doneReadingChoices', {}, function (data) {
-            tu.expectNoError(data);
-            return Q.when({});
-          });
-        })
-        .then(function() {
-          return models.Round.queryOneId(roundId)
-          .then(function(round) {
-            expect(round.doneReadingChoices).not.to.be(null);
-          });
-        });
-
-        return Q.all([testRound.promise, doneTestingRoundUpdate]);
-      })
-
-
-      .then(function() {
-        tu.msg(3, "Then each player makes a vote");
-        var testRound = Q.defer();
-
-        clients[0].oncep('voteCast', function(data) {
-          expect(data.player).to.equal(gameStates[0].players[2].id);
-          testRound.resolve();
-        });
-
-        clients[2].emitp('castVote', {
-          card: gameStates[2].custom.choices[0].card.id,
-          round: gameStates[2].custom.rounds[0].id
-        }, tu.expectNoError);
-
-        return testRound.promise;
-      })
-
-      .then(function() { done(); })
       .fail(done);
 
+      clients[0].emit('startGame', {}, tu.expectNoError);
+    });
+
+
+    it("the reader must submit `readingPromptDone`", function(done) {
+      var roundId = gameStates[0].custom.rounds[0].id;
+
+      var client1prom = clients[1].oncep('readingPromptDone', function(data) {
+        expect(data.roundId).to.equal(roundId);
+      });
+
+      var doneTestingRoundUpdate = models.Round.queryOneId(roundId)
+      .then(function(round) {
+        expect(round.doneReadingPrompt).to.be(null);
+      })
+      .then(function() {
+        return clients[0].emitp('doneReadingPrompt', {}, function (data) {
+          tu.expectNoError(data);
+          return Q.when({});
+        });
+      })
+      .then(function() {
+        return models.Round.queryOneId(roundId)
+        .then(function(round) {
+          expect(round.doneReadingPrompt).not.to.be(null);
+        });
+      });
+
+      Q.all([client1prom, doneTestingRoundUpdate])
+      .then(function() {
+        done();
+      })
+      .fail(done);
+    });
+
+
+    it("each player makes a chooses a card", function(done) {
+      clients[0].oncep('cardChoosen', function(data) {
+        expect(data.player).to.equal(gameStates[0].players[2].id);
+        done();
+      })
+      .fail(done);
+
+      var card = gameStates[2].custom.hand[0];
+      clients[2].emitp('chooseCard', {
+        card: card.id,
+        round: gameStates[2].custom.rounds[0].id
+      }, tu.expectNoError);
+    });
+
+
+    it("making a second choice results in an error", function(done) {
+      var card = gameStates[2].custom.hand[0];
+      clients[2].emitp('chooseCard', {
+        card: card.id,
+        round: gameStates[2].custom.rounds[0].id
+      }, function(data) {
+        tu.expectError(data);
+        done();
+      })
+      .fail(done);
+    });
+
+
+    it("playing a card that is not in your hand results in an error", function(done) {
+      var highestIdCard = _.max(gameStates[1].custom.hand, function(c) {
+        return c.id;
+      });
+
+      // submit bad card
+      clients[1].emitp('chooseCard', {
+        card: highestIdCard.id + 1,
+        round: gameStates[2].custom.rounds[0].id
+      }, function(data) {
+        tu.expectError(data);
+      })
+      .then(function() {
+        // actually submit card now
+        return clients[1].emitp('chooseCard', {
+          card: highestIdCard.id,
+          round: gameStates[2].custom.rounds[0].id
+        }, function(data) {
+          tu.expectNoError(data);
+          done();
+        });
+      })
+      .fail(done);
+    });
+
+
+    it("not all players need to choose before progressing to avoid stalling from logouts", function(done) {
+      var roundId = gameStates[0].custom.rounds[0].id;
+
+      var client1prom = clients[1].oncep('readingChoicesDone', function() {});
+
+      var doneTestingRoundUpdate = models.Round.queryOneId(roundId)
+      .then(function(round) {
+        expect(round.doneReadingChoices).to.be(null);
+      })
+      .then(function() {
+        return clients[0].emitp('doneReadingChoices', {}, function (data) {
+          tu.expectNoError(data);
+          return Q.when({});
+        });
+      })
+      .then(function() {
+        return models.Round.queryOneId(roundId)
+        .then(function(round) {
+          expect(round.doneReadingChoices).not.to.be(null);
+        });
+      });
+
+      Q.all([client1prom, doneTestingRoundUpdate])
+      .then(function() {
+        done();
+      })
+      .fail(done);
+    });
+
+
+    it("then players can cast votes", function(done) {
+      clients[0].oncep('voteCast', function(data) {
+        expect(data.player).to.equal(gameStates[0].players[2].id);
+        done();
+      })
+      .fail(done);
+
+      tu.castVote(clients[2], gameStates[2])
+      .then(tu.expectNoError);
+    });
+
+
+    it.skip("voting for your own card results in an error", function(done) {
+      // TODO: add this
+      done();
+    });
+
+
+    it.skip("voting multiple times per round results in an error", function(done) {
+      // TODO: add this
+      done();
+    });
+
+
+    it("after everyone has voted, all players should have lists of the votes", function(done) {
+      var votingDonePromise = Q.all(_.map(clients, function(c) {
+        return c.oncep('votingDone', function(data) {
+          return Q.when(null);
+        });
+      }));
+
+      tu.castVote(clients[0], gameStates[0]);
+
+      tu.castVote(clients[1], gameStates[1])
+      .then(function() {
+        return Q.when({}).delay(5);  // wait for events to propagate
+      })
+      .then(function(response) {
+        expect(gameStates[0].custom.votes.length).to.be(3);
+        expect(gameStates[1].custom.votes.length).to.be(3);
+        expect(gameStates[2].custom.votes.length).to.be(3);
+      })
+      .then(function() {
+        return votingDonePromise;
+      })
+      .then(function() {
+        done();
+      })
+      .fail(done);
+    });
+
+
+    it("then the server setups a new round", function(done) {
+      Q.all(_.map(clients, function(c) {
+        return c.oncep('roundStarted', function(round) {
+          return Q.when(null);
+        });
+      }))
+      .then(function() {
+        _.forEach(gameStates, function(gs) {
+          expect(gs.custom.choices.length).to.be(0);
+          expect(gs.custom.votes.length).to.be(0);
+          expect(gs.custom.rounds.length).to.be(2);
+          expect(gs.custom.rounds[1].reader).to.be(gs.players[1].id);
+        });
+      })
+      .then(function() {
+        done();
+      })
+      .fail(done);
     });
 
   });
-
-
 });
-
-
-

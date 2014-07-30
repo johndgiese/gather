@@ -3,6 +3,7 @@ var dealer = require('./dealer');
 var Q = require('Q');
 var debug = require('debug')('gather:words');
 var logger = require('../logger');
+var transaction = require('../transaction');
 
 /**
  * Run any initial setup code for a game.
@@ -18,23 +19,7 @@ exports.create = function(game) {
  * @returns {Promise} - a promise indicating when the setup is complete.
  */
 exports.startGame = function(socket, player, game) {
-  // Note this is duplicated in the join code below because I saw no way to
-  // share the socket reference easily
-  models.Round.newByGame(game.id)
-  .then(function(round) {
-    setTimeout(function() {
-      round.forApi()
-      .then(function(roundData) {
-        socket.emit('roundStarted', {round: roundData});
-        socket.broadcast.to(game.party).emit('roundStarted', {round: roundData});
-      });
-    }, INTER_ROUND_DELAY);
-  })
-  .fail(function(reason) {
-    logger.error(reason);
-  });
-
-  return Q.when({});
+  return setupRoundStart(socket, player, game);
 };
 
 /**
@@ -144,31 +129,57 @@ exports.join = function(socket, player, party, game, playerGameId) {
     Q.fcall(function() {
       return requireValidVote(data.card, playerGameId, game.id);
     })
-    .then(function() {
+    // transactions ensure `setupRoundStart` is called only once
+    .then(transaction.inOrderByGroup(party, function() {
       return new models.Vote({
         voter: playerGameId,
         card: data.card,
       })
-      .save();
-    })
-    .then(function(vote) {
-      var sendData = {player: playerGameId};
-      socket.emit('voteCast', sendData);
-      socket.broadcast.to(party).emit('voteCast', sendData);
-      // TODO: if last vote, then broadcast `roundOver` and setup timer for `roundStart`
-      acknowledge({});
-    })
+      .save()
+      .then(function(vote) {
+        var sendData = {player: playerGameId};
+        socket.emit('voteCast', sendData);
+        socket.broadcast.to(party).emit('voteCast', sendData);
+        return models.Round.numPlayersNeedingToVote(data.round, game.id);
+      })
+      .then(function(result) {
+        if (result.playersLeft === 0) {
+          socket.emit('votingDone', {});
+          socket.broadcast.to(party).emit('votingDone', {});
+          setupRoundStart(socket, player, game);
+        }
+        acknowledge(null);
+      });
+    }))
     .fail(function(error) {
       logger.error(error);
       acknowledge({_error: "Unable to register vote"});
     });
   }
 
-  function setupRoundStart() {
-    // COPY from above
-  }
 
 };
+
+
+function setupRoundStart(socket, player, game) {
+
+  models.Round.newByGame(game.id)
+  .then(function(round) {
+    setTimeout(function() {
+      round.forApi()
+      .then(function(roundData) {
+        socket.emit('roundStarted', {round: roundData});
+        socket.broadcast.to(game.party).emit('roundStarted', {round: roundData});
+      });
+    }, INTER_ROUND_DELAY);
+  })
+  .fail(function(reason) {
+    logger.error(reason);
+  });
+
+  return Q.when(null);
+}
+
 
 function requireCardInHand(playerGameId, cardId) {
   return models.Card.queryOneId(cardId)

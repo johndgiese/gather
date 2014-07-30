@@ -1,6 +1,7 @@
 var orm = require('../../orm');
 var logger = require('../../logger');
 var dealer = require('../dealer');
+var _ = require('underscore');
 
 
 var fields = {
@@ -19,25 +20,25 @@ exports.Model = Round;
  * Create a new round for the current game of the specified party.
  */
 Round.newByGame = function(gameId) {
-  var readerListProm = this.raw('SELECT pgId, pgActive FROM tbPlayerGame WHERE gId=? ORDER BY pgCreatedOn DESC', [gameId]);
+  var readerListProm = this.raw('SELECT pgId, pgActive AS active FROM tbPlayerGame WHERE gId=? ORDER BY pgCreatedOn DESC', [gameId]);
 
-  var lastRoundProm = this.raw('SELECT pgId, rNumber FROM tbRound WHERE gId=? ORDER BY rCreatedOn DESC LIMIT 1', [gameId]);
+  var lastRoundProm = this.raw('SELECT pgId, rNumber AS number FROM tbRound WHERE gId=? ORDER BY rCreatedOn DESC LIMIT 1', [gameId]);
 
   var promptProm = dealer.dealPrompt(gameId);
 
   return Q.all([readerListProm, lastRoundProm, promptProm])
   .then(function(data) {
     var readerList = data[0];
-    var lastRound = data[1];
+    var lastRound = data[1][0];
     var prompt = data[2][0];
 
     var reader, number;
-    if (lastRound.length === 0) {
+    if (lastRound === undefined) {
       reader = readerList[0];
       number = 1;
     } else {
       reader = getNextActivePrompter(readerList, lastRound.pgId);
-      number = lastRound.number++;
+      number = lastRound.number + 1;
     }
 
     var roundData = {
@@ -60,9 +61,12 @@ Round.newByGame = function(gameId) {
  * @param {Number} - the last person to have been reader for a round
  */
 function getNextActivePrompter(readerList, lastPrompterId) {
-  var index = _.find(readerList, function(p) {
+
+  // get the index of the previous prompter
+  var lastReader = _.find(readerList, function(p) {
     return p.pgId === lastPrompterId;
   });
+  var index = _.indexOf(readerList, lastReader);
 
   var nextPrompter;
   var n = readerList.length;
@@ -134,5 +138,18 @@ Round.prototype.markDoneReadingChoices = function() {
     this.doneReadingChoices = new Date();
     return this.save();
   }
+};
+
+// NOTE: it is not strictly necessary to include the gameId and roundId, it
+// just makes the query simpler; alternatively, just the gameId could be used,
+// and the most recent roundId could be deduced from that
+Round.numPlayersNeedingToVote = function(roundId, gameId) {
+  var inserts = [gameId, roundId];
+  var sql = 'SELECT Count(pgId) AS playersLeft FROM tbPlayerGame WHERE gId=? ' +
+    'AND pgId NOT IN (' + 
+       'SELECT tbVote.pgId FROM tbVote JOIN tbCard USING (cId) JOIN tbRound USING (rId) WHERE rId=?' +
+    ') ' +
+    'AND pgActive=TRUE';
+  return this.rawOne(sql, inserts);
 };
 
