@@ -175,6 +175,7 @@ exports.setup = function(socket) {
           debug("custom game state: %j", customGameState);
           return game.getState()
           .then(function(gameState) {
+            gameState.you = playerGameId;
             gameState.custom = customGameState;
             return gameState;
           });
