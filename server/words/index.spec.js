@@ -38,6 +38,12 @@ describe('The words socket API', function() {
         expect(gameState.custom.rounds).to.be.an('array');
         expect(gameState.custom.hand).to.be.an('array');
         expect(gameState.custom.hand.length).to.be(dealer.CARDS_IN_HAND);
+
+        var score = gameState.custom.score;
+        var points = _.reduce(score, function(sum, s) { return sum + s.score; }, 0);
+        expect(score).to.be.an('object');
+        expect(points).to.be(0);
+
         done();
       })
       .fail(done);
@@ -237,7 +243,12 @@ describe('The words socket API', function() {
 
     it("after everyone has voted, all players should have lists of the votes", function(done) {
       var votingDonePromise = Q.all(_.map(clients, function(c) {
-        return c.oncep('votingDone', function(data) {
+        return c.oncep('votingDone', function(scores) {
+          expect(scores.length).to.be(players.length);
+          expect(scores[0].player).not.to.be(undefined);
+          expect(scores[0].score).not.to.be(undefined);
+          var points = _.reduce(scores, function(sum, s) { return sum + s.score; }, 0);
+          expect(points).to.be(players.length);
           return Q.when(null);
         });
       }));

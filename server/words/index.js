@@ -1,9 +1,11 @@
 var models = require('./models');
-var dealer = require('./dealer');
 var Q = require('Q');
 var debug = require('debug')('gather:words');
 var logger = require('../logger');
 var transaction = require('../transaction');
+
+var dealer = require('./dealer');
+var scorer = require('./scorer');
 
 /**
  * Run any initial setup code for a game.
@@ -37,11 +39,13 @@ exports.join = function(socket, player, party, game, playerGameId) {
   return Q.all([
     dealer.dealResponses(playerGameId, game.id),
     models.Round.forApiByParty(party),
+    scorer.currentScore(game.id)
   ])
   .then(function(data) {
     return {
       hand: data[0],
-      rounds: data[1]
+      rounds: data[1],
+      score: data[2]
     };
   });
 
@@ -144,9 +148,13 @@ exports.join = function(socket, player, party, game, playerGameId) {
       })
       .then(function(result) {
         if (result.playersLeft === 0) {
-          socket.emit('votingDone', {});
-          socket.broadcast.to(party).emit('votingDone', {});
-          setupRoundStart(socket, player, game);
+          // Note: errors in the scorer code will be silent!
+          scorer.currentScore(game.id)
+          .then(function(score) {
+            socket.emit('votingDone', score);
+            socket.broadcast.to(party).emit('votingDone', score);
+            setupRoundStart(socket, player, game);
+          });
         }
         acknowledge(null);
       });
