@@ -4,6 +4,7 @@ angular.module('join')
   function($scope, $state, $stateParams, ScopedSocket, liveModelList, playerService, gameService, $q, stateStack) {
     var socket = new ScopedSocket($scope);
 
+    var gameState;
     var player = playerService.get();
     if (player === null) {
       stateStack.push({name: 'staging', params: {party: $stateParams.party}});
@@ -23,7 +24,8 @@ angular.module('join')
         return socket.emitp('joinGame', {party: $stateParams.party});
       }
     })
-    .then(function(gameState) {
+    .then(function(gameState_) {
+      gameState = gameState_;
       $scope.joinedGame = true;
       gameService.set(gameState); // IMPROVE
 
@@ -41,15 +43,17 @@ angular.module('join')
     $scope.startGame = function() {
       socket.emitp('startGame', {})
       .then(function(data) {
-        $state.go('game');
+        // TODO: make this generic
+        $state.go('game.words.score');
       })
-      .fail(function(reason) {
+      .catch(function(reason) {
         alert(reason);
       });
     };
 
     socket.on('gameStarted', function() {
-      $state.go('game');
+      // TODO: make this generic
+      $state.go('game.words.score');
     });
 
   }

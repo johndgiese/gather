@@ -50,7 +50,7 @@ describe('The words socket API', function() {
     });
   });
 
-  describe('exposes custom stuff for the words game', function() {
+  describe.only('exposes custom stuff for the words game', function() {
 
     var clients, players, party, gameStates = [];
 
@@ -97,6 +97,7 @@ describe('The words socket API', function() {
       })
       .fail(done);
 
+      console.log('DEBUG');
       clients[0].emit('startGame', {}, tu.expectNoError);
     });
 

@@ -34,11 +34,6 @@ angular.module('join')
     url: '/:party',
     controller: 'StagingCtrl',
     templateUrl: '/static/join/templates/staging.html',
-  })
-
-  .state('game', {
-    controller: 'GameCtrl',
-    templateUrl: '/static/join/templates/game.html',
   });
 
 }]);

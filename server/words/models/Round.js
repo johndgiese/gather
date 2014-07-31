@@ -86,9 +86,9 @@ Round.queryByParty = function(party) {
 };
 
 Round.forApiByParty = function(party) {
-  var sql = 'SELECT rId AS id, pgId AS reader, rNumber AS NUMBER, proText AS prompt ' + 
+  var sql = 'SELECT rId AS id, pgId AS reader, rNumber AS number, proText AS prompt ' + 
     'FROM tbRound NATURAL JOIN tbPrompt NATURAL JOIN tbGame ' + 
-    'WHERE gParty=?';
+    'WHERE gParty=? ORDER BY rNumber';
   var inserts = [party];
   return Round.raw(sql, inserts);
 };

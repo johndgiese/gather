@@ -210,7 +210,7 @@ exports.setup = function(socket) {
       return gameModule.startGame(socket, player, game)
       .then(function() {
         socket.broadcast.to(party).emit('gameStarted', {});
-        acknowledge({});
+        acknowledge(null);
       });
     })
     .fail(function(error) {
