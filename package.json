@@ -24,7 +24,8 @@
     "expect.js": "^0.3.1",
     "socket.io-client": "^1.0",
     "grunt-newer": "~0.7.0",
-    "grunt-shell": "~0.7.0"
+    "grunt-shell": "~0.7.0",
+    "grunt-express-server": "~0.4.17"
   },
   "repository": "https://bitbucket.org/jdgiese/gather-games-word-association",
   "author": "",

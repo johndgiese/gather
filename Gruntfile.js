@@ -10,6 +10,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-mocha-test');
   grunt.loadNpmTasks('grunt-shell');
+  grunt.loadNpmTasks('grunt-express-server');
 
   grunt.initConfig({
     config: serverConfig,
@@ -47,6 +48,12 @@ module.exports = function(grunt) {
       'public/_vendor/underscore/underscore.js',
     ],
 
+    express: {
+      options: {
+        script: 'server/index.js',
+      }
+    },
+
     uglify: {
       options: {
         banner: '/*! <%= pkg.name %> <%= grunt.template.today("yyyy-mm-dd") %> */\n',
@@ -77,6 +84,13 @@ module.exports = function(grunt) {
 
 
     watch: {
+      express: {
+        files:  [ '<%= serverSrc %>' ],
+        tasks:  [ 'express:dev' ],
+        options: {
+          spawn: false
+        }
+      },
       uglify: {
         files: '<%= clientSrc %>',
         tasks: ['uglify']
@@ -166,8 +180,10 @@ module.exports = function(grunt) {
   });
 
 
+
   grunt.registerTask('default', ['jshint', 'mochaTest', 'less', 'uglify', 'watch']);
   grunt.registerTask('tests', ['jshint', 'mochaTest']);
   grunt.registerTask('setup', ['shell:setupDirectories', 'shell:setupDatabase', 'shell:loadWords', 'less', 'uglify']);
+  grunt.registerTask('server', [ 'express', 'watch:express' ]);
 
 };
