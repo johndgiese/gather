@@ -85,20 +85,24 @@ describe('The words socket API', function() {
     });
 
     it("`gameStarted` is emmitted, there is a delay, and then a `roundStarted` is emmitted", function(done) {
-      clients[1].oncep('gameStarted', function() {
-        clients[0].oncep('roundStarted', function(data) {
+      var client1Prom = clients[1].oncep('gameStarted', function() {
+        return clients[0].oncep('roundStarted', function(data) {
           var round = data.round;
 
           expect(round.number).to.be(1);
           expect(round.reader).to.be(gameStates[0].players[0].id);
           expect(round.prompt).to.be.a('string');
-          done();
         });
+      });
+
+      clients[0].emitp('startGame', {}, tu.expectNoError)
+      .then(function() {
+        return client1Prom;
+      })
+      .then(function() {
+        done();
       })
       .fail(done);
-
-      console.log('DEBUG');
-      clients[0].emit('startGame', {}, tu.expectNoError);
     });
 
 
