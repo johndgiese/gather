@@ -88,7 +88,7 @@ var joinGame = exports.joinGame = function(client, party) {
   return client.emitp('joinGame', {party: party}, function(gameState) {
 
     if (gameState._error !== undefined) {
-      throw gameState._error;
+      throw new Error(gameState._error);
     }
 
     client.on('roundStarted', function(data) {
@@ -112,7 +112,7 @@ var joinGame = exports.joinGame = function(client, party) {
       }) !== undefined;
 
       if (!playerInListAlready) {
-        throw "Inconsistent State: removing player that doesn't exist";
+        throw new Error("Inconsistent State: removing player that doesn't exist");
       } else {
         _.reject(gameState.players, function(p) {
           return p.id === player.id;
@@ -126,7 +126,7 @@ var joinGame = exports.joinGame = function(client, party) {
       }) !== undefined;
 
       if (playerInListAlready) {
-        throw "Inconsistent State: adding player that already exists";
+        throw new Error("Inconsistent State: adding player that already exists");
       } else {
         gameState.players.push(player);
       }

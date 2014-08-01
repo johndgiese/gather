@@ -122,7 +122,7 @@ Round.prototype.forApi = function() {
 
 Round.prototype.markDoneReadingPrompt = function() {
   if (this.doneReadingPrompt !== null) {
-    throw "The reader has already finished reading the prompt!";
+    throw new Error("The reader has already finished reading the prompt!");
   } else {
     this.doneReadingPrompt = new Date();
     return this.save();
@@ -131,9 +131,9 @@ Round.prototype.markDoneReadingPrompt = function() {
 
 Round.prototype.markDoneReadingChoices = function() {
   if (this.doneReadingChoices !== null) {
-    throw "The reader has already finished reading the choices!";
+    throw new Error("The reader has already finished reading the choices!");
   } else if (this.doneReadingPrompt === null ) {
-    throw "Not the right time to finish reading choices!";
+    throw new Error("Not the right time to finish reading choices!");
   } else {
     this.doneReadingChoices = new Date();
     return this.save();

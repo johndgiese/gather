@@ -191,7 +191,7 @@ function requireCardInHand(playerGameId, cardId) {
   return models.Card.queryOneId(cardId)
   .then(function(card) {
     if (card.owner !== playerGameId) {
-      throw "The played card is not in your hand!";
+      throw new Error("The played card is not in your hand!");
     }
   });
 }
@@ -204,7 +204,7 @@ function requireNotPlayedThisRound(playerGameId, gameId) {
   return models.Card.raw(sql, inserts)
   .then(function(data) {
     if (data.length !== 0) {
-      throw "You have already played this round!";
+      throw new Error("You have already played this round!");
     }
   });
 }
@@ -213,7 +213,7 @@ function requireReader(playerGameId, gameId) {
   return models.Round.queryLatestById(gameId)
   .then(function(round) {
     if (round.reader !== playerGameId) {
-      throw "This endpoint requires the rounds reader";
+      throw new Error("This endpoint requires the rounds reader");
     }
   });
 }
@@ -227,10 +227,10 @@ function requireValidVote(cardId, playerGameId, gameId) {
     var card = data[0];
     var round = data[1];
     if (card.round !== round.id) {
-      throw "You are voting for a card that is not in the current round!";
+      throw new Error("You are voting for a card that is not in the current round!");
     }
     else if (card.owner === playerGameId) {
-      throw "You can not vote for your own card!";
+      throw new Error("You can not vote for your own card!");
     }
   });
 }

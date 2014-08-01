@@ -47,7 +47,7 @@ connection.rawOne = function() {
   return connection.raw.apply(connection, arguments)
   .then(function(data) {
     if (data.length !== 1) {
-      throw "Expected one row and got " + data.length;
+      throw new Error("Expected one row and got ") + data.length;
     } else {
       return data[0];
     }
@@ -91,7 +91,7 @@ connection.withinTransaction = function(func, isolationLevel) {
         startTransaction = connection.raw('SET TRANSACTION ISOLATION LEVEL READ-UNCOMMITTED; START TRANSACTION');
         break;
       default:
-        throw "Invalid isolation level";
+        throw new Error("Invalid isolation level");
     }
 
     // call the function that should be executed in a single transaction
