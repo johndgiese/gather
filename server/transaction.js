@@ -2,16 +2,16 @@ Q = require('Q');
 
 
 /**
- * Store a promise for each `group` of function calls; the existence of a 
- * promise for a given key indicates a lock on that group, and subsequent 
+ * Store a promise for each `group` of function calls; the existence of a
+ * promise for a given key indicates a lock on that group, and subsequent
  * calls in that group are delayed until that promise is resolved.  After the
  * last call is complete, the lock (i.e. key) is cleared.
- */ 
+ */
 var lockPromises = {};
 
 /**
  * Decorate a promise-returning function to ensure that it completes its work
- * as a single "transaction" within the specified group.  
+ * as a single "transaction" within the specified group.
  * @arg {String} - group identifier
  * @arg {Function} - work that needs to be done as a transaction within the group
  * @return {Function} - decorated function

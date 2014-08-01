@@ -40,7 +40,7 @@ combination one by one.  Once they are done reading them, all of the adjective/n
 combinations are shown on everyone's screen, and everyone gets to vote for first and
 second best words.
 
-Everyone gets two points to divide up, and can give both to the same person, or can 
+Everyone gets two points to divide up, and can give both to the same person, or can
 abstain from voting for the round, but can not vote for themselves.
 
 Bonuses are awarded if:
@@ -124,7 +124,7 @@ A vote for a choice; two per player per round
 - Num (1 or 2)
 - TimeStamp
 
-## Distribution 
+## Distribution
 
 Words given to each player; will be one per round except on the first round,
 when there will be multiple.

@@ -7,7 +7,7 @@ echo -e "angular.module('words')
 .controller('Words${ctrl}Ctrl', [
   '\$scope', '\$stateParams',
   function(\$scope, \$stateParams) {
-  
+
   }
 ]);" > "Words${ctrl}Ctrl.js"
 

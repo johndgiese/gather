@@ -1,4 +1,4 @@
-/* 
+/*
  * Scoped socket factory that is tied into the digest cycle and automatically
  * removes listeners when the scope is destroyed; useful in controllers.
  */

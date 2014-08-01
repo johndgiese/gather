@@ -30,16 +30,16 @@ CREATE TABLE tbPlayerGame (
 
 ALTER TABLE tbPlayerGame
     ADD CONSTRAINT
-    FOREIGN KEY (pId) REFERENCES tbPlayer(pId) 
+    FOREIGN KEY (pId) REFERENCES tbPlayer(pId)
     ON DELETE CASCADE;
 
 ALTER TABLE tbPlayerGame
     ADD CONSTRAINT
-    FOREIGN KEY (gId) REFERENCES tbGame(gId) 
+    FOREIGN KEY (gId) REFERENCES tbGame(gId)
     ON DELETE CASCADE;
 
-ALTER TABLE tbGame 
+ALTER TABLE tbGame
     ADD CONSTRAINT
-    FOREIGN KEY (gCreatedBy) REFERENCES tbPlayer(pId) 
+    FOREIGN KEY (gCreatedBy) REFERENCES tbPlayer(pId)
     ON DELETE CASCADE;
 

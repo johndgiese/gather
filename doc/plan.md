@@ -24,7 +24,7 @@ not be possible otherwise.  For example:
 - game content can be more user specific (e.g. you can have names of local restaurants
   in a game of Apples-to-Apples)
 - many games involve "facilitator roles" where a user is not actually in the game,
-  but is facilitating the game mechanics.  For example, in some games a person is 
+  but is facilitating the game mechanics.  For example, in some games a person is
   responsible for indicating the actual definition (a role that the computer can play)
   without taking a player outside of the game.
 - in some games involving fast-time mechanics (e.g. slapping your hand on the table
@@ -52,4 +52,4 @@ Potential downsides to using smart phones as opposed to traditional game media:
 
 
 there may be some interesting game
-possibilities that 
+possibilities that

@@ -11,7 +11,7 @@ angular.module('join')
     return state;
   }
 
-  function setGameState(newState) { 
+  function setGameState(newState) {
     state = newState;
   }
 

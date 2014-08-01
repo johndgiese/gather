@@ -83,17 +83,17 @@ CREATE TABLE tbRound (
 
 ALTER TABLE tbRound
     ADD CONSTRAINT
-    FOREIGN KEY (gId) REFERENCES tbGame(gId) 
+    FOREIGN KEY (gId) REFERENCES tbGame(gId)
     ON DELETE CASCADE;
 
 ALTER TABLE tbRound
     ADD CONSTRAINT
-    FOREIGN KEY (proId) REFERENCES tbPrompt(proId) 
+    FOREIGN KEY (proId) REFERENCES tbPrompt(proId)
     ON DELETE CASCADE;
 
 ALTER TABLE tbRound
     ADD CONSTRAINT
-    FOREIGN KEY (pgId) REFERENCES tbPlayerGame(pgId) 
+    FOREIGN KEY (pgId) REFERENCES tbPlayerGame(pgId)
     ON DELETE CASCADE;
 
 ALTER TABLE tbRound
@@ -113,17 +113,17 @@ CREATE TABLE tbCard (
 
 ALTER TABLE tbCard
     ADD CONSTRAINT
-    FOREIGN KEY (resId) REFERENCES tbResponse(resId) 
+    FOREIGN KEY (resId) REFERENCES tbResponse(resId)
     ON DELETE CASCADE;
 
 ALTER TABLE tbCard
     ADD CONSTRAINT
-    FOREIGN KEY (rId) REFERENCES tbRound(rId) 
+    FOREIGN KEY (rId) REFERENCES tbRound(rId)
     ON DELETE CASCADE;
 
 ALTER TABLE tbCard
     ADD CONSTRAINT
-    FOREIGN KEY (pgId) REFERENCES tbPlayerGame(pgId) 
+    FOREIGN KEY (pgId) REFERENCES tbPlayerGame(pgId)
     ON DELETE CASCADE;
 
 -- players can vote on cards that have been played on a given round
@@ -137,11 +137,11 @@ CREATE TABLE tbVote (
 
 ALTER TABLE tbVote
     ADD CONSTRAINT
-    FOREIGN KEY (pgId) REFERENCES tbPlayerGame(pgId) 
+    FOREIGN KEY (pgId) REFERENCES tbPlayerGame(pgId)
     ON DELETE CASCADE;
 
 ALTER TABLE tbVote
     ADD CONSTRAINT
-    FOREIGN KEY (cId) REFERENCES tbCard(cId) 
+    FOREIGN KEY (cId) REFERENCES tbCard(cId)
     ON DELETE CASCADE;
 

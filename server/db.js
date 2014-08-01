@@ -107,7 +107,7 @@ connection.withinTransaction = function(func, isolationLevel) {
         return Q.when(value);
       });
     })
-  
+
     // if error in `func` or during the commit, then rollback
     .fail(function(reason) {
       connection.query('ROLLBACK', function() {

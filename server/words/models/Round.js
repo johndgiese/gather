@@ -10,8 +10,8 @@ var fields = {
   reader: 'pgId',
   number: 'rNumber',
   createdOn: 'rCreatedOn',
-  doneReadingPrompt: 'rDoneReadingPrompt', 
-  doneReadingChoices: 'rDoneReadingChoices', 
+  doneReadingPrompt: 'rDoneReadingPrompt',
+  doneReadingChoices: 'rDoneReadingChoices',
 };
 var Round = orm.define('tbRound', fields, 'rId');
 exports.Model = Round;
@@ -86,8 +86,8 @@ Round.queryByParty = function(party) {
 };
 
 Round.forApiByParty = function(party) {
-  var sql = 'SELECT rId AS id, pgId AS reader, rNumber AS number, proText AS prompt ' + 
-    'FROM tbRound NATURAL JOIN tbPrompt NATURAL JOIN tbGame ' + 
+  var sql = 'SELECT rId AS id, pgId AS reader, rNumber AS number, proText AS prompt ' +
+    'FROM tbRound NATURAL JOIN tbPrompt NATURAL JOIN tbGame ' +
     'WHERE gParty=? ORDER BY rNumber';
   var inserts = [party];
   return Round.raw(sql, inserts);
@@ -146,7 +146,7 @@ Round.prototype.markDoneReadingChoices = function() {
 Round.numPlayersNeedingToVote = function(roundId, gameId) {
   var inserts = [gameId, roundId];
   var sql = 'SELECT Count(pgId) AS playersLeft FROM tbPlayerGame WHERE gId=? ' +
-    'AND pgId NOT IN (' + 
+    'AND pgId NOT IN (' +
        'SELECT tbVote.pgId FROM tbVote JOIN tbCard USING (cId) JOIN tbRound USING (rId) WHERE rId=?' +
     ') ' +
     'AND pgActive=TRUE';

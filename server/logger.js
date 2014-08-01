@@ -14,7 +14,7 @@ var logger = new Logger({
       filename: logFile,
       colorize: true,
       level: 'debug',
-      json: false, 
+      json: false,
     })
   ]
 });

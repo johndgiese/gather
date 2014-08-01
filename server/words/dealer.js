@@ -9,7 +9,7 @@ var db = require('../db');
 var util = require('util');
 var debug = require('debug')('gather:words');
 
-/** 
+/**
  * Deal a prompt card for a given game.
  * @arg {Number}
  * @returns {Promise<words.models.Prompt>}
@@ -21,15 +21,15 @@ exports.dealPrompt = function(gameId) {
 };
 
 /**
- * @constant {Number} 
+ * @constant {Number}
  */
 var CARDS_IN_HAND = exports.CARDS_IN_HAND = 7;
 
 
 // TODO: make this smarter; avoid recently used cards etc.
 // TODO: optimize randomization
-var DEAL_CARDS_SQL = 'INSERT INTO tbCard (resId, pgId) ' + 
-  'SELECT resId, ? FROM tbResponse WHERE ' + 
+var DEAL_CARDS_SQL = 'INSERT INTO tbCard (resId, pgId) ' +
+  'SELECT resId, ? FROM tbResponse WHERE ' +
   'resId NOT IN (' +
     'SELECT resId FROM tbCard NATURAL JOIN tbPlayerGame WHERE gId=?' +
   ') ' +

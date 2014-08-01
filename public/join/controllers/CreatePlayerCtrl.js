@@ -1,6 +1,6 @@
 angular.module('join')
 .controller('CreatePlayerCtrl', [
-  '$scope', '$state', '$stateParams', 'playerService', 'ScopedSocket', 'stateStack', 
+  '$scope', '$state', '$stateParams', 'playerService', 'ScopedSocket', 'stateStack',
   function($scope, $state, $stateParams, playerService, ScopedSocket, stateStack) {
     var socket = new ScopedSocket($scope);
 

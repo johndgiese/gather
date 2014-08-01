@@ -22,7 +22,7 @@ function define(table, propFieldMap, idField) {
 
   // add row/instance functions
   M.prototype = new Model(map);
-  
+
   // add table/Model functions
   M.table = table;
   M.idField = idField;
@@ -38,11 +38,11 @@ function Model(map) {
   var self = this;
   _.each(map, function(field, prop) {
     if (field !== prop) {
-      self.__defineGetter__(field, function() { 
-        return this[prop]; 
+      self.__defineGetter__(field, function() {
+        return this[prop];
       });
       self.__defineSetter__(field, function(val) {
-        this[prop] = val; 
+        this[prop] = val;
       });
     }
   });

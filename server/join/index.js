@@ -11,7 +11,7 @@ var transaction = require('../transaction');
 exports.setup = function(socket) {
 
   // null if no player has been created or logged into
-  var player = null;  
+  var player = null;
 
   // null if the player isn't in a party
   var party = null;
@@ -25,7 +25,7 @@ exports.setup = function(socket) {
   socket.on('disconnect', disconnect);
 
   socket.on('startGame', startGame);
-  
+
   function debugSocketState() {
     debug('socket state:\nplayer=%j\nparty=%s', player, party);
   }
