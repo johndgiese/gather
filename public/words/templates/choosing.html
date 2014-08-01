@@ -1,1 +1,8 @@
-<p>At state Choosing</p>
+<p>Choose a Card</p>
+
+<ul>
+  <li ng-repeat="c in hand">
+    <a class="action" ng-click="play(c.id)">{{ c.text }}</a>
+  </li>
+</ul>
+
