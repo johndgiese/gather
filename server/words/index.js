@@ -156,7 +156,7 @@ exports.join = function(socket, player, party, game, playerGameId) {
             setupRoundStart(socket, player, game);
           });
         }
-        acknowledge(null);
+        acknowledge({});
       });
     }))
     .fail(function(error) {
@@ -183,7 +183,7 @@ function setupRoundStart(socket, player, game) {
     logger.error(reason);
   });
 
-  return Q.when(null);
+  return Q.when({});
 }
 
 
