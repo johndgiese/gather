@@ -159,8 +159,11 @@ exports.allJoinGame = function(clients, party) {
 };
 
 exports.castVote = function(client, gameState) {
+  var validChoices = _.filter(gameState.custom.choices, function(c) {
+    return c.player !== gameState.you;
+  });
   return client.emitp('castVote', {
-    card: gameState.custom.choices[0].card.id,
+    card: validChoices[0].card.id,
     round: gameState.custom.rounds[0].id
   }, function(data) {
     return Q.when(data);
