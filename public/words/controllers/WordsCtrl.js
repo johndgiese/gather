@@ -3,7 +3,6 @@ angular.module('words')
   '$scope', '$stateParams', '$state', 'ScopedSocket', 'gameService', 'playerService',
   function($scope, $stateParams, $state, ScopedSocket, gameService, playerService) {
 
-    console.log("in word ctrl");
     var socket = new ScopedSocket($scope);
 
     var player = playerService.get();
