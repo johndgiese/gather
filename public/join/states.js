@@ -30,10 +30,10 @@ angular.module('join')
   })
 
   // staging ground for a game session (you are now leaving the `join` app)
-  .state('staging', {
+  .state('game', {
     url: '/:party',
-    controller: 'StagingCtrl',
-    templateUrl: '/static/join/templates/staging.html',
+    controller: 'GameCtrl',
+    templateUrl: '/static/join/templates/game.html',
   });
 
 }]);

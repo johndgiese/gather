@@ -1,5 +1,6 @@
 angular.module('app', [
   'join',
+  'words',
   'socket',
   'ui.router',
 ])

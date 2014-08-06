@@ -167,3 +167,10 @@ exports.castVote = function(client, gameState) {
   });
 };
 
+exports.allRecieve = function(clients, event) { 
+  return Q.all(_.map(clients, function(c) {
+    return c.oncep(event, function() { return Q.when({}); });
+  }));
+};
+
+

@@ -4,10 +4,10 @@ Invalid Code: <span class="highlight">&quot;{{ invalidCode }}&quot;</span>
 
 <div class="input-w-instruction">
   <p>Join an existing game:</p>
-  <input type="text" ng-model="party">
+  <input id="party" type="text" ng-model="party">
   <small class="highlight">e.g. A54JKL</small>
 </div>
 
-<a type="button" class="action" ui-sref="staging({party: party})" ng-disabled="party.length != 6">Join Game</a>
+<a id="join-game" type="button" class="action" ui-sref="game({party: party})" ng-disabled="party.length != 6">Join Game</a>
 
 <a class="cancel" ui-sref="landing">Back</a>

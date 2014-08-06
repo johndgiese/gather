@@ -27,7 +27,7 @@ exports.setup = function(socket) {
   socket.on('startGame', startGame);
 
   function debugSocketState() {
-    debug('socket state:\nplayer=%j\nparty=%s', player, party);
+    debug('socket state: player=%j, party=%s, pgdId=%s, game=%j', player, party, playerGameId, game);
   }
 
   function requirePlayer() {

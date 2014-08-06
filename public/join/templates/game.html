@@ -1,0 +1,23 @@
+<ui-view>
+  <p ng-show="!joinedGame" class="main-instruction">Joining Game ...</p>
+
+  <p ng-show="joinedGame && !isCreator" class="main-instruction">
+    The game will start once the leader clicks begin!
+    <!-- TODO: add in leader functionality -->
+  </p>
+
+  <div class="btn-w-instruction" ng-show="joinedGame && isCreator">
+     <p>Wait for everyone to join then</p>
+    <button id="begin-game" type="button" class="action" ng-click="startGame()" ng-disabled="form.$invalid">Begin Game</button>
+  </div>
+
+  <p>Invite your friends by sharing a link to the current page:</p>
+  <a id="share-link" href="{{ party }}">gather.gg/{{ party }}</a>
+
+  <div>
+    <p>Currently in game:</p>
+    <ul>
+      <li ng-repeat="p in players">{{ p.name }}</li>
+    </ul>
+  </div>
+</ui-view>

@@ -1,0 +1,9 @@
+<p>Read this response to the group:</p>
+
+<p>{{ prompt }}</p>
+
+<p>{{ responses[currentResponse] }}</p>
+
+<button class="btn" ng-show="currentResponse > 0" ng-click="back()">Back</button>
+<button class="btn" ng-show="currentResponse < responses.length" ng-click="next()">Next</button>
+<button class="btn" ng-show="currentResponse == responses.length" ng-click="done()">Done</button>

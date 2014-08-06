@@ -93,10 +93,17 @@ exports.join = function(socket, player, party, game, playerGameId) {
         // don't send to self, because you can't vote for your self
         socket.broadcast.to(party).emit('cardChoosen', sendData);
 
-        return dealer.dealResponse(game.id, playerGameId)
-        .then(function(card) {
-          acknowledge(models.Card.forApi(card.id));
-        });
+        return models.Round.numPlayersNeedingToChoose(data.round, game.id);
+      })
+      .then(function(result) {
+        if (result.playersLeft === 0) {
+          socket.emit('choosingDone', {});
+          socket.broadcast.to(party).emit('choosingDone', {});
+        }
+        return dealer.dealResponse(game.id, playerGameId);
+      })
+      .then(function(card) {
+        acknowledge(models.Card.forApi(card.id));
       });
     })
     .fail(function(error) {
@@ -109,6 +116,7 @@ exports.join = function(socket, player, party, game, playerGameId) {
     Q.fcall(function() {
       return Q.all([
         requireReader(playerGameId),
+        // TODO: ensure in proper stage of the game
       ]);
     })
     .then(function() {
@@ -118,8 +126,7 @@ exports.join = function(socket, player, party, game, playerGameId) {
       });
     })
     .then(function(round) {
-      var sendData = data.roundId;
-      socket.emit('readingChoicesDone', sendData);
+      var sendData = round.id;
       socket.broadcast.to(party).emit('readingChoicesDone', sendData);
       acknowledge({});
     })
@@ -177,7 +184,7 @@ function setupRoundStart(socket, player, game) {
         socket.emit('roundStarted', {round: roundData});
         socket.broadcast.to(game.party).emit('roundStarted', {round: roundData});
       });
-    }, INTER_ROUND_DELAY);
+    }, exports.INTER_ROUND_DELAY);
   })
   .fail(function(reason) {
     logger.error(reason);
@@ -247,5 +254,5 @@ exports.leave = function(socket) {
  * @constant {number} - delay between finishing a round, and starting the next
  * round, in milliseconds
  */
-var INTER_ROUND_DELAY = exports.INTER_ROUND_DELAY = 500;
+exports.INTER_ROUND_DELAY = 2000;
 

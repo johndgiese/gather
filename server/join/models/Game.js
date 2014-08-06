@@ -4,6 +4,7 @@ var logger = require('../../logger');
 
 var fields = {
   createdBy: 'gCreatedBy',
+  leader: 'gLeader',
   party: 'gParty',
   type: 'gType',
   createdOn: 'gCreatedOn',

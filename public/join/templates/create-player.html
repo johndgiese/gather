@@ -2,13 +2,13 @@
   <p class="main-instruction" ng-show="nextState == 'createGame'">
     Before creating a game, select a nickname:
   </p>
-  <p class="main-instruction" ng-show="nextState == 'staging'">
+  <p class="main-instruction" ng-show="nextState == 'game'">
     Before joining the game, select a nickname:
   </p>
-  <p class="main-instruction" ng-show="nextState != 'staging' && nextState != 'createGame'">
+  <p class="main-instruction" ng-show="nextState != 'game' && nextState != 'createGame'">
     Select a nickname:
   </p>
   <input type="text" name="playerName" ng-model="playerName"></input></p>
   <small class="suggestion">e.g. Snake Enchanter</small>
-  <button type="button" class="action" ng-click="createPlayer()" ng-disabled="form.$invalid">Continue</button>
+  <button id="create-player" type="button" class="action" ng-click="createPlayer()" ng-disabled="form.$invalid">Continue</button>
 </form>

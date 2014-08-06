@@ -153,3 +153,14 @@ Round.numPlayersNeedingToVote = function(roundId, gameId) {
   return this.rawOne(sql, inserts);
 };
 
+
+Round.numPlayersNeedingToChoose = function(roundId, gameId) {
+  var inserts = [gameId, roundId];
+  var sql = 'SELECT Count(pgId) AS playersLeft FROM tbPlayerGame WHERE gId=? ' +
+    'AND pgId NOT IN (' +
+       'SELECT tbCard.pgId FROM tbCard WHERE rId=?' +
+    ') ' +
+    'AND pgActive=TRUE';
+  return this.rawOne(sql, inserts);
+};
+

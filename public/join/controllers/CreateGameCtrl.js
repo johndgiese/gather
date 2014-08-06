@@ -12,7 +12,7 @@ angular.module('join')
       // move on to the next state
       // eventually game setup code will go here
       socket.emit('createGame', {type: 'words'}, function(data) {
-        $state.go('staging', {party: data.party});
+        $state.go('game', {party: data.party});
       });
     }
 

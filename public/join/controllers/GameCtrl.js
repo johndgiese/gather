@@ -1,5 +1,5 @@
 angular.module('join')
-.controller('StagingCtrl', [
+.controller('GameCtrl', [
   '$scope', '$state', '$stateParams', 'ScopedSocket', 'liveModelList', 'playerService', 'gameService', '$q', 'stateStack',
   function($scope, $state, $stateParams, ScopedSocket, liveModelList, playerService, gameService, $q, stateStack) {
     var socket = new ScopedSocket($scope);
@@ -7,7 +7,7 @@ angular.module('join')
     var gameState;
     var player = playerService.get();
     if (player === null) {
-      stateStack.push({name: 'staging', params: {party: $stateParams.party}});
+      stateStack.push({name: 'game', params: {party: $stateParams.party}});
       return $state.go('createPlayer');
     }
 
@@ -15,6 +15,7 @@ angular.module('join')
     $scope.isCreator = false;
     $scope.creator = null;
     $scope.players = [];
+    $scope.party = $stateParams.party;
 
     $q.when(gameService.get())
     .then(function(gameState) {
@@ -25,15 +26,41 @@ angular.module('join')
       }
     })
     .then(function(gameState_) {
+
       gameState = gameState_;
       $scope.joinedGame = true;
-      gameService.set(gameState); // IMPROVE
+      gameService.set(gameState);
+
+      socket.on('playerLeft', function(player) {
+        var playerInListAlready = _.find(gameState.players, function(p) {
+          return p.id === player.id;
+        }) !== undefined;
+
+        if (!playerInListAlready) {
+          throw "Inconsistent State: removing player that doesn't exist";
+        } else {
+          _.reject(gameState.players, function(p) {
+            return p.id === player.id;
+          });
+        }
+      });
+
+      socket.on('playerJoined', function(player) {
+        var playerInListAlready = _.find(gameState.players, function(p) {
+          return p.id === player.id;
+        }) !== undefined;
+
+        if (playerInListAlready) {
+          throw "Inconsistent State: adding player that already exists";
+        } else {
+          gameState.players.push(player);
+        }
+      });
 
       var creatorId = gameState.game.createdBy;
       $scope.isCreator = creatorId === player.id;
       $scope.creator = _.find(gameState.players, function(p) {return p.id === creatorId;});
       $scope.players = gameState.players;
-      liveModelList(socket, $scope.players, 'playerJoined', 'playerLeft');
     })
     .catch(function(reason) {
       $state.go('joinGame', {invalid: $stateParams.party});
@@ -44,7 +71,7 @@ angular.module('join')
       socket.emitp('startGame', {})
       .then(function(data) {
         // TODO: make this generic
-        $state.go('game.words.score');
+        $state.go('.words.score');
       })
       .catch(function(reason) {
         alert(reason);
@@ -53,7 +80,7 @@ angular.module('join')
 
     socket.on('gameStarted', function() {
       // TODO: make this generic
-      $state.go('game.words.score');
+      $state.go('.words.score');
     });
 
   }

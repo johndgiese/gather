@@ -6,7 +6,7 @@ angular.module('words')
   .state('game.words', {
     abstract: true,
     controller: 'WordsCtrl',
-    templateUrl: '/static/words/templates/index.html',
+    template: '<ui-view />',
   })
 
   .state('game.words.score', {
@@ -34,9 +34,9 @@ angular.module('words')
     templateUrl: '/static/words/templates/waiting-for-choices.html',
   })
 
-  .state('game.words.readingChoices', {
-    controller: 'WordsReadingChoicesCtrl',
-    templateUrl: '/static/words/templates/reading-choices.html',
+  .state('game.words.readChoices', {
+    controller: 'WordsReadChoicesCtrl',
+    templateUrl: '/static/words/templates/read-choices.html',
   })
 
   .state('game.words.waitingForChoicesReader', {

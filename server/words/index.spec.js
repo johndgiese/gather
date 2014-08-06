@@ -9,6 +9,9 @@ var server = require('../index').server;
 var words = require('../words');
 var dealer = require('./dealer');
 
+// keep inter round delay short during tests
+words.INTER_ROUND_DELAY = 50;
+
 describe('The words socket API', function() {
 
   describe('exposes some standard API call to the join module:', function() {
@@ -50,7 +53,7 @@ describe('The words socket API', function() {
     });
   });
 
-  describe.only('exposes custom stuff for the words game', function() {
+  describe('exposes custom stuff for the words game', function() {
 
     var clients, players, party, gameStates = [];
 
@@ -192,7 +195,27 @@ describe('The words socket API', function() {
     });
 
 
-    it("not all players need to choose before progressing to avoid stalling from logouts", function(done) {
+    it("all active players need to choose, then the server emits `choosingDone`", function(done) {
+      var card = gameStates[0].custom.hand[0];
+
+      var doneChoosingProm = tu.allRecieve(clients, 'choosingDone');
+
+      clients[0].emitp('chooseCard', {
+        card: card.id,
+        round: gameStates[0].custom.rounds[0].id
+      }, function(data) {
+        tu.expectNoError(data);
+      })
+      .then(function() {
+        return doneChoosingProm;
+      })
+      .then(function() {
+        done();
+      })
+      .fail(done);
+    });
+
+    it("then the prompter must read through the choices", function(done) {
       var roundId = gameStates[0].custom.rounds[0].id;
 
       var client1prom = clients[1].oncep('readingChoicesDone', function() {});
@@ -223,14 +246,17 @@ describe('The words socket API', function() {
 
 
     it("then players can cast votes", function(done) {
-      clients[0].oncep('voteCast', function(data) {
+      var voteCastProm = clients[0].oncep('voteCast', function(data) {
         expect(data.player).to.equal(gameStates[0].players[2].id);
         done();
-      })
-      .fail(done);
+      });
 
       tu.castVote(clients[2], gameStates[2])
-      .then(tu.expectNoError);
+      .then(tu.expectNoError)
+      .then(function() {
+        return voteCastProm;
+      })
+      .fail(done);
     });
 
 
@@ -250,7 +276,7 @@ describe('The words socket API', function() {
       var votingDonePromise = Q.all(_.map(clients, function(c) {
         return c.oncep('votingDone', function(scores) {
           expect(scores.length).to.be(players.length);
-          expect(scores[0].player).not.to.be(undefined);
+          expect(scores[0].name).not.to.be(undefined);
           expect(scores[0].score).not.to.be(undefined);
           var points = _.reduce(scores, function(sum, s) { return sum + s.score; }, 0);
           expect(points).to.be(players.length);

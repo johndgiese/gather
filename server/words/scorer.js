@@ -9,10 +9,10 @@ db = require('../db');
 // TODO: ensure you aren't counting votes from the current unfinished round (as
 // waiting players may see the score in between votes)
 exports.currentScore = function(gameId) {
-  var sql = 'SELECT tbPlayerGame.pgId AS player, Count(vId) AS score FROM ' +
+  var sql = 'SELECT pName AS name, Count(vId) AS score FROM ' +
     'tbVote JOIN tbCard USING (cId) RIGHT JOIN tbPlayerGame ON ' +
-    'tbCard.pgId=tbPlayerGame.pgId ' +
-    'WHERE gId=? GROUP BY tbPlayerGame.pgId';
+    'tbCard.pgId=tbPlayerGame.pgId JOIN tbPlayer USING (pId)' +
+    'WHERE gId=? GROUP BY tbPlayerGame.pgId ORDER BY score DESC';
   var inserts = [gameId];
   return db.raw(sql, inserts);
 };

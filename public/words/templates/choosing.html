@@ -1,6 +1,8 @@
-<p>Choose a Card</p>
+<p>{{ prompt }}</p>
 
-<ul>
+<p>Choose a Response</p>
+
+<ul id="choices">
   <li ng-repeat="c in hand">
     <a class="action" ng-click="play(c.id)">{{ c.text }}</a>
   </li>

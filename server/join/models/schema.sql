@@ -13,7 +13,7 @@ CREATE TABLE tbGame (
     gId INT NOT NULL AUTO_INCREMENT,
     gParty VARCHAR(255) NOT NULL,
     gCreatedOn TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    gCreatedBy INT,
+    gCreatedBy INT NOT NULL,
     gType VARCHAR(255) NOT NULL,
     PRIMARY KEY (gId)
 );
@@ -40,6 +40,5 @@ ALTER TABLE tbPlayerGame
 
 ALTER TABLE tbGame
     ADD CONSTRAINT
-    FOREIGN KEY (gCreatedBy) REFERENCES tbPlayer(pId)
-    ON DELETE CASCADE;
+    FOREIGN KEY (gCreatedBy) REFERENCES tbPlayer(pId);
 
