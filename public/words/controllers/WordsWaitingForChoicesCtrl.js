@@ -7,10 +7,9 @@ angular.module('words')
     $scope.choices = gameState.custom.choices;
     $scope.waitingFor = [];
     $scope.$watch('choices.length', function() {
-      // TODO: optimize this
-      var alreadyChoice = _.pluck(gameState.custom.choices, 'id');
+      var alreadyChose = _.pluck(gameState.custom.choices, 'player');
       $scope.waitingFor = _.filter(gameState.players, function(p) {
-        return !_.contains(alreadyChoice, p.id);
+        return !_.contains(alreadyChose, p.id);
       });
     });
 

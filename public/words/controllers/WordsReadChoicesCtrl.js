@@ -1,11 +1,11 @@
 angular.module('words')
-.controller('WordsReadingChoicesCtrl', [
+.controller('WordsReadChoicesCtrl', [
   '$scope', '$stateParams', '$state', 'ScopedSocket', 'gameService',
   function($scope, $stateParams, $state, ScopedSocket, gameService) {
     var socket = new ScopedSocket($scope);
     var gameState = gameService.get();
     $scope.prompt = _.last(gameState.custom.rounds).prompt;
-    $scope.response = gameState.custom.choices;
+    $scope.responses = gameState.custom.choices;
     $scope.currentResponse = 0;
 
     $scope.next = function() {
