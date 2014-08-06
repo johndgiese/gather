@@ -276,7 +276,7 @@ describe('The words socket API', function() {
       var votingDonePromise = Q.all(_.map(clients, function(c) {
         return c.oncep('votingDone', function(scores) {
           expect(scores.length).to.be(players.length);
-          expect(scores[0].name).not.to.be(undefined);
+          expect(scores[0].id).not.to.be(undefined);
           expect(scores[0].score).not.to.be(undefined);
           var points = _.reduce(scores, function(sum, s) { return sum + s.score; }, 0);
           expect(points).to.be(players.length);
