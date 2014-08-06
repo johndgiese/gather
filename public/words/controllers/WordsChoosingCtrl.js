@@ -9,15 +9,14 @@ angular.module('words')
 
     $scope.prompt = _.last(gameState.custom.rounds).prompt;
 
-    $scope.play = function(cardId, handIndex) {
+    $scope.play = function(cardId, cardIndex) {
       var currentRound = _.last(gameState.custom.rounds);
       socket.emit('chooseCard', {
         round: currentRound.id,
         card: cardId
       }, function(newCard) {
         // TODO: handle errors
-        console.log(newCard);
-        gameState.custom.hand[handIndex] = newCard;
+        gameState.custom.hand[cardIndex] = newCard;
         $state.go('^.waitingForChoices');
       });
     };

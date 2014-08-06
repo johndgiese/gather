@@ -3,8 +3,8 @@
 <p>Choose a Response</p>
 
 <ul id="choices">
-  <li ng-repeat="c in hand">
-    <a class="action" ng-click="play(c.id)">{{ c.text }}</a>
+  <li ng-repeat="(cardIndex, card) in hand">
+    <a class="action" ng-click="play(card.id, cardIndex)">{{ card.text }}</a>
   </li>
 </ul>
 
