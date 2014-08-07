@@ -1,1 +1,10 @@
-<p>At state Voting</p>
+<p>{{ prompt }}</p>
+
+<p>Vote for a Response</p>
+
+<ul id="responese">
+  <li ng-repeat="r in responses">
+    <a class="action" ng-click="vote(r)">{{ r.card.text }}</a>
+  </li>
+</ul>
+

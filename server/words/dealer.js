@@ -79,7 +79,10 @@ exports.dealResponse = function(gameId, playerGameId) {
   .then(function(cards) {
     if (cards.length === CARDS_IN_HAND - 1) {
       var inserts = [playerGameId, gameId, 1];
-      return db.raw(DEAL_CARDS_SQL, inserts);
+      return db.raw(DEAL_CARDS_SQL, inserts)
+      .then(function(result) {
+        return models.Card.forApi(result.insertId);
+      });
     } else {
       throw new Error(util.format('Bad hand state: %j', cards));
     }

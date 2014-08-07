@@ -141,18 +141,27 @@ describe('The words socket API', function() {
     });
 
 
-    it("each player makes a chooses a card", function(done) {
-      clients[0].oncep('cardChoosen', function(data) {
+    it("each player chooses a card", function(done) {
+      var cardChoosenProm = clients[0].oncep('cardChoosen', function(data) {
         expect(data.player).to.equal(gameStates[0].players[2].id);
-        done();
-      })
-      .fail(done);
+      });
 
       var card = gameStates[2].custom.hand[0];
       clients[2].emitp('chooseCard', {
         card: card.id,
         round: gameStates[2].custom.rounds[0].id
-      }, tu.expectNoError);
+      }, function(newCard) {
+        expect(newCard.id).to.be.a('number');
+        expect(newCard.text).to.be.a('string');
+        tu.expectNoError(newCard);
+      })
+      .then(function() {
+        return cardChoosenProm;
+      })
+      .then(function() {
+        done();
+      })
+      .fail(done);
     });
 
 

@@ -135,7 +135,7 @@ module.exports = function(grunt) {
 
     shell: {
       setupDirectories: {
-        command: 'mkdir _var',
+        command: 'mkdir server/_var',
         options: {
           failOnError: false,
         }
@@ -145,7 +145,7 @@ module.exports = function(grunt) {
           'cd server',
           'mysql -u<%= config.DB_USERNAME %> -p<%= config.DB_PASSWORD %> gather < schema.sql',
           'cd -'
-        ].join('&&')
+        ].join(' && ')
       },
       loadWords: {
         command: 'node server/words/data/loadWords server/words/data/words.csv'

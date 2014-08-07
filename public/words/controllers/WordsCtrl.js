@@ -41,8 +41,8 @@ angular.module('words')
       $state.go('^.voting');
     });
 
-    socket.on('voteCast', function(data) {
-      gameState.custom.votes.push(data);
+    socket.on('voteCast', function(vote) {
+      gameState.custom.votes.push(vote);
     });
 
     socket.on('votingDone', function(score) {

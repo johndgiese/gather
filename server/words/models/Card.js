@@ -30,9 +30,8 @@ Card.serializeHand = function(playerGameId) {
 };
 
 Card.forApi = function(cardId) {
-  var sql = 'SELECT cId AS id, resText AS text FROM tbCard ' +
-    'NATURAL JOIN tbPlayerGame ' +
-    'NATURAL JOIN tbResponse ' +
+  var sql = 'SELECT cId AS id, resText AS text FROM ' +
+    'tbCard JOIN tbPlayerGame USING (pgId) JOIN tbResponse USING (resId) ' +
     'WHERE cId=?';
 
   var inserts = [cardId];

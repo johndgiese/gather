@@ -5,7 +5,7 @@ angular.module('words')
     var socket = new ScopedSocket($scope);
     var gameState = gameService.get();
     $scope.prompt = _.last(gameState.custom.rounds).prompt;
-    $scope.responses = gameState.custom.choices;
+    $scope.responses = _.shuffle(gameState.custom.choices);
     $scope.currentResponse = 0;
 
     $scope.next = function() {

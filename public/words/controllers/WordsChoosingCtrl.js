@@ -15,10 +15,9 @@ angular.module('words')
         round: currentRound.id,
         card: cardId
       }, function(newCard) {
-        // TODO: handle errors
         gameState.custom.hand[cardIndex] = newCard;
-        $state.go('^.waitingForChoices');
       });
+      $state.go('^.waitingForChoices');
     };
 
   }

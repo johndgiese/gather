@@ -164,7 +164,7 @@ exports.castVote = function(client, gameState) {
   });
   return client.emitp('castVote', {
     card: validChoices[0].card.id,
-    round: gameState.custom.rounds[0].id
+    round: _.last(gameState.custom.rounds).id
   }, function(data) {
     return Q.when(data);
   });

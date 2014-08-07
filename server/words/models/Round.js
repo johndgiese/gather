@@ -20,7 +20,7 @@ exports.Model = Round;
  * Create a new round for the current game of the specified party.
  */
 Round.newByGame = function(gameId) {
-  var readerListProm = this.raw('SELECT pgId, pgActive AS active FROM tbPlayerGame WHERE gId=? ORDER BY pgCreatedOn DESC', [gameId]);
+  var readerListProm = this.raw('SELECT pgId, pgActive AS active FROM tbPlayerGame WHERE gId=? ORDER BY pgCreatedOn', [gameId]);
 
   var lastRoundProm = this.raw('SELECT pgId, rNumber AS number FROM tbRound WHERE gId=? ORDER BY rCreatedOn DESC LIMIT 1', [gameId]);
 

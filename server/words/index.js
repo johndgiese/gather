@@ -62,8 +62,8 @@ exports.join = function(socket, player, party, game, playerGameId) {
         return round.markDoneReadingPrompt();
       })
       .then(function(round) {
-        socket.broadcast.to(party).emit('readingPromptDone', {roundId: round.id});
         acknowledge({});
+        socket.broadcast.to(party).emit('readingPromptDone', {roundId: round.id});
       });
     })
     .fail(function(error) {
@@ -103,7 +103,7 @@ exports.join = function(socket, player, party, game, playerGameId) {
         return dealer.dealResponse(game.id, playerGameId);
       })
       .then(function(card) {
-        acknowledge(models.Card.forApi(card.id));
+        acknowledge(card);
       });
     })
     .fail(function(error) {
