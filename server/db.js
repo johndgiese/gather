@@ -1,6 +1,6 @@
 var config = require('./config');
 var debugRaw = require('debug')('db:raw');
-var Q = require('Q');
+var Q = require('q');
 
 var mysql = require('mysql');
 
