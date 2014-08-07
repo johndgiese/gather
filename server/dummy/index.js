@@ -2,7 +2,7 @@
  * Dummy game module (for testing).
  */
 
-var Q = require('Q');
+var Q = require('q');
 
 exports.join = function(socket, player, party, playerGameId) {
   return Q.when({});

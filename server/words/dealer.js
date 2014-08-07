@@ -3,7 +3,7 @@
  * @module dealer
  */
 
-var Q = require('Q');
+var Q = require('q');
 var models = require('./models');
 var db = require('../db');
 var util = require('util');

@@ -1,7 +1,7 @@
 var expect = require('expect.js');
 var io = require('socket.io-client');
 var _ = require('underscore');
-var Q = require('Q');
+var Q = require('q');
 var models = require('../join/models');
 var config = require('../config');
 

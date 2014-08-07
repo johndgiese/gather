@@ -1,5 +1,5 @@
 var models = require('./models');
-var Q = require('Q');
+var Q = require('q');
 var debug = require('debug')('gather:words');
 var logger = require('../logger');
 var transaction = require('../transaction');
