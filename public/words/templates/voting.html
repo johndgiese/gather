@@ -3,8 +3,8 @@
 <p class="secondary-instruction">Vote for a response</p>
 
 <ul id="responses">
-  <li ng-repeat="r in responses">
-    <a class="action" ng-click="vote(r)">{{ r.card.text }}</a>
+  <li ng-repeat="r in responses | shuffle">
+    <a class="action-card" ng-click="vote(r)">{{ r.card.text }}</a>
   </li>
 </ul>
 

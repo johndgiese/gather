@@ -74,6 +74,7 @@ body {
 }
 
 #responses,
+#choices,
 .player-list {
     list-style: none;
     padding: 0;
@@ -103,7 +104,8 @@ a.login {
 
 .action,
 .action-next,
-.action-back {
+.action-back,
+.action-card {
     .btn();
     font-size: 160%;
     font-weight: 300;
@@ -114,30 +116,36 @@ a.login {
     margin-bottom: 6px;
 }
 
-.action {
+.action,
+.action-card {
     color: @brand-yellow;
     .btn-block();
-}
-
-.action:hover,
-.action-next:hover {
-    color: @brand-yellow;
-}
-
-.action-back:hover {
-    color: @brand-light-blue;
+    &:hover {
+        color: @brand-yellow;
+    }
 }
 
 .action-next {
     color: @brand-yellow;
     float: right;
     width: 30%;
+    &:hover {
+        color: @brand-yellow;
+    }
 }
 
 .action-back {
     color: @brand-light-blue;
     float: left;
     width: 30%;
+    &:hover {
+        color: @brand-light-blue;
+    }
+}
+
+.action-card {
+    font-size: 100%;
+    white-space: normal;
 }
 
 

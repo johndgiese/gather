@@ -4,7 +4,7 @@ angular.module('words')
   function($scope, $stateParams, gameService, $interval) {
     var gameState = gameService.get();
 
-    $scope.roundNum = _.last(gameState.custom.rounds);
+    $scope.round = _.last(gameState.custom.rounds);
     $scope.playser = gameState.playser;
     $scope.score = [];
 

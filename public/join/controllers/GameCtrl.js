@@ -1,7 +1,7 @@
 angular.module('join')
 .controller('GameCtrl', [
-  '$scope', '$state', '$stateParams', 'ScopedSocket', 'liveModelList', 'playerService', 'gameService', '$q', 'stateStack', '$location',
-  function($scope, $state, $stateParams, ScopedSocket, liveModelList, playerService, gameService, $q, stateStack, $location) {
+  '$scope', '$state', '$stateParams', 'ScopedSocket', 'liveModelList', 'playerService', 'gameService', '$q', 'stateStack', '$location', '$rootScope',
+  function($scope, $state, $stateParams, ScopedSocket, liveModelList, playerService, gameService, $q, stateStack, $location, $rootScope) {
     var socket = new ScopedSocket($scope);
 
     var gameState;
@@ -47,6 +47,8 @@ angular.module('join')
             }
           }
         }
+
+        $rootScope.$digest();
       });
 
       socket.on('playerJoined', function(player) {

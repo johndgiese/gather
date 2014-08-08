@@ -15,7 +15,6 @@ angular.module('words')
         round: currentRound.id,
         card: cardId
       }, function(newCard) {
-        console.log(newCard);
         gameState.custom.hand[cardIndex] = newCard;
       });
     };

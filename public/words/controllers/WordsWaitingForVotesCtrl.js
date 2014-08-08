@@ -7,7 +7,8 @@ angular.module('words')
     $scope.players = gameState.players;
     $scope.votes = gameState.custom.votes;
     $scope.waitingFor = [];
-    $scope.$watchGroup(['votes.length', 'players.length'], updateWaitingFor);
+    $scope.$watch('votes.length', updateWaitingFor);
+    $scope.$watch('players.length', updateWaitingFor);
 
     function updateWaitingFor() {
       var alreadyChose = _.pluck(gameState.custom.votes, 'player');

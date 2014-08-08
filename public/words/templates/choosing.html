@@ -2,7 +2,9 @@
 
 <p class="secondary-instruction">Choose a response</p>
 
-<div id="choices">
-  <a ng-repeat="(cardIndex, card) in hand" class="action" ng-click="play(card.id, cardIndex)">{{ card.text }}</a>
-</div>
+<ul id="choices">
+  <li ng-repeat="(cardIndex, card) in hand">
+    <a class="action-card" ng-click="play(card.id, cardIndex)">{{ card.text }}</a>
+  </li>
+</ul>
 
