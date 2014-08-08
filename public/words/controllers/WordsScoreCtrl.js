@@ -23,7 +23,7 @@ angular.module('words')
         var score = match && match.score;
         unsortedScore.push({'name': p.name, 'score': score || 0});
       });
-      $scope.score = _.sortBy(unsortedScore, 'score');
+      $scope.score = _.sortBy(unsortedScore, 'score').reverse();
     });
   }
 ]);

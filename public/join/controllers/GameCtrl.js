@@ -1,7 +1,7 @@
 angular.module('join')
 .controller('GameCtrl', [
-  '$scope', '$state', '$stateParams', 'ScopedSocket', 'liveModelList', 'playerService', 'gameService', '$q', 'stateStack',
-  function($scope, $state, $stateParams, ScopedSocket, liveModelList, playerService, gameService, $q, stateStack) {
+  '$scope', '$state', '$stateParams', 'ScopedSocket', 'liveModelList', 'playerService', 'gameService', '$q', 'stateStack', '$location',
+  function($scope, $state, $stateParams, ScopedSocket, liveModelList, playerService, gameService, $q, stateStack, $location) {
     var socket = new ScopedSocket($scope);
 
     var gameState;
@@ -16,6 +16,7 @@ angular.module('join')
     $scope.creator = null;
     $scope.players = [];
     $scope.party = $stateParams.party;
+    $scope.link = $location.absUrl();
 
     $q.when(gameService.get())
     .then(function(gameState) {
@@ -39,9 +40,12 @@ angular.module('join')
         if (!playerInListAlready) {
           throw "Inconsistent State: removing player that doesn't exist";
         } else {
-          _.reject(gameState.players, function(p) {
-            return p.id === player.id;
-          });
+          for(var i; i < gameState.players.length; i++) {
+            if (gameState.players[i].id === player.id) {
+              delete gameState.players[i];
+              break;
+            }
+          }
         }
       });
 
@@ -72,9 +76,6 @@ angular.module('join')
       .then(function(data) {
         // TODO: make this generic
         $state.go('.words.score');
-      })
-      .catch(function(reason) {
-        alert(reason);
       });
     };
 

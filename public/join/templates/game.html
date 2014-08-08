@@ -6,16 +6,17 @@
     The game will start once <span class="light-blue">{{ creator.name }}</span> clicks begin!
   </p>
 
-  <div class="btn-w-instruction" ng-show="joinedGame && isCreator">
-    <p>Wait for everyone to join then</p>
-    <a id="begin-game" class="action" ng-click="startGame()" ng-disabled="form.$invalid">Begin Game</a>
+  <div ng-show="joinedGame && isCreator">
+    <p class="secondary-instructions" ng-show="players.length >= 3">Wait for everyone to join, then</p>
+    <p class="secondary-instructions" ng-show="players.length < 3">This game requires at least three players</p>
+    <a id="begin-game" class="action" ng-click="startGame()" ng-disabled="players.length < 3">Begin Game</a>
   </div>
 
   <br>
   <br>
 
-  <p class="secondary-instruction">Invite your friends by sharing a link to the current page:</p>
-  <p id="share-link">gather.gg/{{ party }}</a>
+  <p class="secondary-instruction">Invite your friends by sharing a link to the current page</p>
+  <p id="share-link">{{ link }}</a>
 
   <p class="secondary-instruction">Currently in game:</p>
   <ul class="player-list">
