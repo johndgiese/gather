@@ -1,9 +1,7 @@
 angular.module('words')
 .controller('WordsReadPromptCtrl', [
-  '$scope', '$stateParams', '$state', 'ScopedSocket', 'gameService',
-  function($scope, $stateParams, $state, ScopedSocket, gameService) {
-    var socket = new ScopedSocket($scope);
-
+  '$scope', '$stateParams', '$state', 'socket', 'gameService',
+  function($scope, $stateParams, $state, socket, gameService) {
     var gameState = gameService.get();
 
     $scope.prompt = _.last(gameState.custom.rounds).prompt;

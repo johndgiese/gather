@@ -1,14 +1,24 @@
-<form novalidation name="form">
-  <p class="main-instruction" ng-show="nextState == 'createGame'">
-    Before creating a game, select a nickname:
-  </p>
-  <p class="main-instruction" ng-show="nextState == 'game'">
-    Before joining the game, select a nickname:
-  </p>
-  <p class="main-instruction" ng-show="nextState != 'game' && nextState != 'createGame'">
-    Select a nickname:
-  </p>
-  <input type="text" name="playerName" ng-model="playerName"></input></p>
-  <small class="suggestion">e.g. Snake Enchanter</small>
-  <button id="create-player" type="button" class="action" ng-click="createPlayer()" ng-disabled="form.$invalid">Continue</button>
+<div class="logo-small"></div>
+
+<p class="main-instruction" ng-show="nextState.name == 'createGame'">
+  Before creating a game, select a nickname
+</p>
+<p class="main-instruction" ng-show="nextState.name == 'game'">
+  Before joining the game, select a nickname
+</p>
+<p class="main-instruction" ng-show="nextState.name != 'game' && nextState.name != 'createGame'">
+  Select a nickname
+</p>
+
+<form novalidation role="form" name="form">
+  <div class="form-group">
+    <input class="form-control" type="text" name="playerName" ng-model="playerName" autofocus></input></p>
+  </div>
+  <small class="light-blue">e.g. {{ exampleNickname }}</small>
+
+  <br>
+  <br>
+
+  <input id="create-player" type="submit" class="action" ng-click="createPlayer()" ng-disabled="form.$invalid" value="Continue">
+  <a class="action" ui-sref="landing">Cancel</a>
 </form>

@@ -1,13 +1,17 @@
-<p class="main-instruction" ng-show="invalidCode != undefined">
-Invalid Code: <span class="highlight">&quot;{{ invalidCode }}&quot;</span>
+<div class="logo-small"></div>
+
+<p class="main-instruction">Join existing game</p>
+
+<p class="secondary-instruction">Enter your party's six character code</p>
+
+<input id="party" class="form-control" type="text" ng-model="party" autofocus>
+<small class="light-blue">e.g. A54JKL</small>
+
+<br>
+<br>
+
+<p class="warning" ng-show="invalidCode != undefined">
+Invalid Party Code: <span class="highlight">&quot;{{ invalidCode }}&quot;</span>
 </p>
-
-<div class="input-w-instruction">
-  <p>Join an existing game:</p>
-  <input id="party" type="text" ng-model="party">
-  <small class="highlight">e.g. A54JKL</small>
-</div>
-
-<a id="join-game" type="button" class="action" ui-sref="game({party: party})" ng-disabled="party.length != 6">Join Game</a>
-
-<a class="cancel" ui-sref="landing">Back</a>
+<input id="join-game" type="submit" class="action" ui-sref="game({party: party})" ng-disabled="party.length != 6" value="Join Game">
+<a class="action" ui-sref="landing">Cancel</a>

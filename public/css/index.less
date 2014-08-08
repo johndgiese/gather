@@ -21,7 +21,7 @@ a {
 body {
     background-color: @brand-background;
     color: @brand-dark-blue;
-    font-family: "Helvetica Neue", Helvetica, Arial;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
     font-size: 14px;
     text-align: center;
 }
@@ -32,12 +32,51 @@ body {
     font-weight: bold;
 }
 
+.secondary-instruction {
+    font-size: 110%;
+    font-weight: bold;
+}
+
+.warning {
+    .secondary-instruction();
+    color: @brand-danger;
+}
+
+.countdown {
+    font-size: 300%;
+    font-weight: bold;
+}
+
 .light-blue { 
     color: @brand-light-blue;
 }
 
 .yellow { 
     color: @brand-yellow;
+}
+
+#share-link {
+    background-color: @brand-light-blue;
+    color: @brand-dark-blue;
+    font-size: 140%;
+    padding: 20px;
+    margin: 5px;
+    border-radius: @border-radius-base;
+    display: block;
+}
+
+.player-list {
+    font-weight: bold;
+    li {
+        text-align: center;
+        color: @brand-light-blue;
+    }
+}
+
+#responses,
+.player-list {
+    list-style: none;
+    padding: 0;
 }
 
 footer {
@@ -58,33 +97,49 @@ footer {
     }
 }
 
-.btn-w-instruction {
-    margin-bottom: 6px;
-    display: block;
-    p {
-        margin-top: 6px;
-        font-weight: bold;
-        font-size: 120%;
-    }
-}
-
 a.login {
     text-decoration: underline;
 }
 
-button.action,
-a.action {
-    font-family: "swingdancer", "Helvetica Neue", "Helvetica";
+.action,
+.action-next,
+.action-back {
     .btn();
-    .btn-block();
     font-size: 180%;
+    font-weight: 300;
     background-color: @brand-dark-blue;
-    color: @brand-yellow;
     &:hover {
-        background-color: fadeout(@brand-dark-blue, 10%);
-        color: @brand-yellow;
+        background-color: fadeout(@brand-dark-blue, 20%);
     }
+    margin-bottom: 6px;
 }
+
+.action {
+    color: @brand-yellow;
+    .btn-block();
+}
+
+.action:hover,
+.action-next:hover {
+    color: @brand-yellow;
+}
+
+.action-back:hover {
+    color: @brand-light-blue;
+}
+
+.action-next {
+    color: @brand-yellow;
+    float: right;
+    width: 30%;
+}
+
+.action-back {
+    color: @brand-light-blue;
+    float: left;
+    width: 30%;
+}
+
 
 .logo-big {
     margin-top: 20px;
@@ -95,3 +150,47 @@ a.action {
     height: 72px;
 }
 
+.logo-small {
+    margin-top: 10px;
+    margin-bottom: 10px;
+    background-image: url('/static/img/logo-small.png');
+    background-repeat: no-repeat;
+    background-position: center;
+    height: 25px;
+}
+
+.prompt,
+.prompt-lg {
+    display: block;
+    background-color: @brand-background-darker;
+    width: 100%;
+    padding: 20px;
+    border-radius: @border-radius-base;
+    .main-instruction();
+}
+
+.prompt-lg {
+    height: 240px;
+    line-height: 240px;
+    font-size: 180%;
+    margin-bottom: 10px;
+    p {
+        display: inline-block;
+        vertical-align: middle;
+        line-height: normal;
+    }
+}
+
+.drop-md {
+    margin-top: 150px;
+}
+
+.score-table {
+    font-weight: bold;
+    .table();
+    tr {
+        td:first-child {
+            color: @brand-light-blue;
+        }
+    }
+}

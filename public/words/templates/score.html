@@ -1,10 +1,13 @@
-<p>Next round starts in a few moments</p>
-<!-- TODO: add counter -->
+<p class="secondary-instruction">
+  <span ng-show="roundNum === 1">Game starts in</span>
+  <span ng-hide="roundNum === 1">Next round starts in</span>
+</p>
 
-<table>
+<p class="countdown">{{ countdown }}</p>
+
+<table class="score-table">
   <tr ng-repeat="p in score">
     <td>{{ p.name }}</td>
     <td>{{ p.score }}</td>
   </tr>
 </table>
-

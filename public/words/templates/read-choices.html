@@ -1,9 +1,11 @@
-<p>Read this response to the group:</p>
+<p class="secondary-instruction">Read each response to the group</p>
 
-<p>{{ prompt }}</p>
+<p class="prompt">{{ prompt }}</p>
 
-<p>{{ responses[currentResponse].card.text }}</p>
+<div class="prompt-lg">
+  <p>{{ responses[currentResponse].card.text }}</p>
+</div>
 
-<button id="back" class="btn" ng-show="currentResponse > 0" ng-click="back()">Back</button>
-<button id="next" class="btn" ng-show="currentResponse < (responses.length - 1)" ng-click="next()">Next</button>
-<button id="done" class="btn" ng-show="currentResponse == (responses.length - 1)" ng-click="done()">Done</button>
+<a id="back" class="action-back" ng-show="currentResponse > 0" ng-click="back()">Back</a>
+<a id="next" class="action-next" ng-show="currentResponse < (responses.length - 1)" ng-click="next()">Next</a>
+<a id="done" class="action-next" ng-show="currentResponse == (responses.length - 1)" ng-click="done()">Done</a>

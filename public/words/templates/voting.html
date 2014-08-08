@@ -1,8 +1,8 @@
-<p>{{ prompt }}</p>
+<p class="prompt">{{ prompt }}</p>
 
-<p>Vote for a Response</p>
+<p class="secondary-instruction">Vote for a response</p>
 
-<ul id="responese">
+<ul id="responses">
   <li ng-repeat="r in responses">
     <a class="action" ng-click="vote(r)">{{ r.card.text }}</a>
   </li>

@@ -108,7 +108,7 @@ exports.join = function(socket, player, party, game, playerGameId) {
     })
     .fail(function(error) {
       logger.error(error);
-      acknowledge({_error: "Unable to signal reading is over"});
+      acknowledge({_error: "Unable to send back response card"});
     });
   }
 
@@ -197,7 +197,7 @@ function setupRoundStart(socket, player, game) {
 function requireCardInHand(playerGameId, cardId) {
   return models.Card.queryOneId(cardId)
   .then(function(card) {
-    if (card.owner !== playerGameId) {
+    if (card.owner !== playerGameId && card.round === null) {
       throw new Error("The played card is not in your hand!");
     }
   });
@@ -254,5 +254,5 @@ exports.leave = function(socket) {
  * @constant {number} - delay between finishing a round, and starting the next
  * round, in milliseconds
  */
-exports.INTER_ROUND_DELAY = 2000;
+exports.INTER_ROUND_DELAY = 7000;
 

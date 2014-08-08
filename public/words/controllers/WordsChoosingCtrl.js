@@ -1,8 +1,7 @@
 angular.module('words')
 .controller('WordsChoosingCtrl', [
-  '$scope', '$stateParams', '$state', 'ScopedSocket', 'gameService',
-  function($scope, $stateParams, $state, ScopedSocket, gameService) {
-    var socket = new ScopedSocket($scope);
+  '$scope', '$stateParams', '$state', 'socket', 'gameService',
+  function($scope, $stateParams, $state, socket, gameService) {
     var gameState = gameService.get();
 
     $scope.hand = gameState.custom.hand;
@@ -11,13 +10,14 @@ angular.module('words')
 
     $scope.play = function(cardId, cardIndex) {
       var currentRound = _.last(gameState.custom.rounds);
+      $state.go('^.waitingForChoices');
       socket.emit('chooseCard', {
         round: currentRound.id,
         card: cardId
       }, function(newCard) {
+        console.log(newCard);
         gameState.custom.hand[cardIndex] = newCard;
       });
-      $state.go('^.waitingForChoices');
     };
 
   }
