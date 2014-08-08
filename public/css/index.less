@@ -3,43 +3,53 @@
 @import "variables.less";
 
 @import "../_vendor/bootstrap/less/normalize.less";
+@import "../_vendor/bootstrap/less/print.less";
+@import "../_vendor/bootstrap/less/glyphicons.less";
+
+@import "../_vendor/bootstrap/less/scaffolding.less";
+@import "../_vendor/bootstrap/less/type.less";
+@import "../_vendor/bootstrap/less/code.less";
+@import "../_vendor/bootstrap/less/grid.less";
+@import "../_vendor/bootstrap/less/tables.less";
+@import "../_vendor/bootstrap/less/forms.less";
 @import "../_vendor/bootstrap/less/buttons.less";
+
+a {
+    text-decoration: none;
+}
 
 body {
     background-color: @brand-background;
-    color: @brand-primary;
-    height: 100%;
-    width: 100%;
+    color: @brand-dark-blue;
     font-family: "Helvetica Neue", Helvetica, Arial;
+    font-size: 14px;
+    text-align: center;
 }
+
 
 .main-instruction {
-    font-size: 200%;
+    font-size: 140%;
     font-weight: bold;
-    text-align: center;
-    padding: 0 10%;
 }
 
+.light-blue { 
+    color: @brand-light-blue;
+}
 
-
-ul.highlight {
-    text-align: center;
-    font-size: 150%;
-    font-weight: bold;
-    color: #54c1bb;
-    list-style: none;
+.yellow { 
+    color: @brand-yellow;
 }
 
 footer {
-    margin-bottom: 1%;
-
     ul {
-        font-size: 100%;
+        font-size: 80%;
         text-align: center;
         list-style: none;
         li {
             display: inline;
-            color: desaturate(darken(@brand-background, 30%), 50%);
+            a {
+                color: desaturate(darken(@brand-background, 30%), 50%);
+            }
         }
         li:not(:first-child):before {
             content: " | ";
@@ -49,10 +59,10 @@ footer {
 }
 
 .btn-w-instruction {
-    margin: auto;
+    margin-bottom: 6px;
+    display: block;
     p {
-        margin: auto;
-        margin-top: 5%;
+        margin-top: 6px;
         font-weight: bold;
         font-size: 120%;
     }
@@ -64,22 +74,20 @@ a.login {
 
 button.action,
 a.action {
-    font-family: "swingdancer", cursive;
+    font-family: "swingdancer", "Helvetica Neue", "Helvetica";
     .btn();
-    font-size: 300%;
-    padding-left: 20%;
-    padding-right: 20%;
-    background-color: @brand-primary;
-    color: @brand-highlight;
-
+    .btn-block();
+    font-size: 180%;
+    background-color: @brand-dark-blue;
+    color: @brand-yellow;
     &:hover {
-        background-color: fadeout(@brand-primary, 10%);
-        color: @brand-highlight;
+        background-color: fadeout(@brand-dark-blue, 10%);
+        color: @brand-yellow;
     }
 }
 
 .logo-big {
-    margin-top: 5%;
+    margin-top: 20px;
     background-image: url('/static/img/logo.png');
     background-repeat: no-repeat;
     background-position: center;
