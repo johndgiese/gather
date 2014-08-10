@@ -197,7 +197,7 @@ function setupRoundStart(socket, player, game) {
 function requireCardInHand(playerGameId, cardId) {
   return models.Card.queryOneId(cardId)
   .then(function(card) {
-    if (card.owner !== playerGameId && card.round === null) {
+    if (card.owner !== playerGameId || card.round !== null) {
       throw new Error("The played card is not in your hand!");
     }
   });
