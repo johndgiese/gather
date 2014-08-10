@@ -244,7 +244,7 @@ function requireValidVote(cardId, playerGameId, gameId) {
       throw new Error("You are voting for a card that is not in the current round!");
     }
     else if (card.owner === playerGameId) {
-      throw new Error("You can not vote for your own card!");
+      throw new Error("You can not vote for your own card! (pgId=" + playerGameId + ", owner=" + card.owner + ")");
     }
   });
 }
