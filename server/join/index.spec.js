@@ -17,7 +17,7 @@ describe('The join socket API', function() {
   });
 
   describe('provides a way to create players', function() {
-    it('returns a player object on succsess', function(done) {
+    it('returns a player object on success', function(done) {
       client.emitp('createPlayer', {name: 'test player'}, function(data) {
         expect(data.id).not.to.be(undefined);
         done();
@@ -45,6 +45,30 @@ describe('The join socket API', function() {
         });
       }).fail(done);
     });
+  });
+
+  describe('provides a way to log back in as a player', function() {
+    var player;
+    it('if you create a player', function(done) {
+      client.emitp('createPlayer', {name: 'test player'}, function(player_) {
+        player = player_;
+        expect(player_._error).to.be(undefined);
+        done();
+      }).fail(done);
+    });
+    it('you can then log back in with a different connection', function(done) {
+      client.emitp('login', {id: player.id}, function(player_) {
+        expect(player_).to.eql(player_);
+        done();
+      }).fail(done);
+    });
+    it('if you login with an invalid id you get an error', function(done) {
+      client.emitp('login', {id: 40000000}, function(data) {
+        expect(data._error).not.to.be(undefined);
+        done();
+      }).fail(done);
+    });
+
   });
 
   describe('provides a way of creating games', function() {

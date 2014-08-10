@@ -18,6 +18,7 @@ exports.setup = function(socket) {
   var playerGameId = null;
   var game = null;
 
+  socket.on('login', login);
   socket.on('createPlayer', createPlayer);
   socket.on('createGame', createGame);
   socket.on('joinGame', joinGame);
@@ -91,16 +92,38 @@ exports.setup = function(socket) {
       requireValidPlayerName(data.name);
     })
     .then(function() {
-      var p = new models.Player({name: data.name});
-      return p.save()
-      .then(function() {
-        player = p;
-        acknowledge(p);
+      return new models.Player({name: data.name})
+      .save()
+      .then(function(player_) {
+        player = player_;
+        acknowledge(player);
       });
     })
     .fail(function(error) {
       logger.error(error);
       acknowledge({_error: "Unable to create player"});
+    });
+  }
+
+  /**
+   * Login a player, given the player's id.
+   */
+  // TODO: make this more secure
+  function login(data, acknowledge) {
+    Q.fcall(function() {
+      debugSocketState();
+      requireNoPlayer();
+    })
+    .then(function() {
+      return models.Player.queryOneId(data.id)
+      .then(function(player_) {
+        player = player_;
+        acknowledge(player);
+      });
+    })
+    .fail(function(error) {
+      logger.error(error);
+      acknowledge({_error: "Unable to login"});
     });
   }
 
