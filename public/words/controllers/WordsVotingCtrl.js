@@ -4,9 +4,10 @@ angular.module('words')
   function($scope, $stateParams, $state, socket, gameService) {
     var gameState = gameService.get();
 
-    $scope.responses = _.filter(gameState.custom.choices, function(c) {
+    // shuffle the list of choices to avoid voting order bias
+    $scope.responses = _.shuffle(_.filter(gameState.custom.choices, function(c) {
       return c.player !== gameState.you;
-    });
+    }));
 
     var round = _.last(gameState.custom.rounds);
     $scope.prompt = round.prompt;
