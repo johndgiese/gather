@@ -15,7 +15,7 @@ angular.module('words')
       $scope.waitingFor = _.filter(gameState.players, function(p) {
         return !_.contains(alreadyChose, p.id);
       });
-    };
+    }
 
   }
 ]);
