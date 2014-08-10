@@ -7,9 +7,9 @@
   </p>
 
   <div ng-show="joinedGame && isCreator">
-    <p class="secondary-instructions" ng-show="players.length >= 3">Wait for everyone to join, then</p>
-    <p class="secondary-instructions" ng-show="players.length < 3">This game requires at least three players</p>
-    <a id="begin-game" class="action" ng-click="startGame()" ng-disabled="players.length < 3">Begin Game</a>
+    <p class="secondary-instructions" ng-show="players.length >= 2">Wait for everyone to join, then</p>
+    <p class="secondary-instructions" ng-show="players.length < 2">This game requires two or more players</p>
+    <a id="begin-game" class="action" ng-click="startGame()" ng-disabled="players.length < 2">Begin Game</a>
   </div>
 
   <br>
