@@ -204,14 +204,14 @@ function requireCardInHand(playerGameId, cardId) {
 }
 
 function requireNotPlayedThisRound(playerGameId, gameId) {
-  var sql = 'SELECT cId FROM tbCard JOIN tbRound ON tbCard.rId=tbRound.rId WHERE ' +
-    'tbRound.rId=(SELECT rId FROM tbRound WHERE gId=? ORDER BY rCreatedOn DESC LIMIT 1) ' +
+  var sql = 'SELECT Count(cId) AS cardsPlayedThisRound FROM tbCard WHERE ' +
+    'rId=(SELECT rId FROM tbRound WHERE gId=? ORDER BY rCreatedOn DESC LIMIT 1) ' +
     'AND tbCard.pgId=?';
   var inserts = [gameId, playerGameId];
-  return models.Card.raw(sql, inserts)
+  return models.Card.rawOne(sql, inserts)
   .then(function(data) {
-    if (data.length !== 0) {
-      throw new Error("You have already played this round!");
+    if (data.cardsPlayedThisRound !== 0) {
+      throw new Error("You have already played " + data.cardsPlayedThisRound + " cards this round!");
     }
   });
 }
