@@ -1,4 +1,5 @@
 var orm = require('../../orm');
+var _ = require('underscore');
 
 
 var fields = {
@@ -36,5 +37,25 @@ Card.forApi = function(cardId) {
 
   var inserts = [cardId];
   return Card.rawOne(sql, inserts);
+};
+
+Card.queryLatestByGame = function(gameId) {
+  // get latest batch of choices for a game
+  inserts = [gameId];
+  var sql = 'SELECT pgId, cId AS id, resText AS text FROM ' +
+    'tbCard JOIN tbPlayerGame USING (pgId) JOIN tbResponse USING (resId) ' +
+    'WHERE rId=(SELECT rId FROM tbRound WHERE gId=? ORDER BY rCreatedOn DESC LIMIT 1)';
+  return this.raw(sql, inserts)
+  .then(function(cards) {
+    return _.map(cards, function(c) {
+      return {
+        player: c.pgId,
+        card: {
+          id: c.id,
+          text: c.text
+        }
+      };
+    });
+  });
 };
 

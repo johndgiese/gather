@@ -39,6 +39,8 @@ describe('The words socket API', function() {
         expect(gameState.game.id).to.be.a('number');
         expect(gameState.players.length).to.be(1);
         expect(gameState.custom.rounds).to.be.an('array');
+        expect(gameState.custom.choices.length).to.be(0);
+        expect(gameState.custom.votes.length).to.be(0);
         expect(gameState.custom.hand).to.be.an('array');
         expect(gameState.custom.hand.length).to.be(dealer.CARDS_IN_HAND);
 

@@ -79,29 +79,23 @@ function getNextActivePrompter(readerList, lastPrompterId) {
   return nextPrompter;
 }
 
-Round.queryByParty = function(party) {
+Round.queryByGame = function(party) {
   var inserts = [this.table, party];
-  var sql = 'SELECT * from ?? NATURAL JOIN tbGame where gParty=?';
+  var sql = 'SELECT * from ?? NATURAL JOIN tbGame where gId=?';
   return this.query(sql, inserts);
 };
 
-Round.forApiByParty = function(party) {
+Round.forApiByGame = function(gameId) {
   var sql = 'SELECT rId AS id, pgId AS reader, rNumber AS number, proText AS prompt ' +
     'FROM tbRound NATURAL JOIN tbPrompt NATURAL JOIN tbGame ' +
-    'WHERE gParty=? ORDER BY rNumber';
-  var inserts = [party];
+    'WHERE gId=? ORDER BY rNumber';
+  var inserts = [gameId];
   return Round.raw(sql, inserts);
 };
 
-Round.queryLatestByParty = function(party) {
-  inserts = [this.table, this.table, party];
-  var sql = 'SELECT ??.* FROM ?? NATURAL JOIN tbGame where gParty=? ORDER BY rCreatedOn DESC LIMIT 1';
-  return this.queryOne(sql, inserts);
-};
-
-Round.queryLatestById = function(gameId) {
-  inserts = [this.table, gameId];
-  var sql = 'SELECT * FROM ?? ORDER BY rCreatedOn DESC LIMIT 1';
+Round.queryLatestByGame = function(gameId) {
+  inserts = [this.table, this.table, gameId];
+  var sql = 'SELECT ??.* FROM ?? NATURAL JOIN tbGame WHERE gId=? ORDER BY rCreatedOn DESC LIMIT 1';
   return this.queryOne(sql, inserts);
 };
 

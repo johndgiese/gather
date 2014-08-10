@@ -38,15 +38,22 @@ exports.join = function(socket, player, party, game, playerGameId) {
 
   return Q.all([
     dealer.dealResponses(playerGameId, game.id),
-    models.Round.forApiByParty(party),
-    scorer.currentScore(game.id)
+    models.Round.forApiByGame(game.id),
+    scorer.currentScore(game.id),
+    models.Card.queryLatestByGame(game.id),
+    models.Vote.alreadyVotedByGame(game.id),
   ])
   .then(function(data) {
-    return {
+    var gs = {
       hand: data[0],
       rounds: data[1],
-      score: data[2]
+      score: data[2],
+      votes: data[3],
+      choices: data[4],
     };
+
+    debug(gs);
+    return gs;
   });
 
   function doneReadingPrompt(data, acknowledge) {
@@ -57,7 +64,7 @@ exports.join = function(socket, player, party, game, playerGameId) {
       // TODO: ensure that the provided roundId is correct
     })
     .then(function() {
-      return models.Round.queryLatestByParty(party)
+      return models.Round.queryLatestByGame(game.id)
       .then(function(round) {
         return round.markDoneReadingPrompt();
       })
@@ -120,7 +127,7 @@ exports.join = function(socket, player, party, game, playerGameId) {
       ]);
     })
     .then(function() {
-      return models.Round.queryLatestByParty(party)
+      return models.Round.queryLatestByGame(game.id)
       .then(function(round) {
         return round.markDoneReadingChoices();
       });
@@ -228,7 +235,7 @@ function requireReader(playerGameId, gameId) {
 function requireValidVote(cardId, playerGameId, gameId) {
   return Q.all([
     models.Card.queryOneId(cardId),
-    models.Round.queryLatestById(gameId)
+    models.Round.queryLatestByGame(gameId)
   ])
   .then(function(data) {
     var card = data[0];
