@@ -52,7 +52,7 @@ exports.join = function(socket, player, party, game, playerGameId) {
   function doneReadingPrompt(data, acknowledge) {
     Q.fcall(function() {
       return Q.all([
-        requireReader(playerGameId),
+        requireReader(playerGameId, game.id),
       ]);
       // TODO: ensure that the provided roundId is correct
     })
@@ -115,7 +115,7 @@ exports.join = function(socket, player, party, game, playerGameId) {
   function doneReadingChoices(data, acknowledge) {
     Q.fcall(function() {
       return Q.all([
-        requireReader(playerGameId),
+        requireReader(playerGameId, game.id),
         // TODO: ensure in proper stage of the game
       ]);
     })
@@ -217,7 +217,7 @@ function requireNotPlayedThisRound(playerGameId, gameId) {
 }
 
 function requireReader(playerGameId, gameId) {
-  return models.Round.queryLatestById(gameId)
+  return models.Round.queryLatestByGame(gameId)
   .then(function(round) {
     if (round.reader !== playerGameId) {
       throw new Error("This endpoint requires the rounds reader");
