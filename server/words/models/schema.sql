@@ -77,7 +77,9 @@ CREATE TABLE tbRound (
     rNumber INT NOT NULL, -- round number
     rCreatedOn TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     rDoneReadingPrompt TIMESTAMP NULL,
+    rDoneChoosing TIMESTAMP NULL,
     rDoneReadingChoices TIMESTAMP NULL,
+    rDoneVoting TIMESTAMP NULL,
     PRIMARY KEY (rId)
 );
 

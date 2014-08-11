@@ -8,6 +8,7 @@ var fields = {
   party: 'gParty',
   type: 'gType',
   createdOn: 'gCreatedOn',
+  startedOn: 'gStartedOn',
 };
 var Game = orm.define('tbGame', fields, 'gId');
 exports.Model = Game;

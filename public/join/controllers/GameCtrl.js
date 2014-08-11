@@ -40,12 +40,9 @@ angular.module('join')
         if (!playerInListAlready) {
           throw "Inconsistent State: removing player that doesn't exist";
         } else {
-          for(var i; i < gameState.players.length; i++) {
-            if (gameState.players[i].id === player.id) {
-              delete gameState.players[i];
-              break;
-            }
-          }
+          gameState.players = _.reject(gameState.players, function(p) {
+            return p.id === player.id;
+          });
         }
 
         $rootScope.$digest();
@@ -77,6 +74,8 @@ angular.module('join')
       socket.emitp('startGame', {})
       .then(function(data) {
         // TODO: make this generic
+        // TODO: handle the fact that this may get called twice; once from the
+        // ack, once from the broadcast
         $state.go('.words.score');
       });
     };

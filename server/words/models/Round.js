@@ -11,7 +11,9 @@ var fields = {
   number: 'rNumber',
   createdOn: 'rCreatedOn',
   doneReadingPrompt: 'rDoneReadingPrompt',
+  doneChoosing: 'rDoneChoosing',
   doneReadingChoices: 'rDoneReadingChoices',
+  doneVoting: 'rDoneVoting',
 };
 var Round = orm.define('tbRound', fields, 'rId');
 exports.Model = Round;
@@ -123,6 +125,15 @@ Round.prototype.markDoneReadingPrompt = function() {
   }
 };
 
+Round.prototype.markDoneChoosing = function() {
+  if (this.doneChoosing !== null) {
+    throw new Error("Choosing is already over!");
+  } else {
+    this.doneChoosing = new Date();
+    return this.save();
+  }
+};
+
 Round.prototype.markDoneReadingChoices = function() {
   if (this.doneReadingChoices !== null) {
     throw new Error("The reader has already finished reading the choices!");
@@ -130,6 +141,15 @@ Round.prototype.markDoneReadingChoices = function() {
     throw new Error("Not the right time to finish reading choices!");
   } else {
     this.doneReadingChoices = new Date();
+    return this.save();
+  }
+};
+
+Round.prototype.markDoneVoting = function() {
+  if (this.doneVoting !== null) {
+    throw new Error("Voting is already over!");
+  } else {
+    this.doneVoting = new Date();
     return this.save();
   }
 };

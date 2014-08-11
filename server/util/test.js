@@ -80,29 +80,36 @@ exports.setupPlayers = function(clients) {
 };
 
 
+/**
+ * Rejoin a game.
+ * @arg {number} - playerId
+ * @arg {string} - party
+ * @returns - a promise for an array, whose first element is the connection,
+ * and the second element is the gameState.
+ */
+exports.rejoinGame = function(playerId, party) {
+  var client = setupClient();
+  return client.emitp('login', {id: playerId}, function(player) {
+    return joinGame(client, party)
+    .then(function(gameState) {
+      return [client, gameState];
+    });
+  });
+};
+
+
 // joing game setup game state listeners
 // IMPORTANT: this code has a near identical copy in public/words/controllers/WordsCtrl.js
 // UPDATES DONE HERE SHOULD LIKLEY BE UPDATED IN BOTH PLACES
 // TODO: modularize and include in front end
 var joinGame = exports.joinGame = function(client, party) {
   return client.emitp('joinGame', {party: party}, function(gameState) {
-
     if (gameState._error !== undefined) {
       throw new Error(gameState._error);
     }
 
-    client.on('roundStarted', function(data) {
-      gameState.custom.choices = [];
-      gameState.custom.votes = [];
-      gameState.custom.rounds.push(data.round);
-    });
-
-    client.on('cardChoosen', function(data) {
-      gameState.custom.choices.push(data);
-    });
-
-    client.on('voteCast', function(data) {
-      gameState.custom.votes.push(data);
+    client.on('gameStarted', function(data) {
+      gameState.game.startedOn = new Date(data.startedOn);
     });
 
     // TODO: figure out error handling on this stuff
@@ -114,7 +121,7 @@ var joinGame = exports.joinGame = function(client, party) {
       if (!playerInListAlready) {
         throw new Error("Inconsistent State: removing player that doesn't exist");
       } else {
-        _.reject(gameState.players, function(p) {
+        gameState.players = _.reject(gameState.players, function(p) {
           return p.id === player.id;
         });
       }
@@ -131,6 +138,29 @@ var joinGame = exports.joinGame = function(client, party) {
         gameState.players.push(player);
       }
     });
+
+    if (gameState.game.type === 'words') {
+      client.on('roundStarted', function(data) {
+        gameState.custom.choices = [];
+        gameState.custom.votes = [];
+        gameState.custom.rounds.push(data.round);
+      });
+
+      client.on('cardChoosen', function(data) {
+        gameState.custom.choices.push(data);
+      });
+
+      client.on('voteCast', function(data) {
+        gameState.custom.votes.push(data);
+      });
+
+      client.on('playerJoined', function(player) {
+        var match = _.find(gameState.custom.score, function(s) { return player.id === s.id; });
+        if (match === undefined) {
+          gameState.custom.score.push({name: player.name, id: player.id, score: 0});
+        }
+      });
+    }
 
     // IMPORTANT: see note above
 

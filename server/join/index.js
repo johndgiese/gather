@@ -28,7 +28,7 @@ exports.setup = function(socket) {
   socket.on('startGame', startGame);
 
   function debugSocketState() {
-    debug('socket state: player=%j, party=%s, pgdId=%s, game=%j', player, party, playerGameId, game);
+    debug('socket state: player=%j, party=%s, pgId=%s, game=%j', player, party, playerGameId, game);
   }
 
   function requirePlayer() {
@@ -229,10 +229,15 @@ exports.setup = function(socket) {
       requirePlayerInParty();
     })
     .then(function() {
-      var gameModule = require('../' + game.type);
-      return gameModule.startGame(socket, player, game)
+      game.startedOn = new Date();
+      game.save()
       .then(function() {
-        socket.broadcast.to(party).emit('gameStarted', {});
+        var gameModule = require('../' + game.type);
+        return gameModule.startGame(socket, player, game);
+      })
+      .then(function() {
+        socket.emit('gameStarted', {startedOn: game.startedOn});
+        socket.broadcast.to(party).emit('gameStarted', {startedOn: game.startedOn});
         acknowledge({});
       });
     })

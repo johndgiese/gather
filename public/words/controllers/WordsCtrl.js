@@ -8,6 +8,10 @@ angular.module('words')
     var player = playerService.get();
     var gameState = gameService.get();
 
+    socket.on('gameStarted', function(data) {
+      gameState.game.startedOn = new Date(data.startedOn);
+    });
+
     socket.on('roundStarted', function(data) {
       gameState.custom.choices = [];
       gameState.custom.votes = [];

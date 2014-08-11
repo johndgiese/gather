@@ -106,8 +106,16 @@ exports.join = function(socket, player, party, game, playerGameId) {
         if (result.playersLeft === 0) {
           socket.emit('choosingDone', {});
           socket.broadcast.to(party).emit('choosingDone', {});
+          return models.Round.queryLatestByGame(game.id)
+          .then(function(round) {
+            return round.markDoneChoosing();
+          })
+          .then(function() {
+            return dealer.dealResponse(game.id, playerGameId);
+          });
+        } else {
+          return dealer.dealResponse(game.id, playerGameId);
         }
-        return dealer.dealResponse(game.id, playerGameId);
       })
       .then(function(card) {
         acknowledge(card);
@@ -168,6 +176,11 @@ exports.join = function(socket, player, party, game, playerGameId) {
             socket.emit('votingDone', score);
             socket.broadcast.to(party).emit('votingDone', score);
             setupRoundStart(socket, player, game);
+          });
+
+          models.Round.queryLatestByGame(game.id)
+          .then(function(round) {
+            return round.markDoneVoting();
           });
         }
         acknowledge({});

@@ -55,7 +55,7 @@ describe('The words socket API', function() {
     });
   });
 
-  describe('exposes custom stuff for the words game', function() {
+  describe('provides an API to play through a game', function() {
 
     var clients, players, party, gameStates = [];
 
@@ -90,6 +90,8 @@ describe('The words socket API', function() {
     });
 
     it("`gameStarted` is emmitted, there is a delay, and then a `roundStarted` is emmitted", function(done) {
+
+      expect(gameStates[0].game.startedOn).to.be(null);
       var client1Prom = clients[1].oncep('gameStarted', function() {
         return clients[0].oncep('roundStarted', function(data) {
           var round = data.round;
@@ -105,6 +107,7 @@ describe('The words socket API', function() {
         return client1Prom;
       })
       .then(function() {
+        expect(gameStates[0].game.startedOn).not.to.be(null);
         done();
       })
       .fail(done);
@@ -335,6 +338,6 @@ describe('The words socket API', function() {
       })
       .fail(done);
     });
-
   });
+
 });

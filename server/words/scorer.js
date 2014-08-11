@@ -5,14 +5,13 @@ db = require('../db');
  * @arg {Number} - game id
  * @return - promise for an array of objects with a pgId and score
  */
-// TODO: calculate score differentials for the latest round
-// TODO: ensure you aren't counting votes from the current unfinished round (as
-// waiting players may see the score in between votes)
 exports.currentScore = function(gameId) {
-  var sql = 'SELECT tbPlayerGame.pgId AS id, Count(vId) AS score FROM ' +
+  var sql = 'SELECT tbPlayer.pName AS name, tbPlayerGame.pgId AS id, Count(vId) AS score FROM ' +
     'tbVote JOIN tbCard USING (cId) RIGHT JOIN tbPlayerGame ON ' +
-    'tbCard.pgId=tbPlayerGame.pgId ' +
-    'WHERE gId=? GROUP BY tbPlayerGame.pgId';
-  var inserts = [gameId];
+    '(tbCard.pgId=tbPlayerGame.pgId) JOIN tbPlayer USING (pId) ' +
+    'WHERE gId=? AND ' +
+    'tbCard.rId NOT IN (SELECT rId FROM tbRound WHERE gId=? AND rDoneVoting=NULL) ' +
+    'GROUP BY tbPlayerGame.pgId';
+  var inserts = [gameId, gameId];
   return db.raw(sql, inserts);
 };

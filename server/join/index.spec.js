@@ -150,8 +150,6 @@ describe('The join socket API', function() {
       tu.activePlayers(party)
       .then(function(activePlayers) {
         expect(activePlayers).to.be(1);
-      })
-      .then(function() {
         return tu.joinGame(clients[1], party);
       })
       .then(function() {
@@ -159,8 +157,6 @@ describe('The join socket API', function() {
       })
       .then(function(activePlayers) {
         expect(activePlayers).to.be(2);
-      })
-      .then(function() {
         return tu.joinGame(clients[2], party);
       })
       .then(function(gameState_) {
@@ -169,11 +165,9 @@ describe('The join socket API', function() {
       })
       .then(function(activePlayers) {
         expect(activePlayers).to.be(3);
-      })
-      .then(function() {
         var promise = clients[0].oncep('playerLeft', function(leavingPlayer) {
           expect(leavingPlayer).to.eql(gameState.players[1]);
-        }).fail(done);
+        });
         clients[1].disconnect();
         return promise;
       })
@@ -182,11 +176,10 @@ describe('The join socket API', function() {
       })
       .then(function(activePlayers) {
         expect(activePlayers).to.be(2);
-      })
-      .then(function() {
+        var playerAboutToLeave = gameState.players[0];
         var promise = clients[2].oncep('playerLeft', function(leavingPlayer) {
-          expect(leavingPlayer).to.eql(gameState.players[0]);
-        }).fail(done);
+          expect(leavingPlayer).to.eql(playerAboutToLeave);
+        });
         clients[0].emit('leaveParty');
         return promise;
       })
