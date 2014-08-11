@@ -118,7 +118,7 @@ describe('The words socket API', function() {
       var roundId = gameStates[0].custom.rounds[0].id;
 
       var client1prom = clients[1].oncep('readingPromptDone', function(data) {
-        expect(data.roundId).to.equal(roundId);
+        tu.expectNoError(data);
       });
 
       var doneTestingRoundUpdate = models.Round.queryOneId(roundId)

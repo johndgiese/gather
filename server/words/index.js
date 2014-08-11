@@ -64,13 +64,10 @@ exports.join = function(socket, player, party, game, playerGameId) {
       // TODO: ensure that the provided roundId is correct
     })
     .then(function() {
-      return models.Round.queryLatestByGame(game.id)
-      .then(function(round) {
-        return round.markDoneReadingPrompt();
-      })
-      .then(function(round) {
+      return models.Round.markDoneReadingPrompt(game.id)
+      .then(function() {
         acknowledge({});
-        socket.broadcast.to(party).emit('readingPromptDone', {roundId: round.id});
+        socket.broadcast.to(party).emit('readingPromptDone', {});
       });
     })
     .fail(function(error) {
@@ -106,10 +103,7 @@ exports.join = function(socket, player, party, game, playerGameId) {
         if (result.playersLeft === 0) {
           socket.emit('choosingDone', {});
           socket.broadcast.to(party).emit('choosingDone', {});
-          return models.Round.queryLatestByGame(game.id)
-          .then(function(round) {
-            return round.markDoneChoosing();
-          })
+          return models.Round.markDoneChoosing(game.id)
           .then(function() {
             return dealer.dealResponse(game.id, playerGameId);
           });
@@ -135,10 +129,7 @@ exports.join = function(socket, player, party, game, playerGameId) {
       ]);
     })
     .then(function() {
-      return models.Round.queryLatestByGame(game.id)
-      .then(function(round) {
-        return round.markDoneReadingChoices();
-      });
+      return models.Round.markDoneReadingChoices(game.id);
     })
     .then(function(round) {
       var sendData = round.id;
@@ -178,10 +169,7 @@ exports.join = function(socket, player, party, game, playerGameId) {
             setupRoundStart(socket, player, game);
           });
 
-          models.Round.queryLatestByGame(game.id)
-          .then(function(round) {
-            return round.markDoneVoting();
-          });
+          models.Round.markDoneVoting(game.id);
         }
         acknowledge({});
       });

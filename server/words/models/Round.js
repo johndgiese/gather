@@ -116,42 +116,28 @@ Round.prototype.forApi = function() {
   });
 };
 
-Round.prototype.markDoneReadingPrompt = function() {
-  if (this.doneReadingPrompt !== null) {
-    throw new Error("The reader has already finished reading the prompt!");
-  } else {
-    this.doneReadingPrompt = new Date();
-    return this.save();
-  }
+Round.markDoneReadingPrompt = function(gameId) {
+  var sql = 'UPDATE tbRound SET rDoneReadingPrompt=? ' +
+    'WHERE gId=? AND rDoneReadingPrompt IS NULL';
+  return this.raw(sql, [new Date(), gameId]);
 };
 
-Round.prototype.markDoneChoosing = function() {
-  if (this.doneChoosing !== null) {
-    throw new Error("Choosing is already over!");
-  } else {
-    this.doneChoosing = new Date();
-    return this.save();
-  }
+Round.markDoneChoosing = function(gameId) {
+  var sql = 'UPDATE tbRound SET rDoneChoosing=? ' +
+    'WHERE gId=? AND rDoneChoosing IS NULL';
+  return this.raw(sql, [new Date(), gameId]);
 };
 
-Round.prototype.markDoneReadingChoices = function() {
-  if (this.doneReadingChoices !== null) {
-    throw new Error("The reader has already finished reading the choices!");
-  } else if (this.doneReadingPrompt === null ) {
-    throw new Error("Not the right time to finish reading choices!");
-  } else {
-    this.doneReadingChoices = new Date();
-    return this.save();
-  }
+Round.markDoneReadingChoices = function(gameId) {
+  var sql = 'UPDATE tbRound SET rDoneReadingChoices=? ' +
+    'WHERE gId=? AND rDoneReadingChoices IS NULL';
+  return this.raw(sql, [new Date(), gameId]);
 };
 
-Round.prototype.markDoneVoting = function() {
-  if (this.doneVoting !== null) {
-    throw new Error("Voting is already over!");
-  } else {
-    this.doneVoting = new Date();
-    return this.save();
-  }
+Round.markDoneVoting = function(gameId) {
+  var sql = 'UPDATE tbRound SET rDoneVoting=? ' +
+    'WHERE gId=? AND rDoneVoting IS NULL';
+  return this.raw(sql, [new Date(), gameId]);
 };
 
 // NOTE: it is not strictly necessary to include the gameId and roundId, it
