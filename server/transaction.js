@@ -46,7 +46,7 @@ exports.inOrderByGroup = function inOrderByGroup(group, func) {
       }, function(reason) {
         delete lockPromises[group];
         deferred.resolve();
-        return Q.when(new Error(reason));
+        return Q.reject(new Error(reason));
       });
 
     } else {
