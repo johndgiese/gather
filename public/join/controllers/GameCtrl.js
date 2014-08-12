@@ -33,10 +33,7 @@ angular.module('join')
       gameService.set(gameState);
 
       socket.on('playerLeft', function(player) {
-        var playerInListAlready = _.find(gameState.players, function(p) {
-          return p.id === player.id;
-        }) !== undefined;
-
+        var playerInListAlready = _.findWhere(gameState.players, {id: player.id}) !== undefined;
         if (!playerInListAlready) {
           throw "Inconsistent State: removing player that doesn't exist";
         } else {
@@ -49,10 +46,7 @@ angular.module('join')
       });
 
       socket.on('playerJoined', function(player) {
-        var playerInListAlready = _.find(gameState.players, function(p) {
-          return p.id === player.id;
-        }) !== undefined;
-
+        var playerInListAlready = _.findWhere(gameState.players, {id: player.id}) !== undefined;
         if (playerInListAlready) {
           throw "Inconsistent State: adding player that already exists";
         } else {
@@ -62,7 +56,7 @@ angular.module('join')
 
       var creatorId = gameState.game.createdBy;
       $scope.isCreator = creatorId === player.id;
-      $scope.creator = _.find(gameState.players, function(p) {return p.id === creatorId;});
+      $scope.creator = _.findWhere(gameState.players, {id: creatorId});
       $scope.players = gameState.players;
     })
     .catch(function(reason) {

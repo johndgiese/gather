@@ -114,10 +114,7 @@ var joinGame = exports.joinGame = function(client, party) {
 
     // TODO: figure out error handling on this stuff
     client.on('playerLeft', function(player) {
-      var playerInListAlready = _.find(gameState.players, function(p) {
-        return p.id === player.id;
-      }) !== undefined;
-
+      var playerInListAlready = _.findWhere(gameState.players, {id: player.id}) !== undefined;
       if (!playerInListAlready) {
         throw new Error("Inconsistent State: removing player that doesn't exist");
       } else {
@@ -128,10 +125,7 @@ var joinGame = exports.joinGame = function(client, party) {
     });
 
     client.on('playerJoined', function(player) {
-      var playerInListAlready = _.find(gameState.players, function(p) {
-        return p.id === player.id;
-      }) !== undefined;
-
+      var playerInListAlready = _.findWhere(gameState.players, {id: player.id}) !== undefined;
       if (playerInListAlready) {
         throw new Error("Inconsistent State: adding player that already exists");
       } else {
@@ -155,7 +149,7 @@ var joinGame = exports.joinGame = function(client, party) {
       });
 
       client.on('playerJoined', function(player) {
-        var match = _.find(gameState.custom.score, function(s) { return player.id === s.id; });
+        var match = _.findWhere(gameState.custom.score, {id: player.id});
         if (match === undefined) {
           gameState.custom.score.push({name: player.name, id: player.id, score: 0});
         }
