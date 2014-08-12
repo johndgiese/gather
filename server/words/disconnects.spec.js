@@ -13,9 +13,23 @@ var stateResolver = require('./stateResolver');
 // keep inter round delay short during tests
 words.INTER_ROUND_DELAY = 50;
 
-describe('The words module can handle disconnects and reconnects', function() {
+describe.skip('The words module can handle disconnects and reconnects', function() {
 
   var clients, players, party, gameStates = [];
+
+  function expectSameStateAfterReconnect(num) {
+    var gameStateBeforeDisconnect = gameStates[num];
+    clients[num].disconnect();
+    return clients[num ? num - 1 : num + 1].oncep('playerLeft', function() {
+      return tu.rejoinGame(players[num].id, party);
+    })
+    .then(function(data) {
+      clients[num] = data[0];
+      var gameStateAfterReconnect = data[1];
+      expect(_.isEqual(gameStateAfterReconnect, gameStateBeforeDisconnect)).to.be(true);
+      return Q.when({});
+    });
+  }
 
   it('after setting up the game', function(done) {
     clients = tu.setupClients(3);
@@ -50,44 +64,35 @@ describe('The words module can handle disconnects and reconnects', function() {
   it("should be possible for players to join/rejoin before the game starts", function(done) {
     _.forEach(gameStates, function(gs) { expect(gs.players.length).to.be(3); });
     _.forEach(gameStates, function(gs) { expect(stateResolver(gs)).to.be('game'); });
-    var gameStateBeforeDisconnect = gameStates[1];
-    clients[1].disconnect();
-    clients[2].oncep('playerLeft', function() {
-      expect(gameStates[2].players.length).to.be(2);
-      return tu.rejoinGame(players[1].id, party);
-    })
-    .then(function(data) {
-      clients[1] = data[0];
-      var gameStateAfterReconnect = data[1];
-      expect(_.isEqual(gameStateAfterReconnect, gameStateBeforeDisconnect)).to.be(true);
+    expectSameStateAfterReconnect(1)
+    .then(function() {
       done();
     })
     .fail(done);
   });
+
+  it("you can rejoin before the prompt reader finishes", function(done) {
+    clients[0].emitp('startGame', {}, tu.expectNoError);
+    tu.allRecieve(clients, 'gameStarted', 100)
+    .then(function() {
+      expect(stateResolver(gameStates[0])).to.be('game.words.score');
+      expect(stateResolver(gameStates[1])).to.be('game.words.score');
+      expect(stateResolver(gameStates[2])).to.be('game.words.score');
+      return tu.allRecieve(clients, 'roundStarted');
+    })
+    .then(function() {
+      expect(stateResolver(gameStates[0])).to.be('game.words.readPrompt');
+      expect(stateResolver(gameStates[1])).to.be('game.words.waitingForPromptReader');
+      expect(stateResolver(gameStates[2])).to.be('game.words.waitingForPromptReader');
+    })
+    .then(function() {
+      done();
+    })
+    .fail(done);
+  });
+
 
   /*
-  it("`gameStarted` is emmitted, there is a delay, and then a `roundStarted` is emmitted", function(done) {
-    var client1Prom = clients[1].oncep('gameStarted', function() {
-      return clients[0].oncep('roundStarted', function(data) {
-        var round = data.round;
-
-        expect(round.number).to.be(1);
-        expect(round.reader).to.be(gameStates[0].players[0].id);
-        expect(round.prompt).to.be.a('string');
-      });
-    });
-
-    clients[0].emitp('startGame', {}, tu.expectNoError)
-    .then(function() {
-      return client1Prom;
-    })
-    .then(function() {
-      done();
-    })
-    .fail(done);
-  });
-
-
   it("the reader must submit `readingPromptDone`", function(done) {
     var roundId = gameStates[0].custom.rounds[0].id;
 
@@ -315,4 +320,3 @@ describe('The words module can handle disconnects and reconnects', function() {
  */
 
 });
-

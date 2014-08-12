@@ -13,6 +13,16 @@ var SOCKET_OPTIONS = {
   'force new connection': true,
 };
 
+
+var delay = exports.delay = function(ms) {
+  var deferred = Q.defer();
+  setTimeout(function() {
+    deferred.resolve();
+  }, ms);
+  return deferred.promise;
+};
+
+
 exports.expectError = function(data) {
   if (data._error === undefined) {
     expect().fail('Expected an error in the response!');
@@ -148,6 +158,25 @@ var joinGame = exports.joinGame = function(client, party) {
         gameState.custom.votes.push(data);
       });
 
+      client.on('readingPromptDone', function(data) {
+        _.last(gameState.custom.rounds).doneReadingPrompt = data.at;
+      });
+
+      client.on('choosingDone', function(data) {
+        _.last(gameState.custom.rounds).doneChoosing = data.at;
+      });
+
+      client.on('readingChoicesDone', function(data) {
+        _.last(gameState.custom.rounds).doneReadingChoices = data.at;
+      });
+
+      client.on('votingDone', function(data) {
+        _.last(gameState.custom.rounds).doneVoting = data.at;
+        _.forEach(data.scores, function(scoreDifferential, player) {
+          _findWhere(gameState.custom.score, {id: player}).score += scoreDifferential;
+        });
+      });
+
       client.on('playerJoined', function(player) {
         var match = _.findWhere(gameState.custom.score, {id: player.id});
         if (match === undefined) {
@@ -194,10 +223,16 @@ exports.castVote = function(client, gameState) {
   });
 };
 
-exports.allRecieve = function(clients, event) { 
+exports.allRecieve = function(clients, event, ms) { 
   return Q.all(_.map(clients, function(c) {
     return c.oncep(event, function() { return Q.when({}); });
-  }));
+  }))
+  .then(function(result) {
+    if (ms === undefined) {
+      return Q.when(result);
+    } else {
+      return delay(ms).then(function() { return Q.when(result); });
+    }
+  });
 };
-
 

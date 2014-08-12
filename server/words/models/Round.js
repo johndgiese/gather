@@ -48,6 +48,10 @@ Round.newByGame = function(gameId) {
       prompt: prompt.proId,
       reader: reader.pgId,
       number: number,
+      doneReadingPrompt: null,
+      doneChoosing: null,
+      doneReadingChoices: null,
+      doneVoting: null
     };
 
     return new Round(roundData).save();
@@ -88,7 +92,11 @@ Round.queryByGame = function(party) {
 };
 
 Round.forApiByGame = function(gameId) {
-  var sql = 'SELECT rId AS id, pgId AS reader, rNumber AS number, proText AS prompt ' +
+  var sql = 'SELECT rId AS id, pgId AS reader, rNumber AS number, proText AS prompt, ' +
+    'rDoneReadingPrompt AS doneReadingPrompt, ' +
+    'rDoneChoosing AS doneChoosing, ' +
+    'rDoneReadingChoices AS doneReadingChoices, ' +
+    'rDoneVoting AS doneVoting ' +
     'FROM tbRound NATURAL JOIN tbPrompt NATURAL JOIN tbGame ' +
     'WHERE gId=? ORDER BY rNumber';
   var inserts = [gameId];
@@ -112,6 +120,10 @@ Round.prototype.forApi = function() {
       reader: self.reader,
       number: self.number,
       prompt: data[0].proText,
+      doneReadingPrompt: self.doneReadingPrompt,
+      doneChoosing: self.doneChoosing,
+      doneReadingChoices: self.doneReadingChoices,
+      doneVoting: self.doneVoting,
     };
   });
 };
@@ -119,25 +131,41 @@ Round.prototype.forApi = function() {
 Round.markDoneReadingPrompt = function(gameId) {
   var sql = 'UPDATE tbRound SET rDoneReadingPrompt=? ' +
     'WHERE gId=? AND rDoneReadingPrompt IS NULL';
-  return this.raw(sql, [new Date(), gameId]);
+  var at = new Date();
+  return this.raw(sql, [at, gameId])
+  .then(function() {
+    return at;
+  });
 };
 
 Round.markDoneChoosing = function(gameId) {
   var sql = 'UPDATE tbRound SET rDoneChoosing=? ' +
     'WHERE gId=? AND rDoneChoosing IS NULL';
-  return this.raw(sql, [new Date(), gameId]);
+  var at = new Date();
+  return this.raw(sql, [at, gameId])
+  .then(function() {
+    return at;
+  });
 };
 
 Round.markDoneReadingChoices = function(gameId) {
   var sql = 'UPDATE tbRound SET rDoneReadingChoices=? ' +
     'WHERE gId=? AND rDoneReadingChoices IS NULL';
-  return this.raw(sql, [new Date(), gameId]);
+  var at = new Date();
+  return this.raw(sql, [at, gameId])
+  .then(function() {
+    return at;
+  });
 };
 
 Round.markDoneVoting = function(gameId) {
   var sql = 'UPDATE tbRound SET rDoneVoting=? ' +
     'WHERE gId=? AND rDoneVoting IS NULL';
-  return this.raw(sql, [new Date(), gameId]);
+  var at = new Date();
+  return this.raw(sql, [at, gameId])
+  .then(function() {
+    return at;
+  });
 };
 
 // NOTE: it is not strictly necessary to include the gameId and roundId, it

@@ -214,6 +214,8 @@ describe('The words socket API', function() {
 
       var doneChoosingProm = tu.allRecieve(clients, 'choosingDone');
 
+      var currentRound = _.last(gameStates[0].custom.rounds);
+      expect(currentRound.doneChoosing).to.be(null);
       clients[0].emitp('chooseCard', {
         card: card.id,
         round: gameStates[0].custom.rounds[0].id
@@ -224,6 +226,7 @@ describe('The words socket API', function() {
         return doneChoosingProm;
       })
       .then(function() {
+        expect(currentRound.doneChoosing).not.to.be(null);
         done();
       })
       .fail(done);
@@ -288,19 +291,17 @@ describe('The words socket API', function() {
 
     it("after everyone has voted, all players should have lists of the votes", function(done) {
       var votingDonePromise = Q.all(_.map(clients, function(c) {
-        return c.oncep('votingDone', function(scores) {
-          expect(scores.length).to.be(players.length);
-          expect(scores[0].id).not.to.be(undefined);
-          expect(scores[0].score).not.to.be(undefined);
-          var points = _.reduce(scores, function(sum, s) { return sum + s.score; }, 0);
+        return c.oncep('votingDone', function(data) {
+          var points = _.reduce(data.dscore, function(sum, s) { return sum + s.score; }, 0);
           expect(points).to.be(players.length);
-          return Q.when(null);
+          return Q.when(data);
         });
       }));
 
-      tu.castVote(clients[0], gameStates[0]);
-
-      tu.castVote(clients[1], gameStates[1])
+      Q.all([
+        tu.castVote(clients[0], gameStates[0]),
+        tu.castVote(clients[1], gameStates[1])
+      ])
       .then(function() {
         return Q.when({}).delay(5);  // wait for events to propagate
       })
@@ -312,7 +313,10 @@ describe('The words socket API', function() {
       .then(function() {
         return votingDonePromise;
       })
-      .then(function() {
+      .then(function(data) {
+        var at = data[0].at;
+        var currentRound = _.last(gameStates[0].custom.rounds);
+        expect(currentRound.doneVoting).to.be(at);
         done();
       })
       .fail(done);

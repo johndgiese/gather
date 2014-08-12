@@ -65,9 +65,10 @@ exports.join = function(socket, player, party, game, playerGameId) {
     })
     .then(function() {
       return models.Round.markDoneReadingPrompt(game.id)
-      .then(function() {
+      .then(function(doneAt) {
         acknowledge({});
-        socket.broadcast.to(party).emit('readingPromptDone', {});
+        socket.emit('readingPromptDone', {at: doneAt});
+        socket.broadcast.to(party).emit('readingPromptDone', {at: doneAt});
       });
     })
     .fail(function(error) {
@@ -101,10 +102,10 @@ exports.join = function(socket, player, party, game, playerGameId) {
       })
       .then(function(result) {
         if (result.playersLeft === 0) {
-          socket.emit('choosingDone', {});
-          socket.broadcast.to(party).emit('choosingDone', {});
           return models.Round.markDoneChoosing(game.id)
-          .then(function() {
+          .then(function(doneAt) {
+            socket.emit('choosingDone', {at: doneAt});
+            socket.broadcast.to(party).emit('choosingDone', {at: doneAt});
             return dealer.dealResponse(game.id, playerGameId);
           });
         } else {
@@ -131,9 +132,9 @@ exports.join = function(socket, player, party, game, playerGameId) {
     .then(function() {
       return models.Round.markDoneReadingChoices(game.id);
     })
-    .then(function(round) {
-      var sendData = round.id;
-      socket.broadcast.to(party).emit('readingChoicesDone', sendData);
+    .then(function(doneAt) {
+      socket.emit('readingChoicesDone', {at: doneAt});
+      socket.broadcast.to(party).emit('readingChoicesDone', {at: doneAt});
       acknowledge({});
     })
     .fail(function(error) {
@@ -161,17 +162,25 @@ exports.join = function(socket, player, party, game, playerGameId) {
       })
       .then(function(result) {
         if (result.playersLeft === 0) {
-          // Note: errors in the scorer code will be silent!
-          scorer.currentScore(game.id)
-          .then(function(score) {
-            socket.emit('votingDone', score);
-            socket.broadcast.to(party).emit('votingDone', score);
+          return Q.all([
+            scorer.scoreDifferential(game.id),
+            models.Round.markDoneVoting(game.id)
+          ])
+          .then(function(data) {
+            var sendData = {
+              dscore: data[0],
+              at: data[1]
+            };
+            socket.emit('votingDone', sendData);
+            socket.broadcast.to(party).emit('votingDone', sendData);
             setupRoundStart(socket, player, game);
+          })
+          .then(function() {
+            acknowledge({});
           });
-
-          models.Round.markDoneVoting(game.id);
+        } else {
+          acknowledge({});
         }
-        acknowledge({});
       });
     }))
     .fail(function(error) {
