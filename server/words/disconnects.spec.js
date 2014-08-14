@@ -3,7 +3,7 @@ var io = require('socket.io-client');
 var _ = require('underscore');
 var tu = require('../util/test');
 var models = require('./models');
-var debug = require('debug')('gather:words');
+var debug = require('debug')('gather:tests');
 var diff = require('deep-diff').diff;
 
 var server = require('../index').server;
@@ -12,16 +12,22 @@ var dealer = require('./dealer');
 var stateResolver = require('./stateResolver');
 
 // keep inter round delay short during tests
-words.INTER_ROUND_DELAY = 1000;
+words.INTER_ROUND_DELAY = 200;
 
 describe.only('The words module can handle disconnects and reconnects', function() {
 
   var clients, players, party, gameStates = [];
 
+  var disconnectIndicies = [];  // keep track in case we need to reproduce
   function expectSameStateAfterReconnect(num) {
+    if (num === undefined) {
+      num = _.random(gameStates.length - 1);
+    }
+    disconnectIndicies.push(num);
+
     var gameStateBeforeDisconnect = gameStates[num];
     clients[num].disconnect();
-    return clients[num ? num - 1 : num + 1].oncep('playerLeft', function() {
+    return clients[num ? num - 1 : num + 1].oncep('playerDisconnected', function() {
       return tu.rejoinGame(players[num].id, party);
     })
     .then(function(data) {
@@ -52,6 +58,31 @@ describe.only('The words module can handle disconnects and reconnects', function
 
       gameStates[num] = gameStateAfterReconnect;
       return Q.when({});
+    });
+  }
+
+  beforeEach(function() {
+    disconnectIndicies = [];
+  });
+
+  afterEach(function() {
+    debug("disconnect indices: %j", disconnectIndicies);
+  });
+
+
+  function expectStates(gameStates, state, others, otherState) {
+    if (others === undefined) {
+      others = [];
+    } else if (_.isNumber(others)) {
+      others = [others];
+    }
+
+    _.forEach(gameStates, function(gs, index) {
+      if (_.contains(others, index)) {
+        expect(stateResolver(gs)).to.be('game.words.' + otherState);
+      } else {
+        expect(stateResolver(gs)).to.be('game.words.' + state);
+      }
     });
   }
 
@@ -95,90 +126,129 @@ describe.only('The words module can handle disconnects and reconnects', function
     .fail(done);
   });
 
-  it("you can rejoin before the prompt reader finishes", function(done) {
+  it("you can join/rejoin through out a round", function(done) {
     clients[0].emitp('startGame', {}, tu.expectNoError);
     tu.allRecieve(clients, 'gameStarted')
-    .then(function() {
-      expect(stateResolver(gameStates[0])).to.be('game.words.score');
-      expect(stateResolver(gameStates[1])).to.be('game.words.score');
-      expect(stateResolver(gameStates[2])).to.be('game.words.score');
-      return tu.allRecieve(clients, 'roundStarted');
-    })
-    .then(function() {
-      expect(stateResolver(gameStates[0])).to.be('game.words.readPrompt');
-      expect(stateResolver(gameStates[1])).to.be('game.words.waitingForPromptReader');
-      expect(stateResolver(gameStates[2])).to.be('game.words.waitingForPromptReader');
-      return expectSameStateAfterReconnect(1);
-    })
-    .then(function() {
-      clients[0].emitp('doneReadingPrompt', {}, tu.expectNoError);
-      return tu.allRecieve(clients, 'readingPromptDone');
-    })
-    .then(function() {
-      expect(stateResolver(gameStates[0])).to.be('game.words.choosing');
-      expect(stateResolver(gameStates[1])).to.be('game.words.choosing');
-      expect(stateResolver(gameStates[2])).to.be('game.words.choosing');
-      return expectSameStateAfterReconnect(0);
-    })
-    .then(function() {
-      return tu.makeChoice(clients[0], gameStates[0])
-      .then(function() {
-        expect(stateResolver(gameStates[0])).to.be('game.words.waitingForChoices');
-        expect(stateResolver(gameStates[1])).to.be('game.words.choosing');
-        expect(stateResolver(gameStates[2])).to.be('game.words.choosing');
-        return expectSameStateAfterReconnect(0);
-      });
-    })
-    .then(function() {
-      tu.makeChoice(clients[1], gameStates[1]);
-      tu.makeChoice(clients[2], gameStates[2]);
-      return tu.allRecieve(clients, 'choosingDone');
-    })
-    .then(function() {
-      expect(stateResolver(gameStates[0])).to.be('game.words.readChoices');
-      expect(stateResolver(gameStates[1])).to.be('game.words.waitingForChoicesReader');
-      expect(stateResolver(gameStates[2])).to.be('game.words.waitingForChoicesReader');
-      return expectSameStateAfterReconnect(0);
-    })
-    .then(function() {
-      return expectSameStateAfterReconnect(1);
-    })
-    .then(function() {
-      return expectSameStateAfterReconnect(2);
-    })
-    .then(function() {
-      clients[0].emitp('doneReadingChoices', {}, tu.expectNoError);
-      return tu.allRecieve(clients, 'readingChoicesDone');
-    })
-    .then(function() {
-      expect(stateResolver(gameStates[0])).to.be('game.words.voting');
-      expect(stateResolver(gameStates[1])).to.be('game.words.voting');
-      expect(stateResolver(gameStates[2])).to.be('game.words.voting');
-      return tu.castVote(clients[2], gameStates[2]);
-    })
-    .then(function() {
-      expect(stateResolver(gameStates[0])).to.be('game.words.voting');
-      expect(stateResolver(gameStates[1])).to.be('game.words.voting');
-      expect(stateResolver(gameStates[2])).to.be('game.words.waitingForVotes');
-      return expectSameStateAfterReconnect(2);
-    })
-    .then(function() {
-      return Q.all([
-        tu.castVote(clients[0], gameStates[0]),
-        tu.castVote(clients[1], gameStates[1]),
-        tu.allRecieve(clients, 'votingDone')
-      ]);
-    })
-    .then(function() {
-      expect(stateResolver(gameStates[0])).to.be('game.words.score');
-      expect(stateResolver(gameStates[1])).to.be('game.words.score');
-      expect(stateResolver(gameStates[2])).to.be('game.words.score');
-      return expectSameStateAfterReconnect(1);
-    })
+    .then(playRound)
     .then(function() {
       done();
     })
     .fail(done);
   });
+
+  it("you can join/rejoin through out several rounds", function(done) {
+    this.timeout(50000);
+    playRound()
+    .then(function() {
+      return tu.cardsInGame(gameStates[0].game.id);
+    })
+    .then(function(result) {
+      expect(result.count).to.be(3*dealer.CARDS_IN_HAND + 3*2);
+      return playRound();
+    })
+    .then(playRound)
+    .then(playRound)
+    .then(function() {
+      done();
+    })
+    .fail(done);
+  });
+
+
+  /**
+   * Play through a round of the game.
+   * Assumes that a `roundStarted` event will be emmited by the server after
+   * calling this function.
+   */
+  function playRound() {
+    debug("starting next round");
+
+    var readerIndex = null;
+    var specialIndex = null;  // used to keep track of who voted/choose
+
+    return Q.fcall(function() {
+      expectStates(gameStates, 'score');
+      return tu.allRecieve(clients, 'roundStarted', 10)
+      .then(function() {
+        debug("round started: %s", _.last(gameStates[0].custom.rounds).number);
+        var readerId = _.last(gameStates[0].custom.rounds).reader;
+        for(var i = 0; i < gameStates.length; i++) {
+          if (gameStates[i].you === readerId) {
+            readerIndex = i;
+            break;
+          }
+        }
+      });
+    })
+    .then(function() {
+      debug("waiting for prompt reader");
+      expectStates(gameStates, 'waitingForPromptReader', readerIndex, 'readPrompt');
+      return expectSameStateAfterReconnect();
+    })
+    .then(function() {
+      return Q.all([
+        clients[readerIndex].emitp('doneReadingPrompt', {}, tu.expectNoError),
+        tu.allRecieve(clients, 'readingPromptDone'),
+      ]);
+    })
+    .then(function() {
+      debug("choosing");
+      expectStates(gameStates, 'choosing');
+      return expectSameStateAfterReconnect();
+    })
+    .then(function() {
+      specialIndex = _.random(gameStates.length - 1);
+      return tu.makeChoice(clients[specialIndex], gameStates[specialIndex])
+      .then(function() {
+        expectStates(gameStates, 'choosing', specialIndex, 'waitingForChoices');
+        return expectSameStateAfterReconnect();
+      });
+    })
+    .then(function() {
+      var promises = [];
+      for(var i = 0; i < gameStates.length; i++) {
+        if (i !== specialIndex) {
+          promises.push(tu.makeChoice(clients[i], gameStates[i]));
+        }
+      }
+      promises.push(tu.allRecieve(clients, 'choosingDone'));
+      return Q.all(promises);
+    })
+    .then(function() {
+      debug("choosing done");
+      expectStates(gameStates, 'waitingForChoicesReader', readerIndex, 'readChoices');
+      return expectSameStateAfterReconnect();
+    })
+    .then(function() {
+      return Q.all([
+        clients[readerIndex].emitp('doneReadingChoices', {}, tu.expectNoError),
+        tu.allRecieve(clients, 'readingChoicesDone'),
+      ]);
+    })
+    .then(function() {
+      debug("done reading choices");
+      expectStates(gameStates, 'voting');
+      specialIndex = _.random(gameStates.length - 1);
+      return tu.castVote(clients[specialIndex], gameStates[specialIndex]);
+    })
+    .then(function() {
+      expectStates(gameStates, 'voting', specialIndex, 'waitingForVotes');
+      return expectSameStateAfterReconnect();
+    })
+    .then(function() {
+      var promises = [];
+      for(var i = 0; i < gameStates.length; i++) {
+        if (i !== specialIndex) {
+          promises.push(tu.castVote(clients[i], gameStates[i]));
+        }
+      }
+      promises.push(tu.allRecieve(clients, 'votingDone'));
+      return Q.all(promises);
+    })
+    .then(function() {
+      debug("done voting");
+      return Q.when({});
+    });
+  }
 
 });

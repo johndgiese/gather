@@ -202,6 +202,11 @@ exports.activePlayers = function(party) {
   });
 };
 
+exports.cardsInGame = function(gameId) {
+  return db.rawOne('SELECT COUNT(*) AS count FROM tbCard WHERE pgId IN ' + 
+                   '(SELECT pgId FROM tbPlayerGame WHERE gId=?)', gameId);
+};
+
 exports.setupGame = function(client, type) {
   return client.emitp('createGame', {type: type}, function(data) {
     return data.party;
