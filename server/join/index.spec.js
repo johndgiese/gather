@@ -168,7 +168,7 @@ describe('The join socket API', function() {
         var promise = clients[0].oncep('playerLeft', function(leavingPlayer) {
           expect(leavingPlayer).to.eql(gameState.players[1]);
         });
-        clients[1].disconnect();
+        clients[1].emit('leaveParty');
         return promise;
       })
       .then(function() {

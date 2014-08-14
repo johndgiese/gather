@@ -12,9 +12,8 @@ exports.Model = Player;
  * Make the current player join (or rejoin) the specified game.  If a playerGame
  * exists, set it to active.  If not create one.
  * @arg {number} - playerGame
- * @returns - promise for the playerGameId
+ * @returns - promise for the playerGameId and whether to broadcast
  * @throws {Error} if more than one playerGame exists for the game
- * @throws {Error} if playerGame match is already active
  */
 Player.prototype.join = function(gameId) {
   var self = this;
@@ -28,17 +27,21 @@ Player.prototype.join = function(gameId) {
       var inserts = [playerGameData];
       return self.M.raw('INSERT tbPlayerGame SET ?', inserts)
       .then(function(result) {
-        return result.insertId;  // the playerGameId
+        return {playerGameId: result.insertId, broadcast: true};
       });
     } else if (result.length > 1) {
       throw new Error("Multiple playerGame matches for gId=" + gameId + " pId=" + self.id);
-    } else if (result[0].pgActive) {
-      throw new Error("Existing playerGame (" + result[0].pgId + ") is already active");
     } else {
-      return self.M.raw('UPDATE tbPlayerGame SET pgActive=TRUE WHERE pgId=?', result[0].pgId)
-      .then(function() {
-        return result[0].pgId;
-      });
+      var isActive = result[0].pgActive;
+      if (isActive) {
+        return Q.when({playerGameId: result[0].pgId, broadcast: false});
+      } else {
+        // if inactive, broadcast the rejoin
+        return self.M.raw('UPDATE tbPlayerGame SET pgActive=TRUE WHERE pgId=?', result[0].pgId)
+        .then(function() {
+          return {playerGameId: result[0].pgId, broadcast: true};
+        });
+      }
     }
   });
 };

@@ -178,6 +178,7 @@ exports.setup = function(socket) {
       // TODO: teardown any listeners from previous games
       // TODO: make this more efficient for the person making the game (who
       // already has the game reference)
+      var broadcast;
       return models.Game.getByParty(data.party)
       .then(transaction.inOrderByGroup(data.party, function(game_) {
         game = game_;
@@ -186,8 +187,9 @@ exports.setup = function(socket) {
         return player.join(game.id)
 
         // setup listeners etc. for the appropriate game module
-        .then(function(playerGameId_) {
-          playerGameId = playerGameId_;
+        .then(function(data) {
+          playerGameId = data.playerGameId;
+          broadcast = data.broadcast;
           var gameModule = require('../' + game.type);
           return gameModule.join(socket, player, party, game, playerGameId);
         })
@@ -195,7 +197,6 @@ exports.setup = function(socket) {
         // then build up the game state using custom data returned from the
         // game module setup function
         .then(function(customGameState) {
-          debug("custom game state: %j", customGameState);
           return game.getState()
           .then(function(gameState) {
             gameState.you = playerGameId;
@@ -205,10 +206,12 @@ exports.setup = function(socket) {
         })
 
         .then(function(gameState) {
-          socket.broadcast.to(party).emit('playerJoined', {
-            name: player.name,
-            id: playerGameId
-          });
+          if (broadcast) {
+            socket.broadcast.to(party).emit('playerJoined', {
+              name: player.name,
+              id: playerGameId
+            });
+          }
           acknowledge(gameState);
         });
       }));
@@ -278,7 +281,9 @@ exports.setup = function(socket) {
   }
 
   function disconnect() {
-    leaveParty({}, function() {});
+    if (playerGameId !== null && party !== null) {
+      socket.broadcast.to(party).emit('playerDisconnected', {player: playerGameId});
+    }
   }
 
 };
