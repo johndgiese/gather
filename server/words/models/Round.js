@@ -24,7 +24,7 @@ exports.Model = Round;
 Round.newByGame = function(gameId) {
   var readerListProm = this.raw('SELECT pgId, pgActive AS active FROM tbPlayerGame WHERE gId=? ORDER BY pgCreatedOn', [gameId]);
 
-  var lastRoundProm = this.raw('SELECT pgId, rNumber AS number FROM tbRound WHERE gId=? ORDER BY rCreatedOn DESC LIMIT 1', [gameId]);
+  var lastRoundProm = this.raw('SELECT pgId, rNumber AS number FROM tbRound WHERE gId=? ORDER BY rNumber DESC LIMIT 1', [gameId]);
 
   var promptProm = dealer.dealPrompt(gameId);
 
@@ -105,7 +105,7 @@ Round.forApiByGame = function(gameId) {
 
 Round.queryLatestByGame = function(gameId) {
   inserts = [this.table, this.table, gameId];
-  var sql = 'SELECT ??.* FROM ?? NATURAL JOIN tbGame WHERE gId=? ORDER BY rCreatedOn DESC LIMIT 1';
+  var sql = 'SELECT ??.* FROM ?? NATURAL JOIN tbGame WHERE gId=? ORDER BY rNumber DESC LIMIT 1';
   return this.queryOne(sql, inserts);
 };
 

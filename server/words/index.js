@@ -221,7 +221,7 @@ function requireCardInHand(playerGameId, cardId) {
 
 function requireNotPlayedThisRound(playerGameId, gameId) {
   var sql = 'SELECT Count(cId) AS cardsPlayedThisRound FROM tbCard WHERE ' +
-    'rId=(SELECT rId FROM tbRound WHERE gId=? ORDER BY rCreatedOn DESC LIMIT 1) ' +
+    'rId=(SELECT rId FROM tbRound WHERE gId=? AND rDoneChoosing IS NULL) ' +
     'AND tbCard.pgId=?';
   var inserts = [gameId, playerGameId];
   return models.Card.rawOne(sql, inserts)

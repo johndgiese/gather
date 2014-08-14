@@ -25,7 +25,7 @@ exports.scoreDifferential = function(gameId) {
   var sql = 'SELECT tbPlayerGame.pgId AS id, Count(vId) AS score FROM ' +
     'tbVote JOIN tbCard USING (cId) RIGHT JOIN tbPlayerGame ON ' +
     '(tbCard.pgId=tbPlayerGame.pgId) WHERE ' +
-    'tbCard.rId=(SELECT rId FROM tbRound WHERE gId=? ORDER BY rCreatedOn DESC LIMIT 1)' +
+    'tbCard.rId=(SELECT rId FROM tbRound WHERE gId=? ORDER BY rNumber DESC LIMIT 1)' +
     'GROUP BY tbPlayerGame.pgId';
   var inserts = [gameId, gameId];
   return db.raw(sql, inserts);
