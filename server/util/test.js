@@ -145,8 +145,6 @@ var joinGame = exports.joinGame = function(client, party) {
 
     if (gameState.game.type === 'words') {
       client.on('roundStarted', function(data) {
-        gameState.custom.choices = [];
-        gameState.custom.votes = [];
         gameState.custom.rounds.push(data.round);
       });
 
@@ -171,6 +169,9 @@ var joinGame = exports.joinGame = function(client, party) {
       });
 
       client.on('votingDone', function(data) {
+        gameState.custom.choices = [];
+        gameState.custom.votes = [];
+
         _.last(gameState.custom.rounds).doneVoting = data.at;
 
         // add in points made this round
