@@ -249,6 +249,9 @@ function requireValidVote(cardId, playerGameId, gameId) {
   .then(function(data) {
     var card = data[0];
     var round = data[1];
+    if (round.doneVoting !== null) {
+      throw new Error("Voting is over for this round: " + round.id);
+    }
     if (card.round !== round.id) {
       throw new Error("You are voting for a card that is not in the current round!");
     }

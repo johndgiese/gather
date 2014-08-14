@@ -298,17 +298,15 @@ describe('The words socket API', function() {
         });
       }));
 
-      Q.all([
-        tu.castVote(clients[0], gameStates[0]),
-        tu.castVote(clients[1], gameStates[1])
-      ])
+      tu.castVote(clients[0], gameStates[0])
       .then(function() {
         return Q.when({}).delay(5);  // wait for events to propagate
       })
       .then(function(response) {
-        expect(gameStates[0].custom.votes.length).to.be(3);
-        expect(gameStates[1].custom.votes.length).to.be(3);
-        expect(gameStates[2].custom.votes.length).to.be(3);
+        expect(gameStates[0].custom.votes.length).to.be(2);
+        expect(gameStates[1].custom.votes.length).to.be(2);
+        expect(gameStates[2].custom.votes.length).to.be(2);
+        return tu.castVote(clients[1], gameStates[1]);
       })
       .then(function() {
         return votingDonePromise;

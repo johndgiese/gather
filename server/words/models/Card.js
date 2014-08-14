@@ -44,7 +44,7 @@ Card.queryLatestByGame = function(gameId) {
   inserts = [gameId];
   var sql = 'SELECT pgId, cId AS id, resText AS text FROM ' +
     'tbCard JOIN tbPlayerGame USING (pgId) JOIN tbResponse USING (resId) ' +
-    'WHERE rId=(SELECT rId FROM tbRound WHERE gId=? ORDER BY rCreatedOn DESC LIMIT 1)';
+    'WHERE rId=(SELECT rId FROM tbRound WHERE gId=? AND rDoneVoting IS NULL)';
   return this.raw(sql, inserts)
   .then(function(cards) {
     return _.map(cards, function(c) {
