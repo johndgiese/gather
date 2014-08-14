@@ -40,8 +40,8 @@ exports.join = function(socket, player, party, game, playerGameId) {
     dealer.dealResponses(playerGameId, game.id),
     models.Round.forApiByGame(game.id),
     scorer.currentScore(game.id),
-    models.Card.queryLatestByGame(game.id),
     models.Vote.alreadyVotedByGame(game.id),
+    models.Card.queryLatestByGame(game.id),
   ])
   .then(function(data) {
     var gs = {
@@ -192,20 +192,19 @@ exports.join = function(socket, player, party, game, playerGameId) {
 
 
 function setupRoundStart(socket, player, game) {
-
-  models.Round.newByGame(game.id)
-  .then(function(round) {
-    setTimeout(function() {
-      round.forApi()
+  setTimeout(function() {
+    models.Round.newByGame(game.id)
+    .then(function(round) {
+      return round.forApi()
       .then(function(roundData) {
         socket.emit('roundStarted', {round: roundData});
         socket.broadcast.to(game.party).emit('roundStarted', {round: roundData});
       });
-    }, exports.INTER_ROUND_DELAY);
-  })
-  .fail(function(reason) {
-    logger.error(reason);
-  });
+    })
+    .fail(function(reason) {
+      logger.error(reason);
+    });
+  }, exports.INTER_ROUND_DELAY);
 
   return Q.when({});
 }

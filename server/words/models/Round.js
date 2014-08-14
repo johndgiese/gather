@@ -131,7 +131,7 @@ Round.prototype.forApi = function() {
 Round.markDoneReadingPrompt = function(gameId) {
   var sql = 'UPDATE tbRound SET rDoneReadingPrompt=? ' +
     'WHERE gId=? AND rDoneReadingPrompt IS NULL';
-  var at = new Date();
+  var at = new Date(); at.setMilliseconds(0);
   return this.raw(sql, [at, gameId])
   .then(function() {
     return at;
@@ -141,7 +141,7 @@ Round.markDoneReadingPrompt = function(gameId) {
 Round.markDoneChoosing = function(gameId) {
   var sql = 'UPDATE tbRound SET rDoneChoosing=? ' +
     'WHERE gId=? AND rDoneChoosing IS NULL';
-  var at = new Date();
+  var at = new Date(); at.setMilliseconds(0);
   return this.raw(sql, [at, gameId])
   .then(function() {
     return at;
@@ -151,7 +151,7 @@ Round.markDoneChoosing = function(gameId) {
 Round.markDoneReadingChoices = function(gameId) {
   var sql = 'UPDATE tbRound SET rDoneReadingChoices=? ' +
     'WHERE gId=? AND rDoneReadingChoices IS NULL';
-  var at = new Date();
+  var at = new Date(); at.setMilliseconds(0);
   return this.raw(sql, [at, gameId])
   .then(function() {
     return at;
@@ -161,7 +161,7 @@ Round.markDoneReadingChoices = function(gameId) {
 Round.markDoneVoting = function(gameId) {
   var sql = 'UPDATE tbRound SET rDoneVoting=? ' +
     'WHERE gId=? AND rDoneVoting IS NULL';
-  var at = new Date();
+  var at = new Date(); at.setMilliseconds(0);
   return this.raw(sql, [at, gameId])
   .then(function() {
     return at;

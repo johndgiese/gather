@@ -4,6 +4,7 @@ var _ = require('underscore');
 var tu = require('../util/test');
 var models = require('./models');
 var debug = require('debug')('gather:words');
+var diff = require('deep-diff').diff;
 
 var server = require('../index').server;
 var words = require('../words');
@@ -11,9 +12,9 @@ var dealer = require('./dealer');
 var stateResolver = require('./stateResolver');
 
 // keep inter round delay short during tests
-words.INTER_ROUND_DELAY = 50;
+words.INTER_ROUND_DELAY = 1000;
 
-describe.skip('The words module can handle disconnects and reconnects', function() {
+describe.only('The words module can handle disconnects and reconnects', function() {
 
   var clients, players, party, gameStates = [];
 
@@ -26,7 +27,30 @@ describe.skip('The words module can handle disconnects and reconnects', function
     .then(function(data) {
       clients[num] = data[0];
       var gameStateAfterReconnect = data[1];
+
+
+      // sort players and cards to keep them in the same order for comparisons
+      gameStateAfterReconnect.players = _.sortBy(gameStateAfterReconnect.players, 'id');
+      gameStateBeforeDisconnect.players = _.sortBy(gameStateBeforeDisconnect.players, 'id');
+
+      gameStateAfterReconnect.custom.hand = _.sortBy(gameStateAfterReconnect.custom.hand, 'id');
+      gameStateBeforeDisconnect.custom.hand = _.sortBy(gameStateBeforeDisconnect.custom.hand, 'id');
+
+      gameStateAfterReconnect.custom.votes = _.sortBy(gameStateAfterReconnect.custom.votes, 'player');
+      gameStateBeforeDisconnect.custom.votes = _.sortBy(gameStateBeforeDisconnect.custom.votes, 'player');
+
+      gameStateAfterReconnect.custom.choices = _.sortBy(gameStateAfterReconnect.custom.choices, 'player');
+      gameStateBeforeDisconnect.custom.choices = _.sortBy(gameStateBeforeDisconnect.custom.choices, 'player');
+
+      var gsDiff = diff(gameStateBeforeDisconnect, gameStateAfterReconnect);
+      if (gsDiff !== undefined) {
+        console.log(gsDiff);
+        console.log(gameStateBeforeDisconnect.custom);
+        console.log(gameStateAfterReconnect.custom);
+      }
       expect(_.isEqual(gameStateAfterReconnect, gameStateBeforeDisconnect)).to.be(true);
+
+      gameStates[num] = gameStateAfterReconnect;
       return Q.when({});
     });
   }
@@ -73,7 +97,7 @@ describe.skip('The words module can handle disconnects and reconnects', function
 
   it("you can rejoin before the prompt reader finishes", function(done) {
     clients[0].emitp('startGame', {}, tu.expectNoError);
-    tu.allRecieve(clients, 'gameStarted', 100)
+    tu.allRecieve(clients, 'gameStarted')
     .then(function() {
       expect(stateResolver(gameStates[0])).to.be('game.words.score');
       expect(stateResolver(gameStates[1])).to.be('game.words.score');
@@ -84,239 +108,77 @@ describe.skip('The words module can handle disconnects and reconnects', function
       expect(stateResolver(gameStates[0])).to.be('game.words.readPrompt');
       expect(stateResolver(gameStates[1])).to.be('game.words.waitingForPromptReader');
       expect(stateResolver(gameStates[2])).to.be('game.words.waitingForPromptReader');
+      return expectSameStateAfterReconnect(1);
     })
     .then(function() {
-      done();
-    })
-    .fail(done);
-  });
-
-
-  /*
-  it("the reader must submit `readingPromptDone`", function(done) {
-    var roundId = gameStates[0].custom.rounds[0].id;
-
-    var client1prom = clients[1].oncep('readingPromptDone', function(data) {
-      expect(data.roundId).to.equal(roundId);
-    });
-
-    var doneTestingRoundUpdate = models.Round.queryOneId(roundId)
-    .then(function(round) {
-      expect(round.doneReadingPrompt).to.be(null);
+      clients[0].emitp('doneReadingPrompt', {}, tu.expectNoError);
+      return tu.allRecieve(clients, 'readingPromptDone');
     })
     .then(function() {
-      return clients[0].emitp('doneReadingPrompt', {}, function (data) {
-        tu.expectNoError(data);
-        return Q.when({});
+      expect(stateResolver(gameStates[0])).to.be('game.words.choosing');
+      expect(stateResolver(gameStates[1])).to.be('game.words.choosing');
+      expect(stateResolver(gameStates[2])).to.be('game.words.choosing');
+      return expectSameStateAfterReconnect(0);
+    })
+    .then(function() {
+      return tu.makeChoice(clients[0], gameStates[0])
+      .then(function() {
+        expect(stateResolver(gameStates[0])).to.be('game.words.waitingForChoices');
+        expect(stateResolver(gameStates[1])).to.be('game.words.choosing');
+        expect(stateResolver(gameStates[2])).to.be('game.words.choosing');
+        return expectSameStateAfterReconnect(0);
       });
     })
     .then(function() {
-      return models.Round.queryOneId(roundId)
-      .then(function(round) {
-        expect(round.doneReadingPrompt).not.to.be(null);
-      });
-    });
-
-    Q.all([client1prom, doneTestingRoundUpdate])
-    .then(function() {
-      done();
-    })
-    .fail(done);
-  });
-
-
-  it("each player chooses a card", function(done) {
-    var cardChoosenProm = clients[0].oncep('cardChoosen', function(data) {
-      expect(data.player).to.equal(gameStates[0].players[2].id);
-    });
-
-    var card = gameStates[2].custom.hand[0];
-    clients[2].emitp('chooseCard', {
-      card: card.id,
-      round: gameStates[2].custom.rounds[0].id
-    }, function(newCard) {
-      expect(newCard.id).to.be.a('number');
-      expect(newCard.text).to.be.a('string');
-      tu.expectNoError(newCard);
+      tu.makeChoice(clients[1], gameStates[1]);
+      tu.makeChoice(clients[2], gameStates[2]);
+      return tu.allRecieve(clients, 'choosingDone');
     })
     .then(function() {
-      return cardChoosenProm;
+      expect(stateResolver(gameStates[0])).to.be('game.words.readChoices');
+      expect(stateResolver(gameStates[1])).to.be('game.words.waitingForChoicesReader');
+      expect(stateResolver(gameStates[2])).to.be('game.words.waitingForChoicesReader');
+      return expectSameStateAfterReconnect(0);
     })
     .then(function() {
-      done();
-    })
-    .fail(done);
-  });
-
-
-  it("making a second choice results in an error", function(done) {
-    var card = gameStates[2].custom.hand[0];
-    clients[2].emitp('chooseCard', {
-      card: card.id,
-      round: gameStates[2].custom.rounds[0].id
-    }, function(data) {
-      tu.expectError(data);
-      done();
-    })
-    .fail(done);
-  });
-
-
-  it("playing a card that is not in your hand results in an error", function(done) {
-    var highestIdCard = _.max(gameStates[1].custom.hand, function(c) {
-      return c.id;
-    });
-
-    // submit bad card
-    clients[1].emitp('chooseCard', {
-      card: highestIdCard.id + 1,
-      round: gameStates[2].custom.rounds[0].id
-    }, function(data) {
-      tu.expectError(data);
+      return expectSameStateAfterReconnect(1);
     })
     .then(function() {
-      // actually submit card now
-      return clients[1].emitp('chooseCard', {
-        card: highestIdCard.id,
-        round: gameStates[2].custom.rounds[0].id
-      }, function(data) {
-        tu.expectNoError(data);
-        done();
-      });
-    })
-    .fail(done);
-  });
-
-
-  it("all active players need to choose, then the server emits `choosingDone`", function(done) {
-    var card = gameStates[0].custom.hand[0];
-
-    var doneChoosingProm = tu.allRecieve(clients, 'choosingDone');
-
-    clients[0].emitp('chooseCard', {
-      card: card.id,
-      round: gameStates[0].custom.rounds[0].id
-    }, function(data) {
-      tu.expectNoError(data);
+      return expectSameStateAfterReconnect(2);
     })
     .then(function() {
-      return doneChoosingProm;
+      clients[0].emitp('doneReadingChoices', {}, tu.expectNoError);
+      return tu.allRecieve(clients, 'readingChoicesDone');
+    })
+    .then(function() {
+      expect(stateResolver(gameStates[0])).to.be('game.words.voting');
+      expect(stateResolver(gameStates[1])).to.be('game.words.voting');
+      expect(stateResolver(gameStates[2])).to.be('game.words.voting');
+      return tu.castVote(clients[2], gameStates[2]);
+    })
+    .then(function() {
+      expect(stateResolver(gameStates[0])).to.be('game.words.voting');
+      expect(stateResolver(gameStates[1])).to.be('game.words.voting');
+      expect(stateResolver(gameStates[2])).to.be('game.words.waitingForVotes');
+      return expectSameStateAfterReconnect(2);
+    })
+    .then(function() {
+      return Q.all([
+        tu.castVote(clients[0], gameStates[0]),
+        tu.castVote(clients[1], gameStates[1]),
+        tu.allRecieve(clients, 'votingDone')
+      ]);
+    })
+    .then(function() {
+      expect(stateResolver(gameStates[0])).to.be('game.words.score');
+      expect(stateResolver(gameStates[1])).to.be('game.words.score');
+      expect(stateResolver(gameStates[2])).to.be('game.words.score');
+      return expectSameStateAfterReconnect(1);
     })
     .then(function() {
       done();
     })
     .fail(done);
   });
-
-  it("then the prompter must read through the choices", function(done) {
-    var roundId = gameStates[0].custom.rounds[0].id;
-
-    var client1prom = clients[1].oncep('readingChoicesDone', function() {});
-
-    var doneTestingRoundUpdate = models.Round.queryOneId(roundId)
-    .then(function(round) {
-      expect(round.doneReadingChoices).to.be(null);
-    })
-    .then(function() {
-      return clients[0].emitp('doneReadingChoices', {}, function (data) {
-        tu.expectNoError(data);
-        return Q.when({});
-      });
-    })
-    .then(function() {
-      return models.Round.queryOneId(roundId)
-      .then(function(round) {
-        expect(round.doneReadingChoices).not.to.be(null);
-      });
-    });
-
-    Q.all([client1prom, doneTestingRoundUpdate])
-    .then(function() {
-      done();
-    })
-    .fail(done);
-  });
-
-
-  it("then players can cast votes", function(done) {
-    var voteCastProm = clients[0].oncep('voteCast', function(data) {
-      expect(data.player).to.equal(gameStates[0].players[2].id);
-      done();
-    });
-
-    tu.castVote(clients[2], gameStates[2])
-    .then(tu.expectNoError)
-    .then(function() {
-      return voteCastProm;
-    })
-    .fail(done);
-  });
-
-
-  it.skip("voting for your own card results in an error", function(done) {
-    // TODO: add this
-    done();
-  });
-
-
-  it.skip("voting multiple times per round results in an error", function(done) {
-    // TODO: add this
-    done();
-  });
-
-
-  it("after everyone has voted, all players should have lists of the votes", function(done) {
-    var votingDonePromise = Q.all(_.map(clients, function(c) {
-      return c.oncep('votingDone', function(scores) {
-        expect(scores.length).to.be(players.length);
-        expect(scores[0].id).not.to.be(undefined);
-        expect(scores[0].score).not.to.be(undefined);
-        var points = _.reduce(scores, function(sum, s) { return sum + s.score; }, 0);
-        expect(points).to.be(players.length);
-        return Q.when(null);
-      });
-    }));
-
-    tu.castVote(clients[0], gameStates[0]);
-
-    tu.castVote(clients[1], gameStates[1])
-    .then(function() {
-      return Q.when({}).delay(5);  // wait for events to propagate
-    })
-    .then(function(response) {
-      expect(gameStates[0].custom.votes.length).to.be(3);
-      expect(gameStates[1].custom.votes.length).to.be(3);
-      expect(gameStates[2].custom.votes.length).to.be(3);
-    })
-    .then(function() {
-      return votingDonePromise;
-    })
-    .then(function() {
-      done();
-    })
-    .fail(done);
-  });
-
-
-  it("then the server setups a new round", function(done) {
-    Q.all(_.map(clients, function(c) {
-      return c.oncep('roundStarted', function(round) {
-        return Q.when(null);
-      });
-    }))
-    .then(function() {
-      _.forEach(gameStates, function(gs) {
-        expect(gs.custom.choices.length).to.be(0);
-        expect(gs.custom.votes.length).to.be(0);
-        expect(gs.custom.rounds.length).to.be(2);
-        expect(gs.custom.rounds[1].reader).to.be(gs.players[1].id);
-      });
-    })
-    .then(function() {
-      done();
-    })
-    .fail(done);
-  });
- */
 
 });

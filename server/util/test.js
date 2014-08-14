@@ -119,7 +119,7 @@ var joinGame = exports.joinGame = function(client, party) {
     }
 
     client.on('gameStarted', function(data) {
-      gameState.game.startedOn = new Date(data.startedOn);
+      gameState.game.startedOn = data.startedOn;
     });
 
     // TODO: figure out error handling on this stuff
@@ -172,8 +172,11 @@ var joinGame = exports.joinGame = function(client, party) {
 
       client.on('votingDone', function(data) {
         _.last(gameState.custom.rounds).doneVoting = data.at;
-        _.forEach(data.scores, function(scoreDifferential, player) {
-          _findWhere(gameState.custom.score, {id: player}).score += scoreDifferential;
+
+        // add in points made this round
+        _.forEach(data.dscore, function(player) {
+          var currentScore = _.findWhere(gameState.custom.score, {id: player.id});
+          currentScore.score += player.score;
         });
       });
 
@@ -209,6 +212,17 @@ exports.allJoinGame = function(clients, party) {
     return joinGame(client, party);
   });
   return Q.all(joined);
+};
+
+exports.makeChoice = function(client, gameState) {
+  var index = _.random(gameState.custom.hand.length - 1);
+  var card = gameState.custom.hand[index];
+  return client.emitp('chooseCard', {
+    card: card.id,
+    round: _.last(gameState.custom.rounds).id
+  }, function(newCard) {
+    gameState.custom.hand[index] = newCard;
+  });
 };
 
 exports.castVote = function(client, gameState) {
