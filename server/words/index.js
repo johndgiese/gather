@@ -236,7 +236,7 @@ function requireReader(playerGameId, gameId) {
   return models.Round.queryLatestByGame(gameId)
   .then(function(round) {
     if (round.reader !== playerGameId) {
-      throw new Error("This endpoint requires the rounds reader");
+      throw new Error("This endpoint requires the round's reader (rId=" + round.id + ", pgId=" + playerGameId + ")");
     }
   });
 }
