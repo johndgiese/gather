@@ -1,13 +1,29 @@
 <p class="secondary-instruction">
-  <span ng-show="round.number === 0">Game starts in</span>
-  <span ng-show="round.number > 0">Next round starts in</span>
+<span ng-show="round.number === 0">Game starts in 
+  <span class="countdown">{{ countdown }}</span>
+</span>
+<span ng-show="round.number > 0">Next round starts in 
+  <span class="countdown">{{ countdown }}</span>
+</span>
 </p>
 
-<p class="countdown">{{ countdown }}</p>
+<div ng-show="haveLastRoundDetails && !tie">
+  <p class="primary-instruction">The winner is <span class="light-blue">{{ winners[0].name }}</span> with</p>
+  <p class="prompt-sm">{{ winners[0].response }}</p>
+</div>
+
+<div ng-show="haveLastRoundDetails && tie">
+  <p class="primary-instruction">There was a tie last round.</p>
+  <div ng-repeat="w in winners">
+    <p class="secondary-instruction"><span class="light-blue">{{ w.name }}</span> with</p>
+    <p class="prompt-sm">{{ w.response }}</p>
+  </div>
+</div>
 
 <table class="score-table">
   <tr ng-repeat="p in score">
     <td>{{ p.name }}</td>
     <td>{{ p.score }}</td>
+    <td>{{ getDifferential(p.id) }}</td>
   </tr>
 </table>

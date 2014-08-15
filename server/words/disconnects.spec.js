@@ -14,7 +14,7 @@ var stateResolver = require('./stateResolver');
 // keep inter round delay short during tests
 words.INTER_ROUND_DELAY = 200;
 
-describe.only('The words module can handle disconnects and reconnects', function() {
+describe('The words module can handle disconnects and reconnects', function() {
 
   var clients, players, party, gameStates = [];
 

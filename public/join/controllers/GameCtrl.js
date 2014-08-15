@@ -1,8 +1,10 @@
 angular.module('join')
 .controller('GameCtrl', [
-  '$scope', '$state', '$stateParams', 'ScopedSocket', 'liveModelList', 'playerService', 'gameService', '$q', 'stateStack', '$location', '$rootScope',
-  function($scope, $state, $stateParams, ScopedSocket, liveModelList, playerService, gameService, $q, stateStack, $location, $rootScope) {
+  '$scope', '$state', '$stateParams', 'ScopedSocket', 'liveModelList', 'playerService', 'gameService', '$q', 'stateStack', '$location', '$rootScope', 'stateResolver',
+  function($scope, $state, $stateParams, ScopedSocket, liveModelList, playerService, gameService, $q, stateStack, $location, $rootScope, stateResolver) {
     var socket = new ScopedSocket($scope);
+
+    $scope.loading = true;
 
     var gameState;
     var player = playerService.get();
@@ -41,8 +43,6 @@ angular.module('join')
             return p.id === player.id;
           });
         }
-
-        $rootScope.$digest();
       });
 
       socket.on('playerJoined', function(player) {
@@ -58,25 +58,36 @@ angular.module('join')
       $scope.isCreator = creatorId === player.id;
       $scope.creator = _.findWhere(gameState.players, {id: creatorId});
       $scope.players = gameState.players;
+
+      if (gameState.game.startedOn === null) {
+        socket.on('gameStarted', function(data) {
+          gameState.game.startedOn = data.startedOn;
+        });
+
+        $scope.startGame = function() {
+          socket.emitp('startGame', {})
+          .then(function(data) {
+            // TODO: make this generic
+            // TODO: handle the fact that this may get called twice; once from the
+            // ack, once from the broadcast
+            $state.go('.words.score');
+          });
+        };
+
+        socket.on('gameStarted', function() {
+          // TODO: make this generic
+          $state.go('.words.score');
+        });
+
+        $scope.loading = false;
+      } else {
+        // TODO: make the state resolver generic
+        $state.go(stateResolver(gameState));
+      }
+
     })
     .catch(function(reason) {
       $state.go('joinGame', {invalid: $stateParams.party});
-    });
-
-
-    $scope.startGame = function() {
-      socket.emitp('startGame', {})
-      .then(function(data) {
-        // TODO: make this generic
-        // TODO: handle the fact that this may get called twice; once from the
-        // ack, once from the broadcast
-        $state.go('.words.score');
-      });
-    };
-
-    socket.on('gameStarted', function() {
-      // TODO: make this generic
-      $state.go('.words.score');
     });
 
   }

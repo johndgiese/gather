@@ -43,8 +43,13 @@ body {
 }
 
 .countdown {
-    font-size: 300%;
     font-weight: bold;
+    color: @brand-light-blue
+    text-shadow: 0 0 15px @brand-dark-blue;
+}
+
+.dark-blue { 
+    color: @brand-dark-blue;
 }
 
 .light-blue { 
@@ -168,13 +173,23 @@ a.login {
 }
 
 .prompt,
+.prompt-sm,
 .prompt-lg {
     display: block;
     background-color: @brand-background-darker;
     width: 100%;
-    padding: 20px;
     border-radius: @border-radius-base;
-    .main-instruction();
+    font-weight: bold;
+}
+
+.prompt-sm {
+    padding: 10px;
+    font-size: 100%;
+}
+
+.prompt {
+    padding: 20px;
+    font-size: 130%;
 }
 
 .prompt-lg {
@@ -196,8 +211,11 @@ a.login {
     font-weight: bold;
     .table();
     tr {
-        td:first-child {
+        td {
             color: @brand-light-blue;
+        }
+        td:last-child {
+            color: @brand-dark-blue;
         }
     }
 }

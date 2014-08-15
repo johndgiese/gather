@@ -1,29 +1,54 @@
 angular.module('words')
 .controller('WordsScoreCtrl', [
-  '$scope', '$stateParams', 'gameService', '$interval',
-  function($scope, $stateParams, gameService, $interval) {
+  '$scope', '$stateParams', 'gameService', '$interval', '$timeout', 'lastRoundDetails', 
+  function($scope, $stateParams, gameService, $interval, $timeout, lastRoundDetails) {
     var gameState = gameService.get();
 
     $scope.round = _.last(gameState.custom.rounds);
-    $scope.playser = gameState.playser;
-    $scope.score = [];
+    $scope.score = _.sortBy(gameState.custom.score, 'score').reverse();
 
-    var INTER_ROUND_DELAY = 7;
+    var details = lastRoundDetails.get();
+    $scope.haveLastRoundDetails = !_.isNull(details);
 
-    $scope.countdown = INTER_ROUND_DELAY;
-    $interval(function() {
-      $scope.countdown = $scope.countdown - 1;
-    }, 1000, INTER_ROUND_DELAY);
-      
-    $scope.$watch('players.length', function() {
-      var rawScores = gameState.custom.score;
-      var unsortedScore = [];
-      _.forEach(gameState.players, function(p) {
-        var match = _.find(rawScores, function(s) { return p.id == s.id; });
-        var score = match && match.score;
-        unsortedScore.push({'name': p.name, 'score': score || 0});
+    if ($scope.haveLastRoundDetails) {
+      var maxDifferential = _.max(details.dscore, function(d) { return d.score; }).score;
+      var maxScorers = _.filter(details.dscore, function(d) { return d.score === maxDifferential; });
+      $scope.tie = maxScorers.length > 1;
+      $scope.winners = _.map(maxScorers, function(s) {
+        return {
+          name: _.findWhere($scope.score, {id: s.id}).name,
+          response: _.findWhere(details.choices, {player: s.id}).card.text,
+        };
       });
-      $scope.score = _.sortBy(unsortedScore, 'score').reverse();
-    });
+    }
+
+    $scope.getDifferential = function(playerId) {
+      if ($scope.haveLastRoundDetails) {
+        var playersScoreThisRound = _.findWhere(details.dscore, {id: playerId});
+        if (playersScoreThisRound !== undefined) {
+          return "+" + playersScoreThisRound.score;
+        }
+      }
+    };
+
+    var INTER_ROUND_DELAY = 10000;  // in ms
+
+    // 1. determine ms before next round starts
+    // 2. round counter up to nearest sec
+    // 3. set delay for fraction of second until next countdown
+    // 4. then set timeout for remaining whole seconds, decrememting counter on
+    //    each whole second
+    var sinceVotingDone = Date.now() - new Date($scope.round.doneVoting);
+    var timeLeft = INTER_ROUND_DELAY - sinceVotingDone;
+    var wholeSecondsLeft = Math.floor(timeLeft/1000);
+    var fraction = timeLeft - wholeSecondsLeft*1000;
+    $scope.countdown = Math.ceil(timeLeft/1000);
+    $timeout(function() {
+      $interval(function() {
+        $scope.countdown = $scope.countdown - 1;
+        $scope.countdownChanged = true;
+      }, 1000, wholeSecondsLeft);
+    }, fraction);
+      
   }
 ]);

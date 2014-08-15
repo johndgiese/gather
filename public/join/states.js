@@ -34,6 +34,11 @@ angular.module('join')
     url: '/:party',
     controller: 'GameCtrl',
     templateUrl: '/static/join/templates/game.html',
+    resolve: {
+      storedPlayer: ['relogin', function(relogin) {
+        return relogin();
+      }]
+    }
   });
 
 }]);

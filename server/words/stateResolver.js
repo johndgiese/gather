@@ -1,5 +1,7 @@
 var _ = require('underscore');
 
+// IMPORANT: always update parallel copy of this in public/words/services/stateResolver.js
+
 /**
  * Given a game state object, return the appropriate client-side state.
  */

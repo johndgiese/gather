@@ -273,5 +273,5 @@ exports.leave = function(socket) {
  * @constant {number} - delay between finishing a round, and starting the next
  * round, in milliseconds
  */
-exports.INTER_ROUND_DELAY = 7000;
+exports.INTER_ROUND_DELAY = 10000;
 

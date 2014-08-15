@@ -144,20 +144,17 @@ var joinGame = exports.joinGame = function(client, party) {
     });
 
     if (gameState.game.type === 'words') {
+
       client.on('roundStarted', function(data) {
         gameState.custom.rounds.push(data.round);
       });
 
-      client.on('cardChoosen', function(data) {
-        gameState.custom.choices.push(data);
-      });
-
-      client.on('voteCast', function(data) {
-        gameState.custom.votes.push(data);
-      });
-
       client.on('readingPromptDone', function(data) {
         _.last(gameState.custom.rounds).doneReadingPrompt = data.at;
+      });
+
+      client.on('cardChoosen', function(data) {
+        gameState.custom.choices.push(data);
       });
 
       client.on('choosingDone', function(data) {
@@ -166,6 +163,10 @@ var joinGame = exports.joinGame = function(client, party) {
 
       client.on('readingChoicesDone', function(data) {
         _.last(gameState.custom.rounds).doneReadingChoices = data.at;
+      });
+
+      client.on('voteCast', function(data) {
+        gameState.custom.votes.push(data);
       });
 
       client.on('votingDone', function(data) {
