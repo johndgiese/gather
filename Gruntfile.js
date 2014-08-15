@@ -102,12 +102,6 @@ module.exports = function(grunt) {
           spawn: false,
         },
       },
-      configFiles: {
-        files: ['Gruntfile.js'],
-        options: {
-          livereload: true
-        }
-      },
       style: {
         files: '<%= lessSrc %>',
         tasks: ['less'],
@@ -115,6 +109,10 @@ module.exports = function(grunt) {
       tests: {
         files: ['<%= serverSrc %>'],
         tasks: ['tests']
+      },
+      static: {
+        files: ['<%= serverSrc %>', '<%= clientSrc %>', '<%= lessSrc %>'],
+        tasks: ['jshint', 'uglify', 'less'],
       }
     },
 
