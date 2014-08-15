@@ -38,7 +38,13 @@ angular.module('words')
     // 3. set delay for fraction of second until next countdown
     // 4. then set timeout for remaining whole seconds, decrememting counter on
     //    each whole second
-    var sinceVotingDone = Date.now() - new Date($scope.round.doneVoting);
+    var timerStart;
+    if ($scope.round) {
+      timerStart = $scope.round.doneVoting;
+    } else {
+      timerStart = gameState.game.startedOn;
+    }
+    var sinceVotingDone = Date.now() - new Date(timerStart);
     var timeLeft = INTER_ROUND_DELAY - sinceVotingDone;
     var wholeSecondsLeft = Math.floor(timeLeft/1000);
     var fraction = timeLeft - wholeSecondsLeft*1000;

@@ -71,12 +71,16 @@ angular.module('words')
       $state.go('^.score');
     });
 
-    socket.on('playerJoined', function(player) {
+    socket.on('playerJoined', wordsPlayerJoined);
+
+    function wordsPlayerJoined(player) {
       var match = _.findWhere(gameState.custom.score, {id: player.id});
       if (match === undefined) {
         gameState.custom.score.push({name: player.name, id: player.id, score: 0});
       }
-    });
+    }
+
+    _.forEach(gameState.players, wordsPlayerJoined);
 
     socket.on('reconnect', function() {
       var force = true;

@@ -1,25 +1,25 @@
 <p class="secondary-instruction">
-<span ng-show="round.number === 0">Game starts in 
+<span ng-show="round === undefined">Game starts in 
   <span class="countdown">{{ countdown }}</span>
 </span>
-<span ng-show="round.number > 0">Next round starts in 
+<span ng-show="round !== undefined">Next round starts in 
   <span class="countdown">{{ countdown }}</span>
 </span>
 </p>
 
 <div ng-show="haveLastRoundDetails && !tie">
-  <p class="primary-instruction">The winner is <span class="light-blue">{{ winners[0].name }}</span> with</p>
+  <span class="secondary-instruction">The winner is <span class="light-blue">{{ winners[0].name }}</span> with</span><br>
   <p class="prompt-sm">{{ winners[0].response }}</p>
 </div>
 
 <div ng-show="haveLastRoundDetails && tie">
-  <p class="primary-instruction">There was a tie last round.</p>
   <div ng-repeat="w in winners">
-    <p class="secondary-instruction"><span class="light-blue">{{ w.name }}</span> with</p>
+    <span class="secondary-instruction"><span class="light-blue">{{ w.name }}</span> tied with</span><br>
     <p class="prompt-sm">{{ w.response }}</p>
   </div>
 </div>
 
+<p class="main-instruction">Score</p>
 <table class="score-table">
   <tr ng-repeat="p in score">
     <td>{{ p.name }}</td>
