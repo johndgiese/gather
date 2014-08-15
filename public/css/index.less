@@ -115,6 +115,7 @@ a.login {
     font-size: 150%;
     font-weight: 300;
     background-color: @brand-dark-blue;
+    .box-shadow(0 1px 1px lighten(@brand-dark-blue, 10%));
     &:hover {
         background-color: fadeout(@brand-dark-blue, 20%);
     }
@@ -153,23 +154,36 @@ a.login {
     white-space: normal;
 }
 
-
 .logo-big {
     margin-top: 20px;
     background-image: url('/static/img/logo.png');
     background-repeat: no-repeat;
+    background-size: 240px 60px;
     background-position: center;
-    background-size: contain;
-    height: 72px;
+    height: 60px;
 }
 
 .logo-small {
     margin-top: 10px;
     margin-bottom: 10px;
-    background-image: url('/static/img/logo-small.png');
+    background-image: url('/static/img/logo.png');
     background-repeat: no-repeat;
     background-position: center;
-    height: 25px;
+    background-size: 120px 30px;
+    height: 30px;
+}
+
+// use bigger version of the logo for high density displays
+@media only screen and (-webkit-min-device-pixel-ratio: 1.5),
+only screen and (-o-min-device-pixel-ratio: 3/2),
+only screen and (min--moz-device-pixel-ratio: 1.5),
+only screen and (min-device-pixel-ratio: 1.5) {
+    .logo-big {
+        background-image: url(/static/img/logo@2x.png);
+    }
+    .logo-small {
+        background-image: url(/static/img/logo@2x.png);
+    }
 }
 
 .prompt,
