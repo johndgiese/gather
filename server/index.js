@@ -7,6 +7,7 @@ var path = require('path');
 // USE EXPRESS FOR SERVERING STATIC FILES
 var express = require('express');
 var app = express();
+app.disable('x-powered-by');
 var server = exports.server = app.listen(config.PORT);
 
 app.use(function(request, result, next){
