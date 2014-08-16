@@ -31,4 +31,8 @@ angular.module('app', [
 
 .config(['$locationProvider', function($locationProvider) {
   $locationProvider.html5Mode(true);
+}])
+
+.config(['$compileProvider', function($compileProvider) {   
+  $compileProvider.aHrefSanitizationWhitelist(/^\s*(https?|ftp|mailto|sms|fb|twitter):/);
 }]);
