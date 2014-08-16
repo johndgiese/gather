@@ -1,7 +1,7 @@
 angular.module('words')
 .controller('WordsCtrl', [
-  '$scope', '$stateParams', '$state', 'ScopedSocket', 'gameService', 'playerService', 'lastRoundDetails', 'stateResolver', 'relogin',
-  function($scope, $stateParams, $state, ScopedSocket, gameService, playerService, lastRoundDetails, stateResolver, relogin) {
+  '$scope', '$stateParams', '$state', 'ScopedSocket', 'gameService', 'playerService', 'lastRoundDetails', 'stateResolver', 'relogin', '$interval',
+  function($scope, $stateParams, $state, ScopedSocket, gameService, playerService, lastRoundDetails, stateResolver, relogin, $interval) {
 
     var socket = new ScopedSocket($scope);
 
@@ -82,7 +82,17 @@ angular.module('words')
 
     _.forEach(gameState.players, wordsPlayerJoined);
 
-    socket.on('reconnect', function() {
+    socket.on('reconnect', reconnect);
+
+    // periodically attempt to reconnect, in case the socket.io doesn't do it
+    // automatically
+    $interval(function() {
+      if (!socket.socket.connected) {
+        reconnect();
+      }
+    }, 300);
+
+    function reconnect() {
       var force = true;
       relogin(force)
       .then(function() {
@@ -94,7 +104,7 @@ angular.module('words')
           $state.go(stateResolver(gameState));
         });
       });
-    });
+    }
 
   }
 ]);
