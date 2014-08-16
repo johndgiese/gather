@@ -1,5 +1,6 @@
 var config = require('./config');
 var logger = require('./logger');
+var _ = require('underscore');
 
 var path = require('path');
 
@@ -10,14 +11,21 @@ var app = express();
 app.disable('x-powered-by');
 var server = exports.server = app.listen(config.PORT);
 
-app.use(function(request, result, next){
+app.use(function(request, response, next){
   logger.log('%s %s', request.method, request.url);
   next();
 });
+app.use(function(request, response, next){
+  if (_.contains(request.subdomains, 'www')) {
+    var url = request.fullUrl.replace(/:\/\/www\./, '://');
+    response.redirect(301, url);
+  }
+  next();
+});
 app.use('/static', express.static(__dirname + '/../public'));
-app.use(function(request, result) {
+app.use(function(request, response) {
   var indexPagePath = path.resolve(__dirname, '../public/index.html');
-  result.sendfile(indexPagePath);
+  response.sendfile(indexPagePath);
 });
 
 
