@@ -3,17 +3,8 @@ var db = require('../../db');
 var mysql = require('mysql');
 
 var validTags = [
-  'Mature',
-  'Pop Culture',
-  'Music',
-  'UT',
-  'Tech',
-  'Historical',
-  'Celebrity',
-  'Sports',
-  'Contemporary',
-  'Literature',
-  'Viral Video',
+  'Cards Against Humanity',
+  'Custom',
 ];
 
 exports.genAddTags = function(joinTableName, wordColName) {
