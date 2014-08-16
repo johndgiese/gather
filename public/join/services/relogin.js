@@ -19,6 +19,7 @@ angular.module('join')
             playerService.set(player);
             deferred.resolve();
           } else {
+            playerService.set(null);  // the player must be bad
             deferred.reject(player._error);
           }
           alreadyAttempting = false;
