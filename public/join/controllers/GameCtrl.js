@@ -1,7 +1,7 @@
 angular.module('join')
 .controller('GameCtrl', [
-  '$scope', '$state', '$stateParams', 'ScopedSocket', 'liveModelList', 'playerService', 'gameService', '$q', 'stateStack', '$location', '$rootScope', 'stateResolver',
-  function($scope, $state, $stateParams, ScopedSocket, liveModelList, playerService, gameService, $q, stateStack, $location, $rootScope, stateResolver) {
+  '$scope', '$state', '$stateParams', 'ScopedSocket', 'playerService', 'gameService', '$q', 'stateStack', '$location', '$rootScope', 'stateResolver',
+  function($scope, $state, $stateParams, ScopedSocket, playerService, gameService, $q, stateStack, $location, $rootScope, stateResolver) {
     var socket = new ScopedSocket($scope);
 
     $scope.loading = true;
