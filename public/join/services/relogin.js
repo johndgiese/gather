@@ -3,17 +3,25 @@ angular.module('join')
   'playerService', 'socket', '$q', 
   function(playerService, socket, $q) {
 
+    var alreadyAttempting = false;
+
     return function(force) {
       // login to an anonymous player session automatically this ensures that the
       // disconnects and page refreshes don't create a new player
       var player = playerService.get();
 
       var playerId = parseInt(localStorage.getItem('playerId'));
-      if ((player === null || force ) && !_.isNaN(playerId)) {
+      if ((player === null || force ) && !_.isNaN(playerId) && !alreadyAttempting) {
+        alreadyAttempting = true;
         var deferred = $q.defer();
         socket.emit('login', {id: playerId}, function(player) {
-          playerService.set(player);
-          deferred.resolve();
+          if (player._error === undefined) {
+            playerService.set(player);
+            deferred.resolve();
+          } else {
+            deferred.reject(player._error);
+          }
+          alreadyAttempting = false;
         });
         return deferred.promise;
       } else {
