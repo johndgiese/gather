@@ -17,14 +17,14 @@ angular.module('join')
   })
 
   .state('createPlayer', {
-    url: '/login?party',
+    url: '/login/?party',
     controller: 'CreatePlayerCtrl',
     templateUrl: '/static/join/templates/create-player.html',
   })
 
   // join an existing game session
   .state('joinGame', {
-    url: '/join?invalid',
+    url: '/join/?invalid',
     controller: 'JoinGameCtrl',
     templateUrl: '/static/join/templates/join.html',
   })
