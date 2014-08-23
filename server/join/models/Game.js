@@ -40,7 +40,7 @@ Game.get = function(gameId) {
 
 Game.getByParty = function(party) {
   inserts = [this.table, party];
-  var sql = 'SELECT * from ?? where gParty=?';
+  var sql = 'SELECT * from ?? where gParty=? ORDER BY gCreatedOn DESC LIMIT 1';
   return this.queryOne(sql, inserts);
 };
 
