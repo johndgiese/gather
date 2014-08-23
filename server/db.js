@@ -7,51 +7,13 @@ var _ = require('underscore');
 var mysql = require('mysql');
 
 
-getConnection();
-
-
-// TODO: investigate using a pool to speed things up
-function getConnection() {
-  // Test connection health before returning it to caller.
-  if (module.exports && 
-      module.exports._socket &&
-      module.exports._socket.readable &&
-      module.exports._socket.writable) {
-    return module.connection;
-  }
-
-  debugLog(((module.connection) ? "UNHEALTHY SQL CONNECTION; RE" : "") + "CONNECTING TO SQL.");
-
-  var connection = mysql.createConnection({
+var pool = mysql.createPool({
     host: 'localhost',
     user: config.DB_USERNAME,
     password: config.DB_PASSWORD,
     database: 'gather',
     multipleStatements: true,
-  });
-
-  connection.connect(function(err) {
-    if (err) {
-      debugLog("SQL CONNECT ERROR: " + err);
-    } else {
-      debugLog("SQL CONNECT SUCCESSFUL.");
-    }
-  });
-
-  connection.on("close", function (err) {
-    debugLog("SQL CONNECTION CLOSED.");
-  });
-
-  connection.on("error", function (err) {
-    debugLog("SQL CONNECTION ERROR: " + err);
-  });
-
-  connection.raw = _.bind(raw, connection);
-  connection.rawOne = _.bind(rawOne, connection);
-
-  module.exports = connection;
-  return connection;
-}
+});
 
 /**
  * Execute a query and return a promise for the result.
@@ -68,7 +30,7 @@ function raw() {
 
   try {
     if (arguments.length == 2) {
-      debugRaw(this.format(arguments[0], arguments[1]));
+      debugRaw(mysql.format(arguments[0], arguments[1]));
       this.query(arguments[0], arguments[1], after);
     } else if (arguments.length == 1) {
       debugRaw(arguments[0]);
@@ -94,3 +56,9 @@ function rawOne() {
     }
   });
 }
+
+pool.raw = _.bind(raw, pool);
+pool.rawOne = _.bind(rawOne, pool);
+
+module.exports = pool;
+
