@@ -127,8 +127,10 @@ describe('The words module can handle disconnects and reconnects', function() {
   });
 
   it("you can join/rejoin through out a round", function(done) {
-    clients[0].emitp('startGame', {}, tu.expectNoError);
-    tu.allRecieve(clients, 'gameStarted')
+    Q.all([
+      clients[0].emitp('startGame', {}, tu.expectNoError),
+      tu.allRecieve(clients, 'gameStarted'),
+    ])
     .then(playRound)
     .then(function() {
       done();
@@ -137,7 +139,7 @@ describe('The words module can handle disconnects and reconnects', function() {
   });
 
   it("you can join/rejoin through out several rounds", function(done) {
-    this.timeout(50000);
+    this.timeout(5000);
     playRound()
     .then(function() {
       return tu.cardsInGame(gameStates[0].game.id);
