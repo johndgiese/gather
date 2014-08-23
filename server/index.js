@@ -25,7 +25,12 @@ app.use(function(request, response, next){
 app.use('/static', express.static(__dirname + '/../public'));
 app.use(function(request, response) {
   var indexPagePath = path.resolve(__dirname, '../public/index.html');
-  response.sendfile(indexPagePath);
+  response.sendfile(indexPagePath, function(error) {
+    if (error) {
+      console.log("error");
+      logger.log("Error serving index.html: " + reason);
+    }
+  });
 });
 
 
