@@ -229,7 +229,10 @@ describe('The words module can handle disconnects and reconnects', function() {
       debug("done reading choices");
       expectStates(gameStates, 'voting');
       specialIndex = _.random(gameStates.length - 1);
-      return tu.castVote(clients[specialIndex], gameStates[specialIndex]);
+      return Q.all([
+        tu.castVote(clients[specialIndex], gameStates[specialIndex]),
+        tu.allRecieve(clients, 'voteCast'),
+      ]);
     })
     .then(function() {
       expectStates(gameStates, 'voting', specialIndex, 'waitingForVotes');
