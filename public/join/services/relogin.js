@@ -1,7 +1,7 @@
 angular.module('join')
 .factory('relogin', [
-  'playerService', 'socket', '$q', 
-  function(playerService, socket, $q) {
+  'playerService', 'socket', '$q', 'localStorageService',
+  function(playerService, socket, $q, localStorageService) {
 
     var alreadyAttempting = false;
 
@@ -10,8 +10,8 @@ angular.module('join')
       // disconnects and page refreshes don't create a new player
       var player = playerService.get();
 
-      var playerId = parseInt(localStorage.getItem('playerId'));
-      if ((player === null || force ) && !_.isNaN(playerId) && !alreadyAttempting) {
+      var playerId = localStorageService.get('playerId');
+      if ((player === null || force ) && !_.isNull(playerId) && !alreadyAttempting) {
         alreadyAttempting = true;
         var deferred = $q.defer();
         socket.emit('login', {id: playerId}, function(player) {

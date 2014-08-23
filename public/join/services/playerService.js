@@ -1,26 +1,29 @@
 angular.module('join')
-.factory('playerService', [function() {
-  var service = {};
+.factory('playerService', [
+  'localStorageService', 
+  function(localStorageService) {
+    var service = {};
 
-  var player = null;
+    var player = null;
 
-  service.get = function() {
-    return player;
-  };
+    service.get = function() {
+      return player;
+    };
 
-  service.set = function(val) {
-    player = val;
-    if (_.isNumber(player.id)) {
-      localStorage.setItem('playerId', player.id);
-    } else {
-      localStorage.setItem('playerId', null);
-    }
-  };
+    service.set = function(val) {
+      player = val;
+      if (player && _.isNumber(player.id)) {
+        localStorageService.set('playerId', player.id);
+      } else {
+        localStorageService.set('playerId', null);
+      }
+    };
 
-  service.unset = function() {
-    localStorage.removeItem('playerId');
-    player = null;
-  };
+    service.unset = function() {
+      localStorageService.remove('playerId');
+      player = null;
+    };
 
-  return service;
-}]);
+    return service;
+  }
+]);
