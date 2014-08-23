@@ -20,8 +20,7 @@ angular.module('join')
     };
 
     service.unset = function() {
-      localStorageService.remove('playerId');
-      player = null;
+      service.set(null);
     };
 
     return service;
