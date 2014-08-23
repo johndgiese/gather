@@ -32,3 +32,18 @@ Starting from the root of the repository:
 node server/index.js
 ```
 
+## Development
+
+Run tests:
+
+```bash
+grunt tests
+```
+
+Setup watch for static or tests:
+
+```bash
+grunt watch:tests
+# or
+grunt watch:static
+```

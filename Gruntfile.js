@@ -112,7 +112,7 @@ module.exports = function(grunt) {
       },
       static: {
         files: ['<%= serverSrc %>', '<%= clientSrc %>', '<%= lessSrc %>'],
-        tasks: ['jshint', 'uglify', 'less'],
+        tasks: ['static'],
       }
     },
 
@@ -153,35 +153,10 @@ module.exports = function(grunt) {
   });
 
 
-  grunt.event.on('watch', function(action, filepath, target) {
-    if (target == 'tests') {
-      var fileIsTest = !!filepath.match('spec.js$');
-      var fileHasTest, filepathOfTest;
-
-      if (!fileIsTest) {
-        filepathOfTest = filepath.slice(0, filepath.length - 3) + '.spec.js';
-        fileHasTest = fs.existsSync(filepathOfTest);
-      } else {
-        filepathOfTest = filepath;
-        fileHasTest = false;
-      }
-
-      if (fileIsTest || fileHasTest) {
-        grunt.config('mochaTest.test.src', filepathOfTest)
-      }
-    }
-
-    if (target == 'jshint') {
-      grunt.config('jshint.all.src', filepath)
-    }
-
-  });
-
-
-
   grunt.registerTask('default', ['jshint', 'mochaTest', 'less', 'uglify', 'watch']);
   grunt.registerTask('tests', ['jshint', 'mochaTest']);
-  grunt.registerTask('setup', ['shell:setupDirectories', 'shell:setupDatabase', 'shell:loadWords', 'less', 'uglify']);
+  grunt.registerTask('setup', ['shell:setupDirectories', 'shell:setupDatabase', 'shell:loadWords', 'static']);
+  grunt.registerTask('static', ['jshint', 'less', 'uglify']);
   grunt.registerTask('server', [ 'express', 'watch:express' ]);
 
 };
