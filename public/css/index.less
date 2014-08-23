@@ -116,7 +116,7 @@ a.login {
     font-weight: 300;
     background-color: @brand-dark-blue;
     .box-shadow(0 1px 0 0 lighten(@brand-dark-blue, 40%));
-    &:hover {
+    &:active {
         background-color: fadeout(@brand-dark-blue, 20%);
     }
     margin-bottom: 6px;
@@ -238,4 +238,9 @@ only screen and (min-device-pixel-ratio: 1.5) {
 
 #business-links {
     padding-left: 0;
+}
+
+.link {
+    text-decoration: underline;
+    color: @brand-dark-blue;
 }
