@@ -7,6 +7,11 @@
 
 <a id="join-game" class="action" ui-sref="joinGame">Join Game</a>
 
+<p ng-show="loggedInAs !== null" class="secondary-instruction">
+  Logged in as <span class="light-blue">{{loggedInAs}}</span>!
+  <a class="link" href="#" ng-click="logout()">Logout</a>
+</p>
+
 <footer>
   <ul id="business-links">
     <li><a href="#">about</a></li>
