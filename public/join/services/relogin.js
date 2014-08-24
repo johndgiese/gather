@@ -1,11 +1,15 @@
 angular.module('join')
 .factory('relogin', [
-  'playerService', 'socket', '$q', 'localStorageService',
-  function(playerService, socket, $q, localStorageService) {
+  'playerService', 'socket', '$q', 'localStorageService', 'gameService',
+  function(playerService, socket, $q, localStorageService, gameService) {
 
     var alreadyAttempting = false;
 
     return function(force) {
+
+      // clear old game state
+      gameService.set(null);
+
       // login to an anonymous player session automatically this ensures that the
       // disconnects and page refreshes don't create a new player
       var player = playerService.get();

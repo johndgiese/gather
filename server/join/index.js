@@ -19,6 +19,7 @@ exports.setup = function(socket) {
   var game = null;
 
   socket.on('login', login);
+  socket.on('logout', logout);
   socket.on('createPlayer', createPlayer);
   socket.on('createGame', createGame);
   socket.on('joinGame', joinGame);
@@ -124,6 +125,30 @@ exports.setup = function(socket) {
     .fail(function(error) {
       logger.error(error);
       acknowledge({_error: "Unable to login"});
+    });
+  }
+
+  /**
+   * Logout a player based on the current socket state.  Set all associated
+   * playerGameId's inactive.
+   */
+  function logout(data, acknowledge) {
+    Q.fcall(function() {
+      debugSocketState();
+      requirePlayer();
+    })
+    .then(function() {
+      player = null;
+      if (party !== null) {
+        socket.leave(party);
+        party = null;
+        playerGameId = null;
+        game = null;
+      }
+    })
+    .fail(function(error) {
+      logger.error(error);
+      acknowledge({_error: "Unable to logout"});
     });
   }
 

@@ -87,7 +87,7 @@ angular.module('words')
     // periodically attempt to reconnect, in case the socket.io doesn't do it
     // automatically
     $interval(function() {
-      if (!socket.socket.connected) {
+      if (socket && socket.socket && !socket.socket.connected) {
         reconnect();
       }
     }, 300);

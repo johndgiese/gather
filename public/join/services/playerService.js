@@ -12,6 +12,7 @@ angular.module('join')
 
     service.set = function(val) {
       player = val;
+      console.log(val);
       if (player && _.isNumber(player.id)) {
         localStorageService.set('playerId', player.id);
       } else {
