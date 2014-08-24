@@ -1,6 +1,7 @@
 <p class="prompt">{{ prompt }}</p>
 
 <p class="secondary-instruction">Vote for a response</p>
+<p class="secondary-instruction text-danger" ng-hide="insult === null">{{ insult }}</p>
 
 <ul id="responses">
   <li ng-repeat="r in responses">
