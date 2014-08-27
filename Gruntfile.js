@@ -25,12 +25,14 @@ module.exports = function(grunt) {
       'public/socket/index.js',
       'public/modal/index.js',
       'public/words/index.js',
+      'public/words_analytics/index.js',
 
       'public/join/**/*.js',
       'public/util/**/*.js',
       'public/socket/**/*.js',
       'public/modal/**/*.js',
       'public/words/**/*.js',
+      'public/words_analytics/**/*.js',
     ],
     serverSrc: [
       'server/**/*.js',

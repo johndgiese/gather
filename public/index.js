@@ -1,4 +1,5 @@
 angular.module('app', [
+  'words_analytics',
   'join',
   'words',
   'socket',
