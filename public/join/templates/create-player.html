@@ -12,11 +12,9 @@
 
 <form novalidation role="form" name="form">
   <div class="form-group">
-    <input class="form-control" type="text" name="playerName" ng-model="playerName" autofocus></input></p>
+    <input class="form-control" type="text" name="playerName" ng-model="playerName" autofocus></input>
+    <small class="light-blue">Use the suggestion, or write your own</small>
   </div>
-
-  <br>
-  <br>
 
   <input id="create-player" type="submit" class="action" ng-click="createPlayer()" ng-disabled="form.$invalid" value="Continue">
   <a class="action" ui-sref="landing">Cancel</a>
