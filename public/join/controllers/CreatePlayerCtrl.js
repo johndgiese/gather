@@ -27,7 +27,7 @@ angular.module('join')
     var nouns = [
       'Enchanter',
       'Bacon Hunter',
-      'Lightning god',
+      'Lightning God',
       'Pumpkin',
       'Dr. Boss',
       'Mango',
