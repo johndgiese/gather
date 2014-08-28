@@ -5,6 +5,15 @@ var mysql = require('mysql');
 var validTags = [
   'Cards Against Humanity',
   'Custom',
+  'Mature',
+  'UT',
+  'Pop Culture',
+  'Tech',
+  'Sports',
+  'Contemporary',
+  'Literature',
+  'Historical',
+  'Music',
 ];
 
 exports.genAddTags = function(joinTableName, wordColName) {
