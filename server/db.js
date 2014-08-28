@@ -11,7 +11,7 @@ var pool = mysql.createPool({
     host: 'localhost',
     user: config.DB_USERNAME,
     password: config.DB_PASSWORD,
-    database: 'gather',
+    database: config.DB_NAME,
     multipleStatements: true,
 });
 

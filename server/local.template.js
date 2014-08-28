@@ -4,6 +4,7 @@
 
 exports.DB_PASSWORD = 'CHANGEME';
 exports.DB_USERNAME = 'CHANGEME';
+exports.DB_NAME = 'gather';
 exports.PORT = 80;
 
 // global flag for controlling environment specific settings

@@ -143,7 +143,7 @@ module.exports = function(grunt) {
       setupDatabase: {
         command: [
           'cd server',
-          'mysql -u<%= config.DB_USERNAME %> -p<%= config.DB_PASSWORD %> gather < schema.sql',
+          'mysql -u<%= config.DB_USERNAME %> -p<%= config.DB_PASSWORD %> <%= config.DB_NAME %> < schema.sql',
           'cd -'
         ].join(' && ')
       },
