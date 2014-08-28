@@ -84,7 +84,7 @@ exports.join = function(socket, player, party, game, playerGameId) {
         requireNotPlayedThisRound(playerGameId, game.id)
       ]);
     })
-    .then(function() {
+    .then(transaction.inOrderByGroup(party, function() {
       return models.Card.play(data.card, data.round)
       .then(function() {
         return models.Card.forApi(data.card);
@@ -115,7 +115,7 @@ exports.join = function(socket, player, party, game, playerGameId) {
       .then(function(card) {
         acknowledge(card);
       });
-    })
+    }))
     .fail(function(error) {
       logger.error(error);
       acknowledge({_error: "Unable to send back response card"});
