@@ -1,4 +1,5 @@
 Q = require('q');
+debug = require('debug')('transaction:call');
 
 
 /**
@@ -7,7 +8,7 @@ Q = require('q');
  * calls in that group are delayed until that promise is resolved.  After the
  * last call is complete, the lock (i.e. key) is cleared.
  */
-var lockPromises = {};
+var groupQueues = exports._groupQueus = {};
 
 /**
  * Decorate a promise-returning function to ensure that it completes its work
@@ -34,26 +35,44 @@ exports.inOrderByGroup = function inOrderByGroup(group, func) {
   return function() {
     var args = arguments;
 
-    var lock = lockPromises[group];
-    if (lock === undefined) {
-      var deferred = Q.defer();
-      lockPromises[group] = deferred.promise;
-      return Q.fapply(func, args)
-      .then(function(val) {
-        delete lockPromises[group];
-        deferred.resolve();
-        return Q.when(val);
-      }, function(reason) {
-        delete lockPromises[group];
-        deferred.resolve();
-        return Q.reject(new Error(reason));
-      });
+    var deferred = Q.defer();
 
+    var queue = groupQueues[group];
+    if (queue === undefined) {
+      groupQueues[group] = [deferred];
+      debug('group ' + group + ' queue length: 1');
+      execute(group, deferred, func, args);
     } else {
-      lock.then(function() {
-        return inOrderByGroup(group, func).apply(null, args);
+      var prevCall = queue[queue.length - 1].promise;
+      prevCall.then(function() {
+        execute(group, deferred, func, args);
       });
+      queue.push(deferred);
+      debug('group ' + group + ' queue length: ' + queue.length);
     }
+
+    return deferred.promise;
   };
 };
+
+
+function execute(group, deferred, func, args) {
+  debug('executing');
+  Q.fapply(func, args)
+  .then(function(val) {
+    debug('resolving: ' + val);
+    deferred.resolve(val);
+  }, function(reason) {
+    debug('rejecting: ' + reason);
+    deferred.reject(reason);
+  })
+  .fin(function() {
+    var queue = groupQueues[group];
+    queue.shift();
+    debug('group ' + group + ' queue length: ' + queue.length);
+    if (queue.length === 0) {
+      delete groupQueues[group];
+    }
+  });
+}
 
