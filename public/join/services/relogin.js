@@ -24,13 +24,13 @@ angular.module('join')
             deferred.resolve();
           } else {
             playerService.set(null);  // the player must be bad
-            deferred.reject(player._error);
+            deferred.resolve(null);
           }
           alreadyAttempting = false;
         });
         return deferred.promise;
       } else {
-        return $q.when({});
+        return $q.when(null);
       }
     };
   }
