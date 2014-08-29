@@ -30,7 +30,6 @@ exports.startGame = function(socket, player, game) {
  */
 exports.join = function(socket, player, party, game, playerGameId) {
 
-  socket.on('gameStarted', setupRoundStart);
   socket.on('doneReadingPrompt', doneReadingPrompt);
   socket.on('chooseCard', chooseCard);
   socket.on('doneReadingChoices', doneReadingChoices);
