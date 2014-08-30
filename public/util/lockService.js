@@ -2,6 +2,8 @@ angular.module('util')
 
 .factory('lockService', ['$q',
   function lockService($q) {
+    
+    var service = {};
 
     /**
      * Decorator that ensures a promise-returning function can only have one
@@ -10,7 +12,7 @@ angular.module('util')
      * Places a `lock` property on the returned function to indicate whether it
      * is locked.
      */
-    return function(func) {
+    service.lock = function(func) {
       var decorated = function() {
         if (!decorated.lock) {
           decorated.lock = true;
@@ -24,6 +26,8 @@ angular.module('util')
       };
       return decorated;
     };
+
+    return service;
 
   }
 ]);

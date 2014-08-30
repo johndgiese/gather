@@ -1,24 +1,18 @@
 angular.module('join')
 .controller('CreateGameCtrl', [
-  '$scope', '$state', 'ScopedSocket', 'playerService', 'gameService', 'stateStack',
-  function($scope, $state, ScopedSocket, playerService, gameService, stateStack) {
-    var socket = new ScopedSocket($scope);
+  '$scope', '$state', 'socket', 'player',
+  function($scope, $state, socket, player) {
+    // TODO: make the back button work here
 
-    var player = playerService.get();
-    var gameState = gameService.get();
-    if (player === null) {
-      stateStack.push({name: 'createGame'});
-      $state.go('createPlayer');
-    } else if (gameState === null) {
-      // move on to the next state
+    socket.emitp('createGame', {type: 'words'})
+    .then(function(data) {
       // eventually game setup code will go here
-      socket.emit('createGame', {type: 'words'}, function(data) {
-        $state.go('game', {party: data.party});
-      });
-    } else {
+      $state.go('game', {party: data.party});
+    })
+    .catch(function() {
       // they must have already made a game and are going backwards
       $state.go('landing');
-    }
+    });
 
   }
 ]);

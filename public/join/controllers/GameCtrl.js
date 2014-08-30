@@ -1,17 +1,12 @@
 angular.module('join')
 .controller('GameCtrl', [
-  '$scope', '$state', '$stateParams', 'ScopedSocket', 'playerService', 'gameService', '$q', 'stateStack', '$location', '$rootScope', 'stateResolver',
-  function($scope, $state, $stateParams, ScopedSocket, playerService, gameService, $q, stateStack, $location, $rootScope, stateResolver) {
+  '$scope', '$state', '$stateParams', 'ScopedSocket', 'gameService', '$q', '$location', '$rootScope', 'stateResolver', 'player',
+  function($scope, $state, $stateParams, ScopedSocket, gameService, $q,  $location, $rootScope, stateResolver, player) {
     var socket = new ScopedSocket($scope);
 
     $scope.loading = true;
 
     var gameState;
-    var player = playerService.get();
-    if (player === null) {
-      stateStack.push({name: 'game', params: {party: $stateParams.party}});
-      return $state.go('createPlayer');
-    }
 
     $scope.joinedGame = false;
     $scope.isCreator = false;

@@ -14,12 +14,12 @@ angular.module('join')
     url: '/new/',
     controller: 'CreateGameCtrl',
     templateUrl: '/static/join/templates/create-game.html',
-  })
-
-  .state('createPlayer', {
-    url: '/login/?party',
-    controller: 'CreatePlayerCtrl',
-    templateUrl: '/static/join/templates/create-player.html',
+    resolve: {
+      player: ['playerService', function(playerService) {
+        // TODO: handle failure
+        return playerService.get();
+      }]
+    }
   })
 
   // join an existing game session
@@ -35,8 +35,8 @@ angular.module('join')
     controller: 'GameCtrl',
     templateUrl: '/static/join/templates/game.html',
     resolve: {
-      storedPlayer: ['relogin', function(relogin) {
-        return relogin();
+      player: ['playerService', function(playerService) {
+        return playerService.get();
       }]
     }
   });
