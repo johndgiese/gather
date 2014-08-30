@@ -1,8 +1,7 @@
 angular.module('words')
 .controller('WordsWaitingForChoicesCtrl', [
-  '$scope', '$stateParams', 'gameService',
-  function($scope, $stateParams, gameService) {
-    var gameState = gameService.get();
+  '$scope', '$stateParams', 'gameState',
+  function($scope, $stateParams, gameState) {
 
     $scope.players = gameState.players;
     $scope.choices = gameState.custom.choices;

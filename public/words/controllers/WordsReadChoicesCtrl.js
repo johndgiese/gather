@@ -1,8 +1,7 @@
 angular.module('words')
 .controller('WordsReadChoicesCtrl', [
-  '$scope', '$stateParams', '$state', 'socket', 'gameService',
-  function($scope, $stateParams, $state, socket, gameService) {
-    var gameState = gameService.get();
+  '$scope', '$stateParams', '$state', 'socket', 'gameState',
+  function($scope, $stateParams, $state, socket, gameState) {
     $scope.prompt = _.last(gameState.custom.rounds).prompt;
     $scope.responses = _.shuffle(gameState.custom.choices);
     $scope.currentResponse = 0;

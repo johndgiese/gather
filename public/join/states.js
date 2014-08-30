@@ -37,6 +37,10 @@ angular.module('join')
     resolve: {
       player: ['playerService', function(playerService) {
         return playerService.get();
+      }],
+      gameState: ['socket', '$stateParams', function(socket, $stateParams) {
+        // TODO: handle invalid party!
+        return socket.emitp('joinGame', {party: $stateParams.party});
       }]
     }
   });

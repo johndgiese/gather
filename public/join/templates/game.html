@@ -1,33 +1,23 @@
 <div class="logo-small"></div>
 <ui-view>
-  <div ng-hide="loading">
-    <p ng-show="!joinedGame" class="main-instruction">Joining Game ...</p>
+  <p ng-show="!isCreator" class="main-instruction">
+    The game will start once <span class="light-blue">{{ creator.name }}</span> clicks begin!
+  </p>
 
-    <p ng-show="joinedGame && !isCreator" class="main-instruction">
-      The game will start once <span class="light-blue">{{ creator.name }}</span> clicks begin!
-    </p>
-
-    <div ng-show="joinedGame && isCreator">
-      <p class="secondary-instructions" ng-show="players.length >= 2">Wait for everyone to join, then</p>
-      <p class="secondary-instructions" ng-show="players.length < 2">This game requires two or more players</p>
-      <a id="begin-game" class="action" ng-click="startGame()" ng-disabled="players.length < 2">Begin Game</a>
-    </div>
-
-    <br>
-    <br>
-
-    <p class="secondary-instruction">Invite your friends by sharing a link to the current page</p>
-    <p id="share-link">{{ link }}</a>
-
-    <p class="secondary-instruction">Currently in game:</p>
-    <ul class="player-list">
-      <li ng-repeat="p in players">{{ p.name }}</li>
-    </ul>
+  <div ng-show="isCreator">
+    <p class="secondary-instructions" ng-show="players.length >= 2">Wait for everyone to join, then</p>
+    <p class="secondary-instructions" ng-show="players.length < 2">This game requires two or more players</p>
+    <a id="begin-game" class="action" ng-click="startGame()" ng-disabled="players.length < 2">Begin Game</a>
   </div>
-  <div ng-show="loading">
-    <br>
-    <br>
-    <br>
-    <p class="main-instruction">Loading Game ...</p>
-  </div>
+
+  <br>
+  <br>
+
+  <p class="secondary-instruction">Invite your friends by sharing a link to the current page</p>
+  <p id="share-link">{{ link }}</a>
+
+  <p class="secondary-instruction">Currently in game:</p>
+  <ul class="player-list">
+    <li ng-repeat="p in players">{{ p.name }}</li>
+  </ul>
 </ui-view>

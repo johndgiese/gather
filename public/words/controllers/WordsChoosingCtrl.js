@@ -1,8 +1,7 @@
 angular.module('words')
 .controller('WordsChoosingCtrl', [
-  '$scope', '$stateParams', '$state', 'socket', 'gameService',
-  function($scope, $stateParams, $state, socket, gameService) {
-    var gameState = gameService.get();
+  '$scope', '$stateParams', '$state', 'socket', 'gameState',
+  function($scope, $stateParams, $state, socket, gameState) {
 
     $scope.hand = gameState.custom.hand;
 

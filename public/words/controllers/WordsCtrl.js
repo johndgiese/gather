@@ -1,12 +1,9 @@
 angular.module('words')
 .controller('WordsCtrl', [
-  '$scope', '$stateParams', '$state', 'ScopedSocket', 'gameService', 'playerService', 'lastRoundDetails', 'stateResolver', 'relogin', '$interval',
-  function($scope, $stateParams, $state, ScopedSocket, gameService, playerService, lastRoundDetails, stateResolver, relogin, $interval) {
+  '$scope', '$stateParams', '$state', 'ScopedSocket', 'gameState', 'player', 'lastRoundDetails', 'stateResolver', 'relogin', '$interval',
+  function($scope, $stateParams, $state, ScopedSocket, gameState, player, lastRoundDetails, stateResolver, relogin, $interval) {
 
     var socket = new ScopedSocket($scope);
-
-    var player = playerService.get();
-    var gameState = gameService.get();
 
     socket.on('roundStarted', function(data) {
       gameState.custom.rounds.push(data.round);
@@ -81,31 +78,6 @@ angular.module('words')
     }
 
     _.forEach(gameState.players, wordsPlayerJoined);
-
-    socket.on('reconnect', reconnect);
-
-    // periodically attempt to reconnect, in case the socket.io doesn't do it
-    // automatically
-    $interval(function() {
-      if (socket && socket.socket && !socket.socket.connected) {
-        reconnect();
-      }
-    }, 300);
-
-    function reconnect() {
-      var force = true;
-      relogin(force)
-      .then(function() {
-        socket.emitp('joinGame', {party: $stateParams.party})
-        .then(function(gameState_) {
-          gameState = gameState_;
-          $scope.joinedGame = true;
-          gameService.set(gameState);
-          $state.go(stateResolver(gameState));
-        });
-      });
-    }
-
   }
 ]);
 

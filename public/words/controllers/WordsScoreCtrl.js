@@ -1,8 +1,7 @@
 angular.module('words')
 .controller('WordsScoreCtrl', [
-  '$scope', '$stateParams', 'gameService', '$interval', '$timeout', 'lastRoundDetails', 
-  function($scope, $stateParams, gameService, $interval, $timeout, lastRoundDetails) {
-    var gameState = gameService.get();
+  '$scope', '$stateParams', 'gameState', '$interval', '$timeout', 'lastRoundDetails', 
+  function($scope, $stateParams, gameState, $interval, $timeout, lastRoundDetails) {
 
     $scope.round = _.last(gameState.custom.rounds);
     $scope.score = _.sortBy(gameState.custom.score, 'score').reverse();

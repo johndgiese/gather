@@ -1,9 +1,7 @@
 angular.module('words')
 .controller('WordsVotingCtrl', [
-  '$scope', '$stateParams', '$state', 'socket', 'gameService', 'playerService',
-  function($scope, $stateParams, $state, socket, gameService, playerService) {
-    var gameState = gameService.get();
-    var playerName = playerService.get().name;
+  '$scope', '$stateParams', '$state', 'socket', 'gameState',
+  function($scope, $stateParams, $state, socket, gameState) {
 
     // shuffle the list of choices to avoid voting order bias
     $scope.responses = _.shuffle(gameState.custom.choices);
@@ -14,7 +12,7 @@ angular.module('words')
       "You can't vote for yourself, bitch.",
       "How pathetic.  You really want to vote for yourself?  Well, you can't.",
       "Don't be a loser and vote for yourself.",
-      playerName + ", don't be a dick and vote for yourself."
+      $scope.player.name + ", don't be a dick and vote for yourself."
     ];
 
     var round = _.last(gameState.custom.rounds);
