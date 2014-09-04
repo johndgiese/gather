@@ -79,9 +79,9 @@ describe('The words module can handle disconnects and reconnects', function() {
 
     _.forEach(gameStates, function(gs, index) {
       if (_.contains(others, index)) {
-        expect(stateResolver(gs)).to.be('game.words.' + otherState);
+        expect(stateResolver(gs)).to.be('app.game.words.' + otherState);
       } else {
-        expect(stateResolver(gs)).to.be('game.words.' + state);
+        expect(stateResolver(gs)).to.be('app.game.words.' + state);
       }
     });
   }
@@ -118,7 +118,7 @@ describe('The words module can handle disconnects and reconnects', function() {
 
   it("should be possible for players to join/rejoin before the game starts", function(done) {
     _.forEach(gameStates, function(gs) { expect(gs.players.length).to.be(3); });
-    _.forEach(gameStates, function(gs) { expect(stateResolver(gs)).to.be('game'); });
+    _.forEach(gameStates, function(gs) { expect(stateResolver(gs)).to.be('app.game'); });
     expectSameStateAfterReconnect(1)
     .then(function() {
       done();

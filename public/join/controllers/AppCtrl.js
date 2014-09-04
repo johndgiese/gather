@@ -12,7 +12,7 @@ angular.module('join')
 
     $scope.logout = function() {
       playerService.logout();
-      $state.go('landing');
+      $state.go('app.landing');
     };
 
     $rootScope.$on('$stateChangeError', 

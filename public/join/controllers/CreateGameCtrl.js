@@ -7,11 +7,11 @@ angular.module('join')
     socket.emitp('createGame', {type: 'words'})
     .then(function(data) {
       // eventually game setup code will go here
-      $state.go('game', {party: data.party});
+      $state.go('app.game', {party: data.party});
     })
     .catch(function() {
       // they must have already made a game and are going backwards
-      $state.go('landing');
+      $state.go('app.landing');
     });
 
   }

@@ -8,45 +8,45 @@ var _ = require('underscore');
 module.exports = function stateResolver(gameState) {
 
   if (gameState.game.startedOn === null) {
-    return 'game';
+    return 'app.game';
   }
 
   var round = _.last(gameState.custom.rounds);
   var you = gameState.you;
 
   if (round === undefined || round.doneVoting) {
-    return 'game.words.score';
+    return 'app.game.words.score';
   }
 
   if (round.doneReadingPrompt === null) {
     if (you === round.reader) {
-      return 'game.words.readPrompt';
+      return 'app.game.words.readPrompt';
     } else {
-      return 'game.words.waitingForPromptReader';
+      return 'app.game.words.waitingForPromptReader';
     }
   }
 
   if (round.doneChoosing === null) {
     if (_.findWhere(gameState.custom.choices, {player: you})) {
-      return 'game.words.waitingForChoices';
+      return 'app.game.words.waitingForChoices';
     } else {
-      return 'game.words.choosing';
+      return 'app.game.words.choosing';
     }
   }
 
   if (round.doneReadingChoices === null) {
     if (you === round.reader) {
-      return 'game.words.readChoices';
+      return 'app.game.words.readChoices';
     } else {
-      return 'game.words.waitingForChoicesReader';
+      return 'app.game.words.waitingForChoicesReader';
     }
   }
 
   if (round.doneVoting === null) {
     if (_.findWhere(gameState.custom.votes, {player: you})) {
-      return 'game.words.waitingForVotes';
+      return 'app.game.words.waitingForVotes';
     } else {
-      return 'game.words.voting';
+      return 'app.game.words.voting';
     }
   }
 

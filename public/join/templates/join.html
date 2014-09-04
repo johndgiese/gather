@@ -13,5 +13,5 @@
 <p class="warning" ng-show="invalidCode != undefined">
 Invalid Party Code: <span class="highlight">&quot;{{ invalidCode }}&quot;</span>
 </p>
-<input id="join-game" type="submit" class="action" ui-sref="game({party: party})" ng-disabled="party.length != 6" value="Join Game">
-<a class="action" ui-sref="landing">Cancel</a>
+<input id="join-game" type="submit" class="action" ui-sref="app.game({party: party})" ng-disabled="party.length != 6" value="Join Game">
+<a class="action" ui-sref="app.landing">Cancel</a>

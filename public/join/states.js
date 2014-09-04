@@ -3,14 +3,25 @@ angular.module('join')
 
   $stateProvider
 
-  .state('landing', {
+  .state('app', {
+    abstract: true,
+    controller: 'AppCtrl',
+    template: '<ui-view />',
+    resolve: {
+      player: ['playerService', function(playerService) {
+        return playerService.syncOrNull();
+      }],
+    }
+  })
+
+  .state('app.landing', {
     url: '/',
     controller: 'LandingCtrl',
     templateUrl: '/static/join/templates/landing.html',
   })
 
   // create a new game and session
-  .state('createGame', {
+  .state('app.createGame', {
     url: '/new/',
     controller: 'CreateGameCtrl',
     templateUrl: '/static/join/templates/create-game.html',
@@ -23,14 +34,14 @@ angular.module('join')
   })
 
   // join an existing game session
-  .state('joinGame', {
+  .state('app.joinGame', {
     url: '/join/?invalid',
     controller: 'JoinGameCtrl',
     templateUrl: '/static/join/templates/join.html',
   })
 
   // staging ground for a game session (you are now leaving the `join` app)
-  .state('game', {
+  .state('app.game', {
     url: '/:party/',
     controller: 'GameCtrl',
     templateUrl: '/static/join/templates/game.html',
