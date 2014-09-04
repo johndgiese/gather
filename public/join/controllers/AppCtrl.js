@@ -15,16 +15,16 @@ angular.module('join')
       $state.go('app.landing');
     };
 
-    $rootScope.$on('$stateChangeError', 
-      function(event, toState, toParams, fromState, fromParams, error) {
-        console.log(event);
-        console.log(toState);
-        console.log(toParams);
-        console.log(fromState);
-        console.log(fromParams);
-        console.log(error);
-      }
-    );
+    $rootScope.$on('$stateChangeError', function(event, to, toParams, from, fromParams, error) {
+      console.log(event);
+      console.log(to);
+      console.log(toParams);
+      console.log(from);
+      console.log(fromParams);
+      console.log(error);
+    });
+
+
   }
 ]);
 
