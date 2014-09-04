@@ -24,7 +24,6 @@ module.exports = function(grunt) {
       'public/join/index.js',
       'public/util/index.js',
       'public/socket/index.js',
-      'public/modal/index.js',
       'public/words/index.js',
       'public/words_analytics/index.js',
 
@@ -44,13 +43,10 @@ module.exports = function(grunt) {
       'server/**/*.js',
     ],
     lessSrc: [
-      'public/css/**/*.less',
-      'public/css/**/*.css',
-      'public/_vendor/bootstrap/less/*.less'
+      'public/**/*.less',
+      '!public/_vendor/**/*.less'
     ],
     externalClientSrc: [
-      'public/modal/ui-bootstrap-modal-0.10.0.js',
-      'public/modal/ui-bootstrap-modal-tpls-0.10.0.js',
       'public/_vendor/angular-ui-router/release/angular-ui-router.js',
       'public/_vendor/socket.io-client/socket.io.js',
       'public/_vendor/underscore/underscore.js',
@@ -144,7 +140,7 @@ module.exports = function(grunt) {
           strictImports: true
         },
         files: {
-          'public/_dist/index.css': 'public/css/index.less'
+          'public/_dist/index.css': 'public/index.less'
         }
       }
     },

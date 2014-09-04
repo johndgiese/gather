@@ -1,12 +1,10 @@
-<div class="logo-small"></div>
-
-<p class="main-instruction" ng-show="nextState.name == 'createGame'">
+<p class="main-instruction" ng-show="currentState === 'app.createGame'">
   Before creating a game,<br class="hidden-md hidden-lg"> select your nickname
 </p>
-<p class="main-instruction" ng-show="nextState.name == 'game'">
+<p class="main-instruction" ng-show="currentState === 'app.game'">
   Before joining the game, select your nickname
 </p>
-<p class="main-instruction" ng-show="nextState.name != 'game' && nextState.name != 'createGame'">
+<p class="main-instruction" ng-show="currentState !== 'game' && currentState !== 'createGame'">
   Select your nickname
 </p>
 
@@ -17,5 +15,5 @@
   </div>
 
   <input id="create-player" type="submit" class="action" ng-click="createPlayer()" ng-disabled="form.$invalid" value="Continue">
-  <a class="action" ui-sref="app.landing">Cancel</a>
+  <a class="action" ng-click="$dismiss()">Cancel</a>
 </form>

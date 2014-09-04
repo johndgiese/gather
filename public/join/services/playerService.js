@@ -1,7 +1,7 @@
 angular.module('join')
 .factory('playerService', [
-  'localStorageService', 'socket', '$q', '$rootScope', 'lockService',
-  function(localStorageService, socket, $q, $rootScope, lockService) {
+  'localStorageService', 'socket', '$q', '$rootScope', 'lockService', '$modal',
+  function(localStorageService, socket, $q, $rootScope, lockService, $modal) {
     var service = {};
 
     service.player = null;
@@ -66,7 +66,11 @@ angular.module('join')
 
     function createPlayer() {
       // TODO: create modal that gets a player name
-      return $q.when({name: 'testing'})
+      return $modal.open({
+        templateUrl: '/static/join/templates/create-player.html',
+        controller: 'CreatePlayerCtrl',
+        backdrop: false,
+      }).result
       .then(function(playerData) {
         return socket.emitp('createPlayer', playerData)
         .then(function(player) {

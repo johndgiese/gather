@@ -145,6 +145,7 @@ exports.setup = function(socket) {
         playerGameId = null;
         game = null;
       }
+      acknowledge({});
     })
     .fail(function(error) {
       logger.error(error);

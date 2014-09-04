@@ -1,7 +1,7 @@
 angular.module('join')
 .controller('AppCtrl', [
-  '$scope', 'playerService', '$rootScope', '$state',
-  function($scope, playerService, $rootScope, $state) {
+  '$scope', 'playerService', '$rootScope', '$state', '$templateCache',
+  function($scope, playerService, $rootScope, $state, $templateCache) {
 
     $scope.player = playerService.player;
     $scope.$watch(function() {

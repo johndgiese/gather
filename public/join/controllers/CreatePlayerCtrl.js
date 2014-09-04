@@ -1,7 +1,9 @@
 angular.module('join')
 .controller('CreatePlayerCtrl', [
-  '$scope',
-  function($scope) {
+  '$scope', '$modalInstance', '$state',
+  function($scope, $modalInstance, $state) {
+
+    $scope.currentState = $state.current.name;
 
     var adjectives = [
       'Purple',
@@ -51,7 +53,7 @@ angular.module('join')
     $scope.playerName = _.sample(adjectives) + ' ' + _.sample(nouns);
 
     $scope.createPlayer = function() {
-      // TODO close modal, and return player name
+      $modalInstance.close({name: $scope.playerName});
     };
 
   }
