@@ -5,19 +5,20 @@ angular.module('join')
     var service = {};
 
     service.player = null;
-    service.get = getPlayer;
-    service.loginOrCreate = loginOrCreate;
-    service.logout = logout;
-
-    sync();
+    service.syncOrNull = lockService.inOrderByGroup('lockService', syncOrNull);
+    service.getOrCreate = lockService.inOrderByGroup('lockService', getOrCreate);
+    service.logout = lockService.inOrderByGroup('lockService', logout);
 
     return service;
 
-    function getPlayer() {
+
+    function syncOrNull() {
       if (service.player !== null) {
         return $q.when(service.player);
       } else {
-        return loginOrCreate();
+        return sync().catch(function() {
+          return null;
+        });
       }
     }
 
@@ -28,8 +29,15 @@ angular.module('join')
      * create player.
      */
     // TODO: also allow players to log back in
-    function loginOrCreate() {
-      return sync().catch(createPlayer);
+    function getOrCreate() {
+      if (service.player !== null) {
+        return $q.when(service.player);
+      } else {
+        return sync().catch(
+          function() {
+            return createPlayer();
+        });
+      }
     }
 
     /**
@@ -53,7 +61,7 @@ angular.module('join')
 
     function logout() {
       setPlayer(null);
-      socket.emit('logout', {}, function() {});
+      return socket.emitp('logout', {});
     }
 
     function createPlayer() {

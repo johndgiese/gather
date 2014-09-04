@@ -28,7 +28,7 @@ angular.module('join')
     resolve: {
       player: ['playerService', function(playerService) {
         // TODO: handle failure
-        return playerService.get();
+        return playerService.getOrCreate();
       }]
     }
   })
@@ -47,9 +47,9 @@ angular.module('join')
     templateUrl: '/static/join/templates/game.html',
     resolve: {
       player: ['playerService', function(playerService) {
-        return playerService.get();
+        return playerService.getOrCreate();
       }],
-      gameState: ['socket', '$stateParams', function(socket, $stateParams) {
+      gameState: ['socket', '$stateParams', 'player', function(socket, $stateParams, player) {
         // TODO: handle invalid party!
         return socket.emitp('joinGame', {party: $stateParams.party});
       }]
