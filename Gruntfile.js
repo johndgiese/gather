@@ -11,6 +11,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-mocha-test');
   grunt.loadNpmTasks('grunt-shell');
   grunt.loadNpmTasks('grunt-express-server');
+  grunt.loadNpmTasks('grunt-karma');
 
   grunt.initConfig({
     config: serverConfig,
@@ -33,6 +34,11 @@ module.exports = function(grunt) {
       'public/modal/**/*.js',
       'public/words/**/*.js',
       'public/words_analytics/**/*.js',
+
+      '!public/**/*.spec.js',
+    ],
+    clientTests: [
+      'public/**/*.spec.js',
     ],
     serverSrc: [
       'server/**/*.js',
@@ -84,6 +90,12 @@ module.exports = function(grunt) {
       }
     },
 
+    karma: {
+      unit: {
+        configFile: 'karma.conf.js',
+        background: true,
+      }
+    },
 
     watch: {
       express: {
@@ -115,6 +127,10 @@ module.exports = function(grunt) {
       static: {
         files: ['<%= serverSrc %>', '<%= clientSrc %>', '<%= lessSrc %>'],
         tasks: ['static'],
+      },
+      karma: {
+        files: ['<%= clientSrc %>', '<%= clientTests %>'],
+        tasks: ['karma:unit:run'],
       }
     },
 
