@@ -4,7 +4,6 @@ angular.module('join')
   function($scope, $state, $stateParams, ScopedSocket, gameState, $q,  $location, $rootScope, stateResolver, player) {
     var socket = new ScopedSocket($scope);
 
-    $scope.party = $stateParams.party;
     $scope.link = $location.absUrl();
 
     var creatorId = gameState.game.createdBy;
