@@ -88,15 +88,36 @@ module.exports = function(grunt) {
 
     karma: {
       unit: {
-        configFile: 'karma.conf.js',
-        background: true,
-      }
+        options: {
+          singleRun: false,
+          background: true,
+          runnerPort: 8000,
+          basePath: 'public/',
+          colors: true,
+          files: [
+            '_vendor/angular/angular.js',
+            '_vendor/angular-mocks/angular-mocks.js',
+            '**/*.spec.js',
+            '_dist/index.js',
+          ],
+          frameworks: ['mocha', 'expect'],
+          browsers: ['Chrome'],
+          reporters: ['dots', 'beep'],
+          plugins: [
+            'karma-chrome-launcher',
+            'karma-firefox-launcher',
+            'karma-expect',
+            'karma-mocha',
+            'karma-beep-reporter',
+          ],
+        },
+      },
     },
 
     watch: {
       express: {
-        files:  [ '<%= serverSrc %>' ],
-        tasks:  [ 'express:dev' ],
+        files:  ['<%= serverSrc %>'],
+        tasks:  ['express:dev'],
         options: {
           spawn: false
         }

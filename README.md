@@ -34,16 +34,20 @@ node server/index.js
 
 ## Development
 
-Run tests:
+Run server tests:
 
 ```bash
 grunt tests
 ```
 
-Setup watch for static or tests:
+Setup watch for static or server tests or client tests:
 
 ```bash
 grunt watch:tests
 # or
 grunt watch:static
+# or 
+grunt karma:unit:start watch:karma
 ```
+
+I don't know how to only run client tests without the watch server.

@@ -28,7 +28,14 @@
     "grunt-express-server": "~0.4.17",
     "deep-diff": "~0.2.0",
     "karma": "~0.12.23",
-    "grunt-karma": "~0.8.3"
+    "grunt-karma": "~0.8.3",
+    "karma-chrome-launcher": "~0.1.4",
+    "karma-firefox-launcher": "~0.1.3",
+    "karma-expect": "~1.1.0",
+    "mocha": "~1.21.4",
+    "karma-mocha": "~0.1.9",
+    "karma-minimalist-reporter": "~0.2.0",
+    "karma-beep-reporter": "~0.1.4"
   },
   "repository": "https://bitbucket.org/jdgiese/gather-games-word-association",
   "author": "",
