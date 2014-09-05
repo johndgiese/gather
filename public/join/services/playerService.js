@@ -69,7 +69,6 @@ angular.module('join')
       return $modal.open({
         templateUrl: '/static/join/templates/create-player.html',
         controller: 'CreatePlayerCtrl',
-        backdrop: false,
       }).result
       .then(function(playerData) {
         return socket.emitp('createPlayer', playerData)
