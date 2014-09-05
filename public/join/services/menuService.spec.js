@@ -31,4 +31,7 @@ describe('The menu service', function() {
     expect(menuService.currentItems().length).to.be(0);
   });
 
+  it.skip('the action function can be an injectable', function() {
+  });
+
 });

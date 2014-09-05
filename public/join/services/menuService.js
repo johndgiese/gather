@@ -1,6 +1,7 @@
 angular.module('join')
 .factory('menuService', [
-  function MenuServiceFactory() {
+  '$injector',
+  function MenuServiceFactory($injector) {
     var exports = {};
 
     var items = [];
@@ -12,6 +13,10 @@ angular.module('join')
     };
 
     exports.registerItem = function(item) {
+      var originalAction = item.action;
+      item.action = function() {
+        return $injector.invoke(originalAction);
+      };
       items.push(item);
     };
 
