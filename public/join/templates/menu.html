@@ -1,0 +1,6 @@
+<ul class="list-unstyled">
+  <li ng-repeat="item in menu">
+    <a class="action" ng-click="$dismiss(); item.action();">{{item.title}}</a>
+  </li>
+</ul>
+<a class="action" ng-click="$dismiss()">Cancel</a>

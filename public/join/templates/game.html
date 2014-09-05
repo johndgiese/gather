@@ -1,4 +1,10 @@
-<div class="logo-small"></div>
+<div class="logo-small">
+  <div class="menu-toggle" ng-click="menu()">
+    <span class="icon-bar"></span>
+    <span class="icon-bar"></span>
+    <span class="icon-bar"></span>
+  </div>
+</div>
 <ui-view>
   <p ng-show="!isCreator" class="main-instruction">
     The game will start once <span class="light-blue">{{ creator.name }}</span> clicks begin!
