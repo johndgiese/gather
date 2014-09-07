@@ -1,6 +1,6 @@
 describe('The menu service', function() {
 
-  beforeEach(module('join'));
+  beforeEach(module('util.menuService'));
 
   var menuService;
   beforeEach(inject(function(_menuService_) {

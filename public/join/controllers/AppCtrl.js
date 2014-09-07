@@ -43,8 +43,6 @@ angular.module('join')
       console.log(error);
 
     });
-
-
   }
 ]);
 

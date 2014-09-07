@@ -23,7 +23,7 @@ exports.setup = function(socket) {
   socket.on('createPlayer', createPlayer);
   socket.on('createGame', createGame);
   socket.on('joinGame', joinGame);
-  socket.on('leaveParty', leaveParty);
+  socket.on('leaveGame', leaveGame);
   socket.on('disconnect', disconnect);
 
   socket.on('startGame', startGame);
@@ -281,7 +281,7 @@ exports.setup = function(socket) {
    * Marks the player-game connection as inactive at the database level, and
    * clears out the socket state.
    */
-  function leaveParty(data, acknowledge) {
+  function leaveGame(data, acknowledge) {
     Q.fcall(function() {
       debugSocketState();
       requirePlayerInParty();

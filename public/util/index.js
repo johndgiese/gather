@@ -1,1 +1,3 @@
-angular.module('util', []);
+angular.module('util', [
+  'util.menuService',
+]);

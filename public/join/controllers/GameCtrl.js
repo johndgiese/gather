@@ -1,7 +1,7 @@
 angular.module('join')
 .controller('GameCtrl', [
-  '$scope', '$state', '$stateParams', 'ScopedSocket', 'gameState', '$q', '$location', '$rootScope', 'stateResolver', 'player',
-  function($scope, $state, $stateParams, ScopedSocket, gameState, $q,  $location, $rootScope, stateResolver, player) {
+  '$scope', '$state', '$stateParams', 'ScopedSocket', 'gameState', '$q', '$location', '$rootScope', 'stateResolver', 'player', 'menuService',
+  function($scope, $state, $stateParams, ScopedSocket, gameState, $q,  $location, $rootScope, stateResolver, player, menuService) {
     var socket = new ScopedSocket($scope);
 
     $scope.link = $location.absUrl();
@@ -58,5 +58,20 @@ angular.module('join')
     }
 
   }
-]);
+])
 
+
+.config(['menuServiceProvider', function(menuServiceProvider) {
+
+    menuServiceProvider.registerItem({
+      title: 'Leave Game',
+      action: ['$state', 'socket', function($state, socket) { 
+        socket.emitp('leaveGame', {});
+        $state.go('app.landing');
+      }],
+      visible: ['$state', function($state) { 
+        return $state.current.name.substr(0, 3 + 1 + 4) === 'app.game'; 
+      }]
+    });
+
+}]);
