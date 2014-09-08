@@ -191,7 +191,8 @@ exports.join = function(socket, player, party, game, playerGameId) {
 
 
 function setupRoundStart(socket, player, game) {
-  setTimeout(function() {
+  return Q.delay(exports.INTER_ROUND_DELAY)
+  .then(function() {
     models.Round.newByGame(game.id)
     .then(function(round) {
       return round.forApi()
@@ -203,9 +204,7 @@ function setupRoundStart(socket, player, game) {
     .fail(function(reason) {
       logger.error(reason);
     });
-  }, exports.INTER_ROUND_DELAY);
-
-  return Q.when({});
+  });
 }
 
 
