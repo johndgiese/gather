@@ -258,7 +258,8 @@ exports.setup = function(socket) {
       requirePlayerInParty();
     })
     .then(function() {
-      game.startedOn = new Date(); game.startedOn.setMilliseconds(0);
+      game.startedOn = new Date();
+      game.startedOn.setMilliseconds(0);
       game.save()
       .then(function() {
         var gameModule = require('../' + game.type);
