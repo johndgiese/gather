@@ -5,6 +5,8 @@ var Q = require('q');
 var models = require('../join/models');
 var config = require('../config');
 
+var stateResolver = require('../words/stateResolver');
+
 var debug = require('debug')('gather:test');
 
 var SOCKET_URL = "http://localhost:" + config.PORT;
@@ -29,6 +31,26 @@ exports.expectError = function(data) {
   } else {
     expect(true).to.be(true);
   }
+};
+
+exports.expectStates = function(gameStates, state, others, otherState) {
+  if (others === undefined) {
+    others = [];
+  } else if (_.isNumber(others)) {
+    others = [others];
+  }
+
+  _.forEach(gameStates, function(gs, index) {
+    if (_.contains(others, index)) {
+      exports.expectState(gs, otherState);
+    } else {
+      exports.expectState(gs, state);
+    }
+  });
+};
+
+exports.expectState = function(gameState, state) {
+  expect(stateResolver(gameState)).to.be('app.game.words.' + state);
 };
 
 exports.expectNoError = function(data) {
