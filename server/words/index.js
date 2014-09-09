@@ -267,7 +267,7 @@ function requireValidVote(cardId, playerGameId, gameId) {
 }
 
 function requireNotVotedThisRound(playerGameId, gameId) {
-  var sql = 'SELECT Count(vId) AS votesThisRound FROM tbVote WHERE ' +
+  var sql = 'SELECT Count(vId) AS votesThisRound FROM tbVote JOIN tbCard USING(cId) WHERE ' +
     'rId=(SELECT rId FROM tbRound WHERE gId=? AND rDoneVoting IS NULL) ' +
     'AND tbVote.pgId=?';
   var inserts = [gameId, playerGameId];
