@@ -257,3 +257,11 @@ exports.allRecieve = function(clients, event, ms) {
   });
 };
 
+exports.anyRecieve = function(clients, event) { 
+  var deferred = Q.defer();
+  _.each(clients, function(c) {
+    return c.oncep(event, function() { deferred.resolve(); });
+  });
+  return deferred.promise;
+};
+

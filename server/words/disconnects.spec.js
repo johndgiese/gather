@@ -2,6 +2,7 @@ var expect = require('expect.js');
 var io = require('socket.io-client');
 var _ = require('underscore');
 var tu = require('../util/test');
+var playRoundWith = require('../util/playRound');
 var models = require('./models');
 var debug = require('debug')('gather:tests');
 var diff = require('deep-diff').diff;
@@ -26,6 +27,7 @@ describe('The words module can handle disconnects and reconnects', function() {
     disconnectIndicies.push(num);
 
     var gameStateBeforeDisconnect = gameStates[num];
+    
     clients[num].disconnect();
     return clients[num ? num - 1 : num + 1].oncep('playerDisconnected', function() {
       return tu.rejoinGame(players[num].id, party);
@@ -69,6 +71,60 @@ describe('The words module can handle disconnects and reconnects', function() {
     debug("disconnect indices: %j", disconnectIndicies);
   });
 
+  var disconnectHooks = {
+    beforeReadingPrompt: function(clients, gameStates, readerIndex) {
+      expectStates(gameStates, 'waitingForPromptReader', readerIndex, 'readPrompt');
+      return expectSameStateAfterReconnect();
+    },
+    beforeChoosing: function(clients, gameStates, readerIndex) {
+      expectStates(gameStates, 'choosing');
+      return expectSameStateAfterReconnect();
+    },
+    beforeChoice: function(clients, gameStates, readerIndex, index) {
+      expectState(gameStates[index], 'choosing');
+      if (index === (readerIndex + 1) % clients.length) {
+        return expectSameStateAfterReconnect();
+      } else {
+        return Q.when();
+      }
+    },
+    afterChoice: function(clients, gameStates, readerIndex, index) {
+      var isLastPerson = index === clients.length - 1;
+
+      if (!isLastPerson) {
+        expectState(gameStates[index], 'waitingForChoices');
+      }
+      if (index === (readerIndex + 1) % clients.length) {
+        return expectSameStateAfterReconnect();
+      } else {
+        return Q.when();
+      }
+    },
+    beforeReadingChoices: function(clients, gameStates, readerIndex) {
+      expectStates(gameStates, 'waitingForChoicesReader', readerIndex, 'readChoices');
+      return expectSameStateAfterReconnect();
+    },
+    beforeVote: function(clients, gameStates, readerIndex, index) {
+      expectState(gameStates[index], 'voting');
+      if (index === (readerIndex + 1) % clients.length) {
+        return expectSameStateAfterReconnect();
+      } else {
+        return Q.when();
+      }
+    },
+    afterVote: function(clients, gameStates, readerIndex, index) {
+      var isLastPerson = index === clients.length - 1;
+
+      if (!isLastPerson) {
+        expectState(gameStates[index], 'waitingForVotes');
+      }
+      if (index === (readerIndex + 1) % clients.length && !isLastPerson) {
+        return expectSameStateAfterReconnect();
+      } else {
+        return Q.when();
+      }
+    },
+  };
 
   function expectStates(gameStates, state, others, otherState) {
     if (others === undefined) {
@@ -79,11 +135,15 @@ describe('The words module can handle disconnects and reconnects', function() {
 
     _.forEach(gameStates, function(gs, index) {
       if (_.contains(others, index)) {
-        expect(stateResolver(gs)).to.be('app.game.words.' + otherState);
+        expectState(gs, otherState);
       } else {
-        expect(stateResolver(gs)).to.be('app.game.words.' + state);
+        expectState(gs, state);
       }
     });
+  }
+
+  function expectState(gameState, state) {
+    expect(stateResolver(gameState)).to.be('app.game.words.' + state);
   }
 
   it('after setting up the game', function(done) {
@@ -130,8 +190,8 @@ describe('The words module can handle disconnects and reconnects', function() {
     Q.all([
       clients[0].emitp('startGame', {}, tu.expectNoError),
       tu.allRecieve(clients, 'gameStarted'),
+      playRoundWith(clients, gameStates, disconnectHooks)()
     ])
-    .then(playRound)
     .then(function() {
       done();
     })
@@ -140,6 +200,9 @@ describe('The words module can handle disconnects and reconnects', function() {
 
   it("you can join/rejoin through out several rounds", function(done) {
     this.timeout(5000);
+
+    var playRound = playRoundWith(clients, gameStates, disconnectHooks);
+
     playRound()
     .then(function() {
       return tu.cardsInGame(gameStates[0].game.id);
@@ -155,105 +218,5 @@ describe('The words module can handle disconnects and reconnects', function() {
     })
     .fail(done);
   });
-
-
-  /**
-   * Play through a round of the game.
-   * Assumes that a `roundStarted` event will be emmited by the server after
-   * calling this function.
-   */
-  function playRound() {
-    debug("starting next round");
-
-    var readerIndex = null;
-    var specialIndex = null;  // used to keep track of who voted/choose
-
-    return Q.fcall(function() {
-      expectStates(gameStates, 'score');
-      return tu.allRecieve(clients, 'roundStarted', 10)
-      .then(function() {
-        debug("round started: %s", _.last(gameStates[0].custom.rounds).number);
-        var readerId = _.last(gameStates[0].custom.rounds).reader;
-        for(var i = 0; i < gameStates.length; i++) {
-          if (gameStates[i].you === readerId) {
-            readerIndex = i;
-            break;
-          }
-        }
-      });
-    })
-    .then(function() {
-      debug("waiting for prompt reader");
-      expectStates(gameStates, 'waitingForPromptReader', readerIndex, 'readPrompt');
-      return expectSameStateAfterReconnect();
-    })
-    .then(function() {
-      return Q.all([
-        clients[readerIndex].emitp('doneReadingPrompt', {}, tu.expectNoError),
-        tu.allRecieve(clients, 'readingPromptDone'),
-      ]);
-    })
-    .then(function() {
-      debug("choosing");
-      expectStates(gameStates, 'choosing');
-      return expectSameStateAfterReconnect();
-    })
-    .then(function() {
-      specialIndex = _.random(gameStates.length - 1);
-      return tu.makeChoice(clients[specialIndex], gameStates[specialIndex])
-      .then(function() {
-        expectStates(gameStates, 'choosing', specialIndex, 'waitingForChoices');
-        return expectSameStateAfterReconnect();
-      });
-    })
-    .then(function() {
-      var promises = [];
-      for(var i = 0; i < gameStates.length; i++) {
-        if (i !== specialIndex) {
-          promises.push(tu.makeChoice(clients[i], gameStates[i]));
-        }
-      }
-      promises.push(tu.allRecieve(clients, 'choosingDone'));
-      return Q.all(promises);
-    })
-    .then(function() {
-      debug("choosing done");
-      expectStates(gameStates, 'waitingForChoicesReader', readerIndex, 'readChoices');
-      return expectSameStateAfterReconnect();
-    })
-    .then(function() {
-      return Q.all([
-        clients[readerIndex].emitp('doneReadingChoices', {}, tu.expectNoError),
-        tu.allRecieve(clients, 'readingChoicesDone'),
-      ]);
-    })
-    .then(function() {
-      debug("done reading choices");
-      expectStates(gameStates, 'voting');
-      specialIndex = _.random(gameStates.length - 1);
-      return Q.all([
-        tu.castVote(clients[specialIndex], gameStates[specialIndex]),
-        tu.allRecieve(clients, 'voteCast'),
-      ]);
-    })
-    .then(function() {
-      expectStates(gameStates, 'voting', specialIndex, 'waitingForVotes');
-      return expectSameStateAfterReconnect();
-    })
-    .then(function() {
-      var promises = [];
-      for(var i = 0; i < gameStates.length; i++) {
-        if (i !== specialIndex) {
-          promises.push(tu.castVote(clients[i], gameStates[i]));
-        }
-      }
-      promises.push(tu.allRecieve(clients, 'votingDone'));
-      return Q.all(promises);
-    })
-    .then(function() {
-      debug("done voting");
-      return Q.when({});
-    });
-  }
 
 });
