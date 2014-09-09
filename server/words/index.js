@@ -191,7 +191,9 @@ exports.join = function(socket, player, party, game, playerGameId) {
 
 
 function setupRoundStart(socket, player, game) {
-  return Q.delay(exports.INTER_ROUND_DELAY)
+
+  // NOTE: errors in the following code won't be caught
+  Q.delay(exports.INTER_ROUND_DELAY)
   .then(function() {
     models.Round.newByGame(game.id)
     .then(function(round) {
@@ -205,6 +207,8 @@ function setupRoundStart(socket, player, game) {
       logger.error(reason);
     });
   });
+
+  return Q.when();
 }
 
 
