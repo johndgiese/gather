@@ -144,7 +144,10 @@ exports.join = function(socket, player, party, game, playerGameId) {
 
   function castVote(data, acknowledge) {
     Q.fcall(function() {
-      return requireValidVote(data.card, playerGameId, game.id);
+      return Q.all([
+        requireValidVote(data.card, playerGameId, game.id),
+        requireNotVotedThisRound(playerGameId, game.id),
+      ]);
     })
     // transactions ensure `setupRoundStart` is called only once
     .then(transaction.inOrderByGroup(party, function() {
@@ -259,6 +262,19 @@ function requireValidVote(cardId, playerGameId, gameId) {
     }
     else if (card.owner === playerGameId) {
       throw new Error("You can not vote for your own card! (pgId=" + playerGameId + ", owner=" + card.owner + ")");
+    }
+  });
+}
+
+function requireNotVotedThisRound(playerGameId, gameId) {
+  var sql = 'SELECT Count(vId) AS votesThisRound FROM tbVote WHERE ' +
+    'rId=(SELECT rId FROM tbRound WHERE gId=? AND rDoneVoting IS NULL) ' +
+    'AND tbVote.pgId=?';
+  var inserts = [gameId, playerGameId];
+  return models.Vote.rawOne(sql, inserts)
+  .then(function(data) {
+    if (data.votesThisRound !== 0) {
+      throw new Error("You have already voted " + data.cardsPlayedThisRound + " times this round!");
     }
   });
 }
