@@ -120,53 +120,6 @@ describe('The join socket API', function() {
       return clients[1].emitp('joinGame', {party: 'AAAAAA'}).should.be.rejectedWith(Error);
     });
 
-    it('should record the state as players come and go', function() {
-      var gameState;
-      return tu.activePlayers(party)
-      .then(function(activePlayers) {
-        expect(activePlayers).to.equal(1);
-        return tu.joinGame(clients[1], party);
-      })
-      .then(function() {
-        return tu.activePlayers(party);
-      })
-      .then(function(activePlayers) {
-        expect(activePlayers).to.equal(2);
-        return tu.joinGame(clients[2], party);
-      })
-      .then(function(gameState_) {
-        gameState = gameState_;
-        return tu.activePlayers(party);
-      })
-      .then(function(activePlayers) {
-        expect(activePlayers).to.equal(3);
-        var promise = clients[0].oncep('playerLeft')
-        .then(function(leavingPlayer) {
-          expect(leavingPlayer).to.eql(gameState.players[1]);
-        });
-        clients[1].emitp('leaveGame', {});
-        return promise;
-      })
-      .then(function() {
-        return tu.activePlayers(party);
-      })
-      .then(function(activePlayers) {
-        expect(activePlayers).to.equal(2);
-        var playerAboutToLeave = gameState.players[0];
-        var promise = clients[2].oncep('playerLeft')
-        .then(function(leavingPlayer) {
-          expect(leavingPlayer).to.eql(playerAboutToLeave);
-        });
-        clients[0].emitp('leaveGame', {});
-        return promise;
-      })
-      .then(function() {
-        return tu.activePlayers(party);
-      })
-      .then(function(activePlayers) {
-        expect(activePlayers).to.equal(1);
-      });
-    });
   });
 
   describe('should never change state if there is an error', function() {

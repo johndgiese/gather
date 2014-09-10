@@ -9,7 +9,7 @@ var Game = require('../join/models').Game;
 // keep inter round delay short during tests
 words.INTER_ROUND_DELAY = 200;
 
-describe.only('The words module can handle players leaving and coming', function() {
+describe('The words module can handle players leaving and coming', function() {
 
   var clients, players, party, gameStates = [];
   beforeEach(function() {
