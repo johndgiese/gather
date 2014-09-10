@@ -1,4 +1,5 @@
-var expect = require('expect.js');
+var expect = require('../expect');
+
 var io = require('socket.io-client');
 var _ = require('underscore');
 var tu = require('../util/test');
@@ -29,7 +30,8 @@ describe('The words module can handle disconnects and reconnects', function() {
     var gameStateBeforeDisconnect = gameStates[num];
     
     clients[num].disconnect();
-    return clients[num ? num - 1 : num + 1].oncep('playerDisconnected', function() {
+    return clients[num ? num - 1 : num + 1].oncep('playerDisconnected')
+    .then(function() {
       return tu.rejoinGame(players[num].id, party);
     })
     .then(function(data) {
@@ -56,7 +58,7 @@ describe('The words module can handle disconnects and reconnects', function() {
         console.log(gameStateBeforeDisconnect.custom);
         console.log(gameStateAfterReconnect.custom);
       }
-      expect(_.isEqual(gameStateAfterReconnect, gameStateBeforeDisconnect)).to.be(true);
+      expect(_.isEqual(gameStateAfterReconnect, gameStateBeforeDisconnect)).to.equal(true);
 
       gameStates[num] = gameStateAfterReconnect;
       return Q.when({});
@@ -127,9 +129,9 @@ describe('The words module can handle disconnects and reconnects', function() {
   };
 
 
-  it('after setting up the game', function(done) {
+  it('after setting up the game', function() {
     clients = tu.setupClients(3);
-    tu.setupPlayers(clients).then(function(players_) {
+    return tu.setupPlayers(clients).then(function(players_) {
       players = players_;
     })
     .then(function() {
@@ -151,53 +153,39 @@ describe('The words module can handle disconnects and reconnects', function() {
       })
       .then(function(gs) {
         gameStates.push(gs);
-        done();
       });
-    })
-    .fail(done);
+    });
   });
 
-  it("should be possible for players to join/rejoin before the game starts", function(done) {
-    _.forEach(gameStates, function(gs) { expect(gs.players.length).to.be(3); });
-    _.forEach(gameStates, function(gs) { expect(stateResolver(gs)).to.be('app.game'); });
-    expectSameStateAfterReconnect(1)
-    .then(function() {
-      done();
-    })
-    .fail(done);
+  it("should be possible for players to join/rejoin before the game starts", function() {
+    _.each(gameStates, function(gs) { expect(gs.players.length).to.equal(3); });
+    _.each(gameStates, function(gs) { expect(stateResolver(gs)).to.equal('app.game'); });
+    return expectSameStateAfterReconnect(1);
   });
 
-  it("you can join/rejoin through out a round", function(done) {
-    Q.all([
-      clients[0].emitp('startGame', {}, tu.expectNoError),
-      tu.allRecieve(clients, 'gameStarted'),
-      playRoundWith(clients, gameStates, disconnectHooks)()
+  it("you can join/rejoin through out a round", function() {
+    return Q.all([
+      tu.allRecieve(clients, 'roundStarted'),
+      clients[0].emitp('startGame', {}),
     ])
-    .then(function() {
-      done();
-    })
-    .fail(done);
+    .then(playRoundWith(clients, gameStates, disconnectHooks));
   });
 
-  it("you can join/rejoin through out several rounds", function(done) {
+  it("you can join/rejoin through out several rounds", function() {
     this.timeout(5000);
 
     var playRound = playRoundWith(clients, gameStates, disconnectHooks);
 
-    playRound()
+    return playRound()
     .then(function() {
       return tu.cardsInGame(gameStates[0].game.id);
     })
     .then(function(result) {
-      expect(result.count).to.be(3*dealer.CARDS_IN_HAND + 3*2);
+      expect(result.count).to.equal(3*dealer.CARDS_IN_HAND + 3*2);
       return playRound();
     })
     .then(playRound)
-    .then(playRound)
-    .then(function() {
-      done();
-    })
-    .fail(done);
+    .then(playRound);
   });
 
 });

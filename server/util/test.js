@@ -1,4 +1,5 @@
-var expect = require('expect.js');
+var expect = require('../expect');
+
 var io = require('socket.io-client');
 var _ = require('underscore');
 var Q = require('q');
@@ -25,14 +26,6 @@ var delay = exports.delay = function(ms) {
 };
 
 
-exports.expectError = function(data) {
-  if (data._error === undefined) {
-    expect().fail('Expected an error in the response!');
-  } else {
-    expect(true).to.be(true);
-  }
-};
-
 exports.expectStates = function(gameStates, state, others, otherState) {
   if (others === undefined) {
     others = [];
@@ -50,15 +43,7 @@ exports.expectStates = function(gameStates, state, others, otherState) {
 };
 
 exports.expectState = function(gameState, state) {
-  expect(stateResolver(gameState)).to.be('app.game.words.' + state);
-};
-
-exports.expectNoError = function(data) {
-  if (data._error !== undefined) {
-    expect().fail('Expected no error, recieved: ' + data._error);
-  } else {
-    expect(true).to.be(true);
-  }
+  expect(stateResolver(gameState)).to.equal('app.game.words.' + state);
 };
 
 exports.setupClients = function(num) {
@@ -78,23 +63,23 @@ exports.setupClient = setupClient = function() {
 
 function emitPromise(event, data, ack) {
   var deferred = Q.defer();
-  this.emit(event, data, function(data) {
-    try {
-      deferred.resolve(ack(data));
-    } catch (e) {
-      deferred.reject(e);
+  this.emit(event, data, function(response) {
+    if (response._error === undefined) {
+      deferred.resolve(response);
+    } else {
+      deferred.reject(new Error(response._error));
     }
   });
   return deferred.promise;
 }
 
-function oncePromise(event, callback) {
+function oncePromise(event) {
   var deferred = Q.defer();
-  this.once(event, function(data) {
-    try {
-      deferred.resolve(callback(data));
-    } catch (e) {
-      deferred.reject(e);
+  this.once(event, function(response) {
+    if (response === undefined || response._error === undefined) {
+      deferred.resolve(response);
+    } else {
+      deferred.reject(new Error(response._error));
     }
   });
   return deferred.promise;
@@ -104,7 +89,8 @@ exports.setupPlayers = function(clients) {
   var count = 0;
   var players = _.map(clients, function(client) {
     var name = 'player' + String(count++);
-    return client.emitp('createPlayer', {name: name}, function(player) {
+    return client.emitp('createPlayer', {name: name})
+    .then(function(player) {
       return player;
     });
   });
@@ -121,7 +107,8 @@ exports.setupPlayers = function(clients) {
  */
 exports.rejoinGame = function(playerId, party) {
   var client = setupClient();
-  return client.emitp('login', {id: playerId}, function(player) {
+  return client.emitp('login', {id: playerId})
+  .then(function(player) {
     return joinGame(client, party)
     .then(function(gameState) {
       return [client, gameState];
@@ -135,10 +122,8 @@ exports.rejoinGame = function(playerId, party) {
 // UPDATES DONE HERE SHOULD LIKLEY BE UPDATED IN BOTH PLACES
 // TODO: modularize and include in front end
 var joinGame = exports.joinGame = function(client, party) {
-  return client.emitp('joinGame', {party: party}, function(gameState) {
-    if (gameState._error !== undefined) {
-      throw new Error(gameState._error);
-    }
+  return client.emitp('joinGame', {party: party})
+  .then(function(gameState) {
 
     client.on('gameStarted', function(data) {
       gameState.game.startedOn = data.startedOn;
@@ -231,7 +216,8 @@ exports.cardsInGame = function(gameId) {
 };
 
 exports.setupGame = function(client, type) {
-  return client.emitp('createGame', {type: type}, function(data) {
+  return client.emitp('createGame', {type: type})
+  .then(function(data) {
     return data.party;
   });
 };
@@ -249,7 +235,8 @@ exports.makeChoice = function(client, gameState) {
   return client.emitp('chooseCard', {
     card: card.id,
     round: _.last(gameState.custom.rounds).id
-  }, function(newCard) {
+  })
+  .then(function(newCard) {
     gameState.custom.hand[index] = newCard;
   });
 };
@@ -261,14 +248,14 @@ exports.castVote = function(client, gameState) {
   return client.emitp('castVote', {
     card: validChoices[0].card.id,
     round: _.last(gameState.custom.rounds).id
-  }, function(data) {
+  }).then(function(data) {
     return Q.when(data);
   });
 };
 
 exports.allRecieve = function(clients, event, ms) { 
   return Q.all(_.map(clients, function(c) {
-    return c.oncep(event, function() { return Q.when({}); });
+    return c.oncep(event);
   }))
   .then(function(result) {
     if (ms === undefined) {
@@ -282,7 +269,7 @@ exports.allRecieve = function(clients, event, ms) {
 exports.anyRecieve = function(clients, event) { 
   var deferred = Q.defer();
   _.each(clients, function(c) {
-    return c.oncep(event, function() { deferred.resolve(); });
+    return c.oncep(event);
   });
   return deferred.promise;
 };

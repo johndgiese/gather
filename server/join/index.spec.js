@@ -1,4 +1,5 @@
-var expect = require('expect.js');
+var expect = require('../expect');
+
 var io = require('socket.io-client');
 var config = require('../config');
 var _ = require('underscore');
@@ -11,152 +12,126 @@ describe('The join socket API', function() {
 
   var client;
 
-  beforeEach(function(done) {
+  beforeEach(function() {
     client = tu.setupClient();
-    client.once('connect', done);
+    return client.oncep('connect');
   });
 
   describe('provides a way to create players', function() {
-    it('returns a player object on success', function(done) {
-      client.emitp('createPlayer', {name: 'test player'}, function(data) {
-        expect(data.id).not.to.be(undefined);
-        done();
-      }).fail(done);
+    it('returns a player object on success', function() {
+      return client.emitp('createPlayer', {name: 'test player'})
+      .then(function(data) {
+        expect(data.id).not.to.equal(undefined);
+      });
     });
-    it('returns an error if an invalid data is passed into it', function(done) {
-      client.emitp('createPlayer', 3, function(data) {
-        tu.expectError(data);
-        done();
-      }).fail(done);
+    it('returns an error if an invalid data is passed into it', function() {
+      return client.emitp('createPlayer', 3).should.be.rejectedWith(Error);
     });
-    it('returns an error if the name is too long', function(done) {
+    it('returns an error if the name is too long', function() {
       var longName = new Array(101 + 1).join('a');
-      client.emitp('createPlayer', {name: longName}, function(data) {
-        tu.expectError(data);
-        done();
-      }).fail(done);
+      return client.emitp('createPlayer', {name: longName}).should.be.rejectedWith(Error);
     });
-    it('returns an error if already attached to a player', function(done) {
-      client.emitp('createPlayer', {name: 'david'}, function(data) {
-        tu.expectNoError(data);
-        client.emit('createPlayer', {name: 'david'}, function(data) {
-          tu.expectError(data);
-          done();
-        });
-      }).fail(done);
+    it('returns an error if already attached to a player', function() {
+      return client.emitp('createPlayer', {name: 'david'})
+      .then(function(data) {
+        return client.emitp('createPlayer', {name: 'david'}).should.be.rejectedWith(Error);
+      });
     });
   });
 
   describe('provides a way to log back in as a player', function() {
     var player;
-    it('if you create a player', function(done) {
-      client.emitp('createPlayer', {name: 'test player'}, function(player_) {
+    it('if you create a player', function() {
+      return client.emitp('createPlayer', {name: 'test player'})
+      .then(function(player_) {
         player = player_;
-        expect(player_._error).to.be(undefined);
-        done();
-      }).fail(done);
+      });
     });
-    it('you can then log back in with a different connection', function(done) {
-      client.emitp('login', {id: player.id}, function(player_) {
+    it('you can then log back in with a different connection', function() {
+      return client.emitp('login', {id: player.id})
+      .then(function(player_) {
         expect(player_).to.eql(player_);
-        done();
-      }).fail(done);
+      });
     });
-    it('if you login with an invalid id you get an error', function(done) {
-      client.emitp('login', {id: 40000000}, function(data) {
-        expect(data._error).not.to.be(undefined);
-        done();
-      }).fail(done);
+    it('if you login with an invalid id you get an error', function() {
+      return client.emitp('login', {id: 40000000}).should.be.rejectedWith(Error);
     });
 
   });
 
   describe('provides a way of creating games', function() {
     var player;
-    beforeEach(function(done) {
-      client.emit('createPlayer', {name: 'david'}, function(player_) {
+    beforeEach(function() {
+      return client.emitp('createPlayer', {name: 'david'})
+      .then(function(player_) {
         player = player_;
-        done();
       });
     });
 
-    it('returns the party promise', function(done) {
-      client.emitp('createGame', {type: 'dummy'}, function(data) {
-        expect(_.isString(data.party)).to.be(true);
-        done();
-      }).fail(done);
+    it('returns the party promise', function() {
+      return client.emitp('createGame', {type: 'dummy'})
+      .then(function(data) {
+        expect(_.isString(data.party)).to.equal(true);
+      });
     });
-    it.skip('requires that the player owns the game', function(done) {
-      done();
+    it.skip('requires that the player owns the game', function() {
     });
-    it('throws an error if there is no `createPlayer` call first', function(done) {
+    it('throws an error if there is no `createPlayer` call first', function() {
       var client = tu.setupClient();
-      client.emitp('createGame', {type: 'dummy'}, function(data) {
-        tu.expectError(data);
-        done();
-      }).fail(done);
+      client.emitp('createGame', {type: 'dummy'}).should.be.rejectedWith(Error);
     });
   });
 
   describe('provides a way to join and leave existing games', function() {
 
     var clients, players, party;
-    beforeEach(function(done) {
+    beforeEach(function() {
       clients = tu.setupClients(3);
-      tu.setupPlayers(clients)
+      return tu.setupPlayers(clients)
       .then(function(players_) {
         players = players_;
-        clients[0].emitp('createGame', {type: 'dummy'}, function(data) {
+        return clients[0].emitp('createGame', {type: 'dummy'})
+        .then(function(data) {
           party = data.party;
-        })
-        .then(function() {
-          clients[0].emitp('joinGame', {party: party}, function(data) {
-            done();
-          });
+          return clients[0].emitp('joinGame', {party: party});
         });
       });
     });
 
-    it('it broadcasts the event to other players in the party', function(done) {
+    it('it broadcasts the event to other players in the party', function() {
       var gameState;
 
-      var client0promise = clients[0].oncep('playerJoined', function(player) {
-        return player;
-      });
+      var client0promise = clients[0].oncep('playerJoined');
 
-      clients[1].emitp('joinGame', {party: party}, function(gameState_) {
+      return clients[1].emitp('joinGame', {party: party})
+      .then(function(gameState_) {
         gameState = gameState_;
         expect(gameState.game.id).to.be.a('number');
-        expect(_.isString(gameState.game.party)).to.be(true);
+        expect(_.isString(gameState.game.party)).to.equal(true);
         return client0promise;
       })
       .then(function(broadcastPlayer) {
         var playerInGameState = gameState.players[1];
         expect(broadcastPlayer).to.eql(playerInGameState);
-        done();
-      })
-      .fail(done);
+      });
     });
 
-    it('throws an error if given an invalid party', function(done) {
-      clients[1].emitp('joinGame', {party: 'AAAAAA'}, function(data) {
-        tu.expectError(data);
-        done();
-      }).fail(done);
+    it('throws an error if given an invalid party', function() {
+      return clients[1].emitp('joinGame', {party: 'AAAAAA'}).should.be.rejectedWith(Error);
     });
 
-    it('should record the state as players come and go', function(done) {
+    it('should record the state as players come and go', function() {
       var gameState;
-      tu.activePlayers(party)
+      return tu.activePlayers(party)
       .then(function(activePlayers) {
-        expect(activePlayers).to.be(1);
+        expect(activePlayers).to.equal(1);
         return tu.joinGame(clients[1], party);
       })
       .then(function() {
         return tu.activePlayers(party);
       })
       .then(function(activePlayers) {
-        expect(activePlayers).to.be(2);
+        expect(activePlayers).to.equal(2);
         return tu.joinGame(clients[2], party);
       })
       .then(function(gameState_) {
@@ -164,33 +139,33 @@ describe('The join socket API', function() {
         return tu.activePlayers(party);
       })
       .then(function(activePlayers) {
-        expect(activePlayers).to.be(3);
-        var promise = clients[0].oncep('playerLeft', function(leavingPlayer) {
+        expect(activePlayers).to.equal(3);
+        var promise = clients[0].oncep('playerLeft')
+        .then(function(leavingPlayer) {
           expect(leavingPlayer).to.eql(gameState.players[1]);
         });
-        clients[1].emit('leaveGame');
+        clients[1].emitp('leaveGame', {});
         return promise;
       })
       .then(function() {
         return tu.activePlayers(party);
       })
       .then(function(activePlayers) {
-        expect(activePlayers).to.be(2);
+        expect(activePlayers).to.equal(2);
         var playerAboutToLeave = gameState.players[0];
-        var promise = clients[2].oncep('playerLeft', function(leavingPlayer) {
+        var promise = clients[2].oncep('playerLeft')
+        .then(function(leavingPlayer) {
           expect(leavingPlayer).to.eql(playerAboutToLeave);
         });
-        clients[0].emit('leaveGame');
+        clients[0].emitp('leaveGame', {});
         return promise;
       })
       .then(function() {
         return tu.activePlayers(party);
       })
       .then(function(activePlayers) {
-        expect(activePlayers).to.be(1);
-        done();
-      })
-      .fail(done);
+        expect(activePlayers).to.equal(1);
+      });
     });
   });
 
