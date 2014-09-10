@@ -6,7 +6,6 @@ var tu = require('../util/test');
 var playRoundWith = require('../util/playRound');
 var models = require('./models');
 var debug = require('debug')('gather:tests');
-var diff = require('deep-diff').diff;
 
 var server = require('../index').server;
 var words = require('../words');
@@ -20,72 +19,19 @@ describe('The words module can handle disconnects and reconnects', function() {
 
   var clients, players, party, gameStates = [];
 
-  var disconnectIndicies = [];  // keep track in case we need to reproduce
-  function expectSameStateAfterReconnect(num) {
-    if (num === undefined) {
-      num = _.random(gameStates.length - 1);
-    }
-    disconnectIndicies.push(num);
-
-    var gameStateBeforeDisconnect = gameStates[num];
-    
-    clients[num].disconnect();
-    return clients[num ? num - 1 : num + 1].oncep('playerDisconnected')
-    .then(function() {
-      return tu.rejoinGame(players[num].id, party);
-    })
-    .then(function(data) {
-      clients[num] = data[0];
-      var gameStateAfterReconnect = data[1];
-
-
-      // sort players and cards to keep them in the same order for comparisons
-      gameStateAfterReconnect.players = _.sortBy(gameStateAfterReconnect.players, 'id');
-      gameStateBeforeDisconnect.players = _.sortBy(gameStateBeforeDisconnect.players, 'id');
-
-      gameStateAfterReconnect.custom.hand = _.sortBy(gameStateAfterReconnect.custom.hand, 'id');
-      gameStateBeforeDisconnect.custom.hand = _.sortBy(gameStateBeforeDisconnect.custom.hand, 'id');
-
-      gameStateAfterReconnect.custom.votes = _.sortBy(gameStateAfterReconnect.custom.votes, 'player');
-      gameStateBeforeDisconnect.custom.votes = _.sortBy(gameStateBeforeDisconnect.custom.votes, 'player');
-
-      gameStateAfterReconnect.custom.choices = _.sortBy(gameStateAfterReconnect.custom.choices, 'player');
-      gameStateBeforeDisconnect.custom.choices = _.sortBy(gameStateBeforeDisconnect.custom.choices, 'player');
-
-      var gsDiff = diff(gameStateBeforeDisconnect, gameStateAfterReconnect);
-      if (gsDiff !== undefined) {
-        console.log(gsDiff);
-        console.log(gameStateBeforeDisconnect.custom);
-        console.log(gameStateAfterReconnect.custom);
-      }
-      expect(_.isEqual(gameStateAfterReconnect, gameStateBeforeDisconnect)).to.equal(true);
-
-      gameStates[num] = gameStateAfterReconnect;
-      return Q.when({});
-    });
-  }
-
-  beforeEach(function() {
-    disconnectIndicies = [];
-  });
-
-  afterEach(function() {
-    debug("disconnect indices: %j", disconnectIndicies);
-  });
-
   var disconnectHooks = {
     beforeReadingPrompt: function(clients, gameStates, readerIndex) {
       tu.expectStates(gameStates, 'waitingForPromptReader', readerIndex, 'readPrompt');
-      return expectSameStateAfterReconnect();
+      return tu.expectSameStateAfterReconnect(clients, gameStates, players, party);
     },
     beforeChoosing: function(clients, gameStates, readerIndex) {
       tu.expectStates(gameStates, 'choosing');
-      return expectSameStateAfterReconnect();
+      return tu.expectSameStateAfterReconnect(clients, gameStates, players, party);
     },
     beforeChoice: function(clients, gameStates, readerIndex, index) {
       tu.expectState(gameStates[index], 'choosing');
       if (index === (readerIndex + 1) % clients.length) {
-        return expectSameStateAfterReconnect();
+        return tu.expectSameStateAfterReconnect(clients, gameStates, players, party);
       } else {
         return Q.when();
       }
@@ -97,19 +43,19 @@ describe('The words module can handle disconnects and reconnects', function() {
         tu.expectState(gameStates[index], 'waitingForChoices');
       }
       if (index === (readerIndex + 1) % clients.length) {
-        return expectSameStateAfterReconnect();
+        return tu.expectSameStateAfterReconnect(clients, gameStates, players, party);
       } else {
         return Q.when();
       }
     },
     beforeReadingChoices: function(clients, gameStates, readerIndex) {
       tu.expectStates(gameStates, 'waitingForChoicesReader', readerIndex, 'readChoices');
-      return expectSameStateAfterReconnect();
+      return tu.expectSameStateAfterReconnect(clients, gameStates, players, party);
     },
     beforeVote: function(clients, gameStates, readerIndex, index) {
       tu.expectState(gameStates[index], 'voting');
       if (index === (readerIndex + 1) % clients.length) {
-        return expectSameStateAfterReconnect();
+        return tu.expectSameStateAfterReconnect(clients, gameStates, players, party);
       } else {
         return Q.when();
       }
@@ -121,46 +67,27 @@ describe('The words module can handle disconnects and reconnects', function() {
         tu.expectState(gameStates[index], 'waitingForVotes');
       }
       if (index === (readerIndex + 1) % clients.length && !isLastPerson) {
-        return expectSameStateAfterReconnect();
+        return tu.expectSameStateAfterReconnect(clients, gameStates, players, party);
       } else {
         return Q.when();
       }
     },
   };
 
-
   it('after setting up the game', function() {
-    clients = tu.setupClients(3);
-    return tu.setupPlayers(clients).then(function(players_) {
-      players = players_;
-    })
-    .then(function() {
-      return tu.setupGame(clients[0], 'words');
-    })
-    .then(function(party_) {
-      party = party_;
-
-      // make players join in order, so we know how clients map to player
-      // roles during a round; i.e. clients[0] is the first reader
-      return tu.joinGame(clients[0], party)
-      .then(function(gs) {
-        gameStates.push(gs);
-        return tu.joinGame(clients[1], party);
-      })
-      .then(function(gs) {
-        gameStates.push(gs);
-        return tu.joinGame(clients[2], party);
-      })
-      .then(function(gs) {
-        gameStates.push(gs);
-      });
+    return tu.setupAndJoinGame(3, 'words')
+    .then(function(data) {
+      clients = data.clients;
+      players = data.players;
+      party = data.party;
+      gameStates = data.gameStates;
     });
   });
 
   it("should be possible for players to join/rejoin before the game starts", function() {
     _.each(gameStates, function(gs) { expect(gs.players.length).to.equal(3); });
     _.each(gameStates, function(gs) { expect(stateResolver(gs)).to.equal('app.game'); });
-    return expectSameStateAfterReconnect(1);
+    return tu.expectSameStateAfterReconnect(clients, gameStates, players, party, 1);
   });
 
   it("you can join/rejoin through out a round", function() {

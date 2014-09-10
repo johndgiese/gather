@@ -5,6 +5,8 @@ var _ = require('underscore');
 var Q = require('q');
 var models = require('../join/models');
 var config = require('../config');
+var diff = require('deep-diff').diff;
+var deepcopy = require('deepcopy');
 
 var stateResolver = require('../words/stateResolver');
 
@@ -46,7 +48,49 @@ exports.expectState = function(gameState, state) {
   expect(stateResolver(gameState)).to.equal('app.game.words.' + state);
 };
 
-exports.setupClients = function(num) {
+/**
+ * Compare two game states to ensure they are functionally the same.
+ * @returns {boolean}
+ */
+var compareGameStates = exports.compareGameStates = function(gameStateOne, gameStateTwo) {
+
+  gameStateOne.players = _.sortBy(gameStateOne.players, 'id');
+  gameStateTwo.players = _.sortBy(gameStateTwo.players, 'id');
+
+  gameStateOne.custom.hand = _.sortBy(gameStateOne.custom.hand, 'id');
+  gameStateTwo.custom.hand = _.sortBy(gameStateTwo.custom.hand, 'id');
+
+  gameStateOne.custom.votes = _.sortBy(gameStateOne.custom.votes, 'player');
+  gameStateTwo.custom.votes = _.sortBy(gameStateTwo.custom.votes, 'player');
+
+  gameStateOne.custom.choices = _.sortBy(gameStateOne.custom.choices, 'player');
+  gameStateTwo.custom.choices = _.sortBy(gameStateTwo.custom.choices, 'player');
+
+  var gsDiff = diff(gameStateTwo, gameStateOne);
+  if (gsDiff !== undefined) {
+    debug(gsDiff);
+    debug(gameStateTwo.custom);
+    debug(gameStateOne.custom);
+  }
+
+  return _.isEqual(gameStateOne, gameStateTwo);
+};
+
+exports.expectSameStateAfterReconnect = function(clients, gameStates, players, party, num) {
+  if (num === undefined) {
+    num = _.random(gameStates.length - 1);
+  }
+
+  var gameStateBeforeDisconnect = deepcopy(gameStates[num]);
+  return rejoinGame(clients, gameStates, num, players[num].id, party)
+  .then(function() {
+    var gameStateAfterReconnect = deepcopy(gameStates[num]);
+    expect(compareGameStates(gameStateBeforeDisconnect, gameStateAfterReconnect)).to.equal(true);
+  });
+};
+
+
+var setupClients = exports.setupClients = function(num) {
   var clients = [];
   for(var i = 0; i < num; i++) {
     clients[i] = setupClient();
@@ -85,7 +129,7 @@ function oncePromise(event) {
   return deferred.promise;
 }
 
-exports.setupPlayers = function(clients) {
+var setupPlayers = exports.setupPlayers = function(clients) {
   var count = 0;
   var players = _.map(clients, function(client) {
     var name = 'player' + String(count++);
@@ -100,20 +144,28 @@ exports.setupPlayers = function(clients) {
 
 /**
  * Rejoin a game.
+ * @arg - Array of clients
+ * @arg - index of the player in the array
  * @arg {number} - playerId
  * @arg {string} - party
- * @returns - a promise for an array, whose first element is the connection,
- * and the second element is the gameState.
+ * @returns - a promise for when the player has reconnected
  */
-exports.rejoinGame = function(playerId, party) {
-  var client = setupClient();
-  return client.emitp('login', {id: playerId})
-  .then(function(player) {
-    return joinGame(client, party)
-    .then(function(gameState) {
-      return [client, gameState];
+var rejoinGame = exports.rejoinGame = function(clients, gameStates, index, playerId, party) {
+  var promise = clients[index ? index - 1 : index + 1]
+  .oncep('playerDisconnected')
+  .then(function() {
+    var client = clients[index] = setupClient();
+    return client.emitp('login', {id: playerId})
+    .then(function(player) {
+      return joinGame(client, party)
+      .then(function(gameState) {
+        gameStates[index] = gameState;
+      });
     });
   });
+
+  clients[index].disconnect();
+  return promise;
 };
 
 
@@ -215,18 +267,48 @@ exports.cardsInGame = function(gameId) {
                    '(SELECT pgId FROM tbPlayerGame WHERE gId=?)', gameId);
 };
 
-exports.setupGame = function(client, type) {
+var setupGame = exports.setupGame = function(client, type) {
   return client.emitp('createGame', {type: type})
   .then(function(data) {
     return data.party;
   });
 };
 
-exports.allJoinGame = function(clients, party) {
-  var joined = _.map(clients, function(client) {
-    return joinGame(client, party);
+exports.setupAndJoinGame = function(numPlayers, type) {
+  var out = {};
+  out.clients = setupClients(numPlayers);
+  return setupPlayers(out.clients)
+  .then(function(players) {
+    out.players = players;
+    return setupGame(out.clients[0], type);
+  })
+  .then(function(party) {
+    out.party = party;
+    return allJoinGame(out.clients, party);
+  })
+  .then(function(gameStates) {
+    out.gameStates = gameStates;
+    return out;
   });
-  return Q.all(joined);
+};
+
+/**
+ * Make all the provided clients join the party, serially.
+ * @arg - array of sockets
+ * @arg {string} - party
+ * @return - promise for array of game states
+ */
+var allJoinGame = exports.allJoinGame = function(clients, party) {
+  var gameStates = [];
+  var promise = Q.when();
+  _.each(clients, function(client) {
+    promise = promise.then(function() {
+      return joinGame(client, party).then(function(gameState) {
+        gameStates.push(gameState);
+      });
+    });
+  });
+  return promise.then(function() { return gameStates; });
 };
 
 exports.makeChoice = function(client, gameState) {

@@ -12,7 +12,8 @@
     "underscore": "^1.6",
     "winston": "^0.7",
     "mkdirp": "~0.5.0",
-    "debug": "~1.0.2"
+    "debug": "~1.0.2",
+    "deepcopy": "~0.3.3"
   },
   "devDependencies": {
     "grunt": "^0.4",
