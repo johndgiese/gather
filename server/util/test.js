@@ -182,13 +182,13 @@ var joinGame = exports.joinGame = function(client, party) {
     });
 
     // TODO: figure out error handling on this stuff
-    client.on('playerLeft', function(player) {
-      var playerInListAlready = _.findWhere(gameState.players, {id: player.id}) !== undefined;
+    client.on('playerLeft', function(data) {
+      var playerInListAlready = _.findWhere(gameState.players, {id: data.player.id}) !== undefined;
       if (!playerInListAlready) {
         throw new Error("Inconsistent State: removing player that doesn't exist");
       } else {
         gameState.players = _.reject(gameState.players, function(p) {
-          return p.id === player.id;
+          return p.id === data.player.id;
         });
       }
     });

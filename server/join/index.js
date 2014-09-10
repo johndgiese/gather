@@ -14,9 +14,15 @@ exports.setup = function(socket) {
   var player = null;
 
   // null if the player isn't in a party
-  var party = null;
-  var playerGameId = null;
-  var game = null;
+  var party, playerGameId, game;
+
+  function clearPartyState() {
+    party = null;
+    playerGameId = null;
+    game = null;
+  }
+
+  clearPartyState();
 
   socket.on('login', login);
   socket.on('logout', logout);
@@ -47,18 +53,6 @@ exports.setup = function(socket) {
   function requirePlayerInParty() {
     if (party === null) {
       throw new Error('Player is not in a party');
-    }
-  }
-
-  function requirePlayerNotInParty() {
-    if (party !== null) {
-      throw new Error('Player is already in a party');
-    }
-  }
-
-  function requireSameParty(party_) {
-    if (party !== null && party !== party_) {
-      throw new Error("Can't join another party until leaving the current one");
     }
   }
 
@@ -196,7 +190,6 @@ exports.setup = function(socket) {
     Q.fcall(function() {
       debugSocketState();
       requirePlayer();
-      requireSameParty(data.party);
     })
     .then(function() {
       // TODO: add throttling to help prevent people from joining other
@@ -204,6 +197,8 @@ exports.setup = function(socket) {
       // TODO: teardown any listeners from previous games
       // TODO: make this more efficient for the person making the game (who
       // already has the game reference)
+      clearPartyState();
+
       var broadcast;
       return models.Game.getByParty(data.party)
       .then(transaction.inOrderByGroup(data.party, function(game_) {
@@ -244,6 +239,7 @@ exports.setup = function(socket) {
     })
     .fail(function(error) {
       logger.error(error);
+      clearPartyState();
       acknowledge({_error: "Unable to join game"});
     });
   }
@@ -282,6 +278,7 @@ exports.setup = function(socket) {
    * Marks the player-game connection as inactive at the database level, and
    * clears out the socket state.
    */
+  // TODO: eventually only close if is the last owener in the game
   function leaveGame(data, acknowledge) {
     Q.fcall(function() {
       debugSocketState();
@@ -291,18 +288,27 @@ exports.setup = function(socket) {
       return player.leave(party);
     })
     .then(function() {
-      socket.broadcast.to(party).emit('playerLeft', {
-        name: player.name,
-        id: playerGameId
-      });
 
       // stop the game if the creator leaves
-      if (game.createdBy === player.id) {
+      var leavingPlayerIsCreator = game.createdBy === player.id;
+      var gameCleanupPromise;
+      if (leavingPlayerIsCreator) {
         game.party = null;
-        return game.save();
+        gameCleanupPromise = game.save();
       } else {
-        return Q.when();
+        gameCleanupPromise = Q.when();
       }
+
+      return gameCleanupPromise
+      .then(function() {
+        socket.broadcast.to(party).emit('playerLeft', {
+          player: {
+            name: player.name,
+            id: playerGameId
+          },
+          gameOver: leavingPlayerIsCreator
+        });
+      });
     })
     .then(function() {
       socket.leave(party);

@@ -1,7 +1,7 @@
 angular.module('join')
 .controller('GameCtrl', [
-  '$scope', '$state', '$stateParams', 'ScopedSocket', 'gameState', '$q', '$location', '$rootScope', 'stateResolver', 'player', 'menuService',
-  function($scope, $state, $stateParams, ScopedSocket, gameState, $q,  $location, $rootScope, stateResolver, player, menuService) {
+  '$scope', '$state', 'ScopedSocket', 'gameState', '$location', '$rootScope', 'stateResolver', 'player', 'menuService', 'messageService',
+  function($scope, $state, ScopedSocket, gameState, $location, $rootScope, stateResolver, player, menuService, messageService) {
     var socket = new ScopedSocket($scope);
 
     $scope.link = $location.absUrl();
@@ -12,14 +12,25 @@ angular.module('join')
     $scope.players = gameState.players;
 
 
-    socket.on('playerLeft', function(player) {
-      var playerInListAlready = _.findWhere(gameState.players, {id: player.id}) !== undefined;
+    socket.on('playerLeft', function(data) {
+      var playerInListAlready = _.findWhere(gameState.players, {id: data.player.id}) !== undefined;
       if (!playerInListAlready) {
         throw "Inconsistent State: removing player that doesn't exist";
       } else {
-        gameState.players = _.reject(gameState.players, function(p) {
-          return p.id === player.id;
-        });
+
+        if (data.gameOver) {
+          messageService.message("The game's creator canceled the game!")
+          .then(function() {
+            $state.go('app.landing');
+          });
+        } else {
+          for (var i = 0; i < gameState.players.length; i++) {
+            if (data.player.id === gameState.players[i].id) {
+              gameState.players.splice(i, 1);
+              break;
+            }
+          }
+        }
       }
     });
 
