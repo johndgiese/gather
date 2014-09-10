@@ -288,18 +288,28 @@ exports.setup = function(socket) {
       requirePlayerInParty();
     })
     .then(function() {
-      return player.leave(party)
-      .then(function() {
-        socket.broadcast.to(party).emit('playerLeft', {
-          name: player.name,
-          id: playerGameId
-        });
-        socket.leave(party);
-        party = null;
-        playerGameId = null;
-        game = null;
-        acknowledge({});
+      return player.leave(party);
+    })
+    .then(function() {
+      socket.broadcast.to(party).emit('playerLeft', {
+        name: player.name,
+        id: playerGameId
       });
+
+      // stop the game if the creator leaves
+      if (game.createdBy === player.id) {
+        game.party = null;
+        return game.save();
+      } else {
+        return Q.when();
+      }
+    })
+    .then(function() {
+      socket.leave(party);
+      party = null;
+      playerGameId = null;
+      game = null;
+      acknowledge({});
     })
     .fail(function(error) {
       logger.error(error);

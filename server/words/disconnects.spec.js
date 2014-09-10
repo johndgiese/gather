@@ -18,6 +18,15 @@ words.INTER_ROUND_DELAY = 200;
 describe('The words module can handle disconnects and reconnects', function() {
 
   var clients, players, party, gameStates = [];
+  it('after setting up the game', function() {
+    return tu.setupAndJoinGame(3, 'words')
+    .then(function(data) {
+      clients = data.clients;
+      players = data.players;
+      party = data.party;
+      gameStates = data.gameStates;
+    });
+  });
 
   var disconnectHooks = {
     beforeReadingPrompt: function(clients, gameStates, readerIndex) {
@@ -73,16 +82,6 @@ describe('The words module can handle disconnects and reconnects', function() {
       }
     },
   };
-
-  it('after setting up the game', function() {
-    return tu.setupAndJoinGame(3, 'words')
-    .then(function(data) {
-      clients = data.clients;
-      players = data.players;
-      party = data.party;
-      gameStates = data.gameStates;
-    });
-  });
 
   it("should be possible for players to join/rejoin before the game starts", function() {
     _.each(gameStates, function(gs) { expect(gs.players.length).to.equal(3); });
