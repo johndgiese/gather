@@ -99,8 +99,8 @@ exports.join = function(socket, player, party, game, playerGameId) {
 
         return models.Round.numPlayersNeedingToChoose(data.round, game.id);
       })
-      .then(function(result) {
-        if (result.playersLeft === 0) {
+      .then(function(playersLeft) {
+        if (playersLeft === 0) {
           return models.Round.markDoneChoosing(game.id)
           .then(function(doneAt) {
             socket.emit('choosingDone', {at: doneAt});
@@ -162,8 +162,8 @@ exports.join = function(socket, player, party, game, playerGameId) {
         socket.broadcast.to(party).emit('voteCast', sendData);
         return models.Round.numPlayersNeedingToVote(data.round, game.id);
       })
-      .then(function(result) {
-        if (result.playersLeft === 0) {
+      .then(function(playersLeft) {
+        if (playersLeft === 0) {
           return Q.all([
             scorer.scoreDifferential(game.id),
             models.Round.markDoneVoting(game.id)
@@ -279,12 +279,69 @@ function requireNotVotedThisRound(playerGameId, gameId) {
   });
 }
 
-exports.leave = function(socket) {
+/**
+ * Called when a player leaves a game.
+ * Should return a promise for any custom data that should be sent out with the
+ * `playerLeft` data.
+ * Note: the player is already marked as inactive at this point.
+ */
+// TODO: remove code duplication between voting/choosing AND between the vote
+// and choose listeners above
+exports.leave = function(socket, player, party, game, playerGameId) {
   // TODO: remove all event listeners associated with this game, as a single
-  // socket can only be playin a single game at once
+  // socket can only be playing a single game at once
 
-  // TODO: if leaving player is the reader, promote another player
-  // TODO: if leaving player is the last voter, then send the `doneVoting` event
+  var customLeaveData = {};
+
+  return models.Round.queryLatestByGame(game.id)
+  .then(handleInGameStuff, function() {})
+  .then(function() { return customLeaveData; });
+    
+  function handleInGameStuff(round) {
+
+    // Promote new leader if necessary
+    var promise;
+    if (round.reader === playerGameId) {
+      promise = round.promoteNewLeader()
+      .then(function() {
+        customLeaveData.newReader = round.reader;
+      });
+    } else {
+      customLeaveData.newReader = null;
+      promise = Q.when();
+    }
+
+    // Handle case when player is laster voter or chooser
+    return promise
+    .then(function() {
+      var stage = round.stage();
+      if (stage === "choosing") {
+        return round.numPlayersNeedingToChoose()
+        .then(function(playersLeft) {
+          if (playersLeft === 0) {
+            return models.Round.markDoneChoosing(game.id)
+            .then(function(doneAt) {
+              socket.emit('choosingDone', {at: doneAt});
+              socket.broadcast.to(party).emit('choosingDone', {at: doneAt});
+            });
+          }
+        });
+      } else if (stage === "voting") {
+        return round.numPlayersNeedingToVote()
+        .then(function(playersLeft) {
+          if (playersLeft === 0) {
+            return models.Round.markDoneVoting(game.id)
+            .then(function(doneAt) {
+              socket.emit('votingDone', {at: doneAt});
+              socket.broadcast.to(party).emit('votingDone', {at: doneAt});
+              setupRoundStart(socket, player, game);
+            });
+          }
+        });
+      }
+    });
+  }
+
 };
 
 /**

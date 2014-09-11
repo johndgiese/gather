@@ -187,10 +187,22 @@ var joinGame = exports.joinGame = function(client, party) {
       if (!playerInListAlready) {
         throw new Error("Inconsistent State: removing player that doesn't exist");
       } else {
-        gameState.players = _.reject(gameState.players, function(p) {
-          return p.id === data.player.id;
-        });
+        for (var i = 0; i < gameState.players.length; i++) {
+          if (data.player.id === gameState.players[i].id) {
+            gameState.players.splice(i, 1);
+            break;
+          }
+        }
       }
+
+      // update the game state with the new reader if it changed
+      if (data.custom.newReader !== null) {
+        var latestRound = _.last(gameState.custom.rounds);
+        if (latestRound) {
+          latestRound.reader = data.custom.newReader;
+        }
+      }
+
     });
 
     client.on('playerJoined', function(player) {
@@ -293,6 +305,17 @@ exports.setupAndJoinGame = function(numPlayers, type) {
 };
 
 /**
+ * Start a game; resolves once everyone has recieved `roundStarted`.
+ */
+var startGame = exports.startGame = function(clients) {
+  return Q.all([
+    allRecieve(clients, 'roundStarted'),
+    allRecieve(clients, 'gameStarted'),
+    clients[0].emitp('startGame', {})
+  ]);
+};
+
+/**
  * Make all the provided clients join the party, serially.
  * @arg - array of sockets
  * @arg {string} - party
@@ -335,9 +358,16 @@ exports.castVote = function(client, gameState) {
   });
 };
 
-exports.allRecieve = function(clients, event, ms) { 
+/**
+ * Return a promise that resolves once all players receive the specified event
+ */
+var allRecieve = exports.allRecieve = function(clients, event, ms) { 
   return Q.all(_.map(clients, function(c) {
-    return c.oncep(event);
+    if (c) {
+      return c.oncep(event);
+    } else {
+      return Q.when();
+    }
   }))
   .then(function(result) {
     if (ms === undefined) {
@@ -348,10 +378,17 @@ exports.allRecieve = function(clients, event, ms) {
   });
 };
 
-exports.anyRecieve = function(clients, event) { 
+/**
+ * Return a promise that resolves if any players receive the specified event
+ */
+var anyRecieve = exports.anyRecieve = function(clients, event) { 
   var deferred = Q.defer();
   _.each(clients, function(c) {
-    return c.oncep(event);
+    if (c) {
+      return c.oncep(event);
+    } else {
+      return Q.when();
+    }
   });
   return deferred.promise;
 };

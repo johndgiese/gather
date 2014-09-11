@@ -5,11 +5,12 @@ var tu = require('../util/test');
 var playRoundWith = require('../util/playRound');
 var words = require('../words');
 var Game = require('../join/models').Game;
+var Round = require('../words/models').Round;
 
 // keep inter round delay short during tests
 words.INTER_ROUND_DELAY = 200;
 
-describe('The words module can handle players leaving and coming', function() {
+describe.only('The words module can handle players leaving and coming', function() {
 
   var clients, players, party, gameStates = [];
   beforeEach(function() {
@@ -47,6 +48,67 @@ describe('The words module can handle players leaving and coming', function() {
     .then(function() {
       return Game.getByParty(party).should.be.rejectedWith(Error);
     });
+  });
+
+  it('should promote a new reader if the reader leaves', function() {
+    return tu.startGame(clients)
+    .then(playRoundWith(clients, gameStates))  // so that client 1
+    .then(function() {
+
+      var checkPromotedPromise = clients[2].oncep('playerLeft')
+      .then(function(data) {
+        expect(data.custom.newReader).to.equal(gameStates[2].you);
+        return Round.queryLatestByGame(gameStates[0].game.id)
+        .then(function(round) {
+          expect(data.custom.newReader).to.equal(round.reader);
+        });
+      });
+
+      return Q.all([
+        clients[0].oncep('playerLeft'),
+        checkPromotedPromise,
+        clients[1].emitp('leaveGame', {}),
+      ]);
+    });
+  });
+
+  it('should trigger a `choosingDone` if the last player to choose leaves', function() {
+    var lastChooserLeaveHooks = {
+      beforeChoice: function(clients, gameStates, readerIndex, index) {
+        if (index === gameStates.length - 1) {
+          return clients[index].emitp('leaveGame', {})
+          .then(function() {
+            clients[index] = false;
+            return Q.reject();
+          });
+        } else {
+          return Q.when();
+        }
+      }
+    };
+
+    return tu.startGame(clients)
+    .then(playRoundWith(clients, gameStates, lastChooserLeaveHooks));
+  });
+
+
+  it('should trigger a `votingDone` if the last player to vote leaves', function() {
+    var lastVoterLeaveHooks = {
+      beforeVote: function(clients, gameStates, readerIndex, index) {
+        if (index === gameStates.length - 1) {
+          return clients[index].emitp('leaveGame', {})
+          .then(function() {
+            clients[index] = false;
+            return Q.reject();
+          });
+        } else {
+          return Q.when();
+        }
+      }
+    };
+
+    return tu.startGame(clients)
+    .then(playRoundWith(clients, gameStates, lastVoterLeaveHooks));
   });
 
 

@@ -90,10 +90,7 @@ describe('The words module can handle disconnects and reconnects', function() {
   });
 
   it("you can join/rejoin through out a round", function() {
-    return Q.all([
-      tu.allRecieve(clients, 'roundStarted'),
-      clients[0].emitp('startGame', {}),
-    ])
+    return tu.startGame(clients)
     .then(playRoundWith(clients, gameStates, disconnectHooks));
   });
 
@@ -110,7 +107,6 @@ describe('The words module can handle disconnects and reconnects', function() {
       expect(result.count).to.equal(3*dealer.CARDS_IN_HAND + 3*2);
       return playRound();
     })
-    .then(playRound)
     .then(playRound);
   });
 

@@ -18,17 +18,24 @@ var fields = {
 var Round = orm.define('tbRound', fields, 'rId');
 exports.Model = Round;
 
+function readerList(gameId) {
+  return Round.raw('SELECT pgId, pgActive AS active FROM tbPlayerGame WHERE gId=? ORDER BY pgCreatedOn', [gameId]);
+}
+
 /**
  * Create a new round for the current game of the specified party.
  */
 Round.newByGame = function(gameId) {
-  var readerListProm = this.raw('SELECT pgId, pgActive AS active FROM tbPlayerGame WHERE gId=? ORDER BY pgCreatedOn', [gameId]);
 
   var lastRoundProm = this.raw('SELECT pgId, rNumber AS number FROM tbRound WHERE gId=? ORDER BY rNumber DESC LIMIT 1', [gameId]);
 
   var promptProm = dealer.dealPrompt(gameId);
 
-  return Q.all([readerListProm, lastRoundProm, promptProm])
+  return Q.all([
+    readerList(gameId),
+    lastRoundProm,
+    promptProm
+  ])
   .then(function(data) {
     var readerList = data[0];
     var lastRound = data[1][0];
@@ -55,6 +62,22 @@ Round.newByGame = function(gameId) {
     };
 
     return new Round(roundData).save();
+  });
+};
+
+/**
+ * Promote a new reader, update in database, and return the playerGameId of the
+ * new reader.
+ */
+Round.prototype.promoteNewLeader = function() {
+  var self = this;
+  return readerList(self.game)
+  .then(function(readerList) {
+    self.reader = getNextActivePrompter(readerList, self.reader).pgId;
+    return self.save()
+    .then(function() {
+      return self;
+    });
   });
 };
 
@@ -128,45 +151,32 @@ Round.prototype.forApi = function() {
   });
 };
 
-Round.markDoneReadingPrompt = function(gameId) {
-  var sql = 'UPDATE tbRound SET rDoneReadingPrompt=? ' +
-    'WHERE gId=? AND rDoneReadingPrompt IS NULL';
-  var at = new Date(); at.setMilliseconds(0);
-  return this.raw(sql, [at, gameId])
-  .then(function() {
-    return at;
-  });
-};
+var markMethodNamePostfixes = [
+  'ReadingPrompt',
+  'Choosing',
+  'ReadingChoices',
+  'Voting',
+];
 
-Round.markDoneChoosing = function(gameId) {
-  var sql = 'UPDATE tbRound SET rDoneChoosing=? ' +
-    'WHERE gId=? AND rDoneChoosing IS NULL';
-  var at = new Date(); at.setMilliseconds(0);
-  return this.raw(sql, [at, gameId])
-  .then(function() {
-    return at;
-  });
-};
+// create mark done methods for each stage
+_.each(markMethodNamePostfixes, function(postfix) {
+  var methodName = 'markDone' + postfix;
 
-Round.markDoneReadingChoices = function(gameId) {
-  var sql = 'UPDATE tbRound SET rDoneReadingChoices=? ' +
-    'WHERE gId=? AND rDoneReadingChoices IS NULL';
-  var at = new Date(); at.setMilliseconds(0);
-  return this.raw(sql, [at, gameId])
-  .then(function() {
-    return at;
-  });
-};
+  Round[methodName] = function(gameId) {
+    var sql = 'UPDATE tbRound SET ??=? WHERE gId=? AND ?? IS NULL';
+    var at = new Date(); at.setMilliseconds(0);
+    var field = 'rDone' + postfix;
+    return this.raw(sql, [field, at, gameId, field])
+    .then(function() {
+      return at;
+    });
+  };
 
-Round.markDoneVoting = function(gameId) {
-  var sql = 'UPDATE tbRound SET rDoneVoting=? ' +
-    'WHERE gId=? AND rDoneVoting IS NULL';
-  var at = new Date(); at.setMilliseconds(0);
-  return this.raw(sql, [at, gameId])
-  .then(function() {
-    return at;
-  });
-};
+  Round.prototype[methodName] = function() {
+    return Round[methodName](this.game);
+  };
+});
+
 
 // NOTE: it is not strictly necessary to include the gameId and roundId, it
 // just makes the query simpler; alternatively, just the gameId could be used,
@@ -178,9 +188,15 @@ Round.numPlayersNeedingToVote = function(roundId, gameId) {
        'SELECT tbVote.pgId FROM tbVote JOIN tbCard USING (cId) JOIN tbRound USING (rId) WHERE rId=?' +
     ') ' +
     'AND pgActive=TRUE';
-  return this.rawOne(sql, inserts);
+  return this.rawOne(sql, inserts)
+  .then(function(result) {
+    return result.playersLeft;
+  });
 };
 
+Round.prototype.numPlayersNeedingToVote = function() {
+  return Round.numPlayersNeedingToVote(this.id, this.game);
+};
 
 Round.numPlayersNeedingToChoose = function(roundId, gameId) {
   var inserts = [gameId, roundId];
@@ -189,6 +205,26 @@ Round.numPlayersNeedingToChoose = function(roundId, gameId) {
        'SELECT tbCard.pgId FROM tbCard WHERE rId=?' +
     ') ' +
     'AND pgActive=TRUE';
-  return this.rawOne(sql, inserts);
+  return this.rawOne(sql, inserts)
+  .then(function(result) {
+    return result.playersLeft;
+  });
 };
 
+Round.prototype.numPlayersNeedingToChoose = function() {
+  return Round.numPlayersNeedingToChoose(this.id, this.game);
+};
+
+Round.prototype.stage = function() {
+  if (this.doneReadingPrompt === null) {
+    return "readingPrompt";
+  } else if (this.doneChoosing === null) {
+    return "choosing";
+  } else if (this.doneReadingChoices === null) {
+    return "readingChoices";
+  } else if (this.doneVoting === null) {
+    return "voting";
+  } else {
+    return "over";
+  }
+};

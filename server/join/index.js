@@ -288,25 +288,29 @@ exports.setup = function(socket) {
       return player.leave(party);
     })
     .then(function() {
+      var gameModule = require('../' + game.type);
+      var gameCleanupPromise = gameModule.leave(socket, player, party, game, playerGameId);
 
       // stop the game if the creator leaves
       var leavingPlayerIsCreator = game.createdBy === player.id;
-      var gameCleanupPromise;
       if (leavingPlayerIsCreator) {
-        game.party = null;
-        gameCleanupPromise = game.save();
-      } else {
-        gameCleanupPromise = Q.when();
+        gameCleanupPromise = gameCleanupPromise
+        .then(function(customLeaveData) {
+          game.party = null;
+          game.save();
+          return customLeaveData;
+        });
       }
 
       return gameCleanupPromise
-      .then(function() {
+      .then(function(customLeaveData) {
         socket.broadcast.to(party).emit('playerLeft', {
           player: {
             name: player.name,
             id: playerGameId
           },
-          gameOver: leavingPlayerIsCreator
+          gameOver: leavingPlayerIsCreator,
+          custom: customLeaveData,
         });
       });
     })
