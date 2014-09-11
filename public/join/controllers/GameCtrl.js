@@ -55,13 +55,13 @@ angular.module('join')
           // TODO: make this generic
           // TODO: handle the fact that this may get called twice; once from the
           // ack, once from the broadcast
-          $state.go('.words.score');
+          $state.go('app.game.words.score');
         });
       };
 
       socket.on('gameStarted', function() {
         // TODO: make this generic
-        $state.go('.words.score');
+        $state.go('app.game.words.score');
       });
 
     } else {
