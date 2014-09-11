@@ -274,7 +274,7 @@ function requireNotVotedThisRound(playerGameId, gameId) {
   return models.Vote.rawOne(sql, inserts)
   .then(function(data) {
     if (data.votesThisRound !== 0) {
-      throw new Error("You have already voted " + data.cardsPlayedThisRound + " times this round!");
+      throw new Error("You have already voted " + data.votesThisRound + " times this round!");
     }
   });
 }

@@ -3,7 +3,6 @@ angular.module('words')
   '$scope', '$stateParams', 'gameState',
   function($scope, $stateParams, gameState) {
 
-    $scope.players = gameState.players;
     $scope.choices = gameState.custom.choices;
     $scope.waitingFor = [];
     $scope.$watch('players.length', updateWaitingFor);

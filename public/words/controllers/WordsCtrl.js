@@ -3,6 +3,7 @@ angular.module('words')
   '$scope', '$stateParams', '$state', 'ScopedSocket', 'gameState', 'player', 'lastRoundDetails', 'stateResolver', 'relogin', '$interval', 'messageService',
   function($scope, $stateParams, $state, ScopedSocket, gameState, player, lastRoundDetails, stateResolver, relogin, $interval, messageService) {
 
+    lastRoundDetails.clear();
     var socket = new ScopedSocket($scope);
 
     socket.on('roundStarted', function(data) {

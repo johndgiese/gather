@@ -53,7 +53,6 @@ exports.expectState = function(gameState, state) {
  * @returns {boolean}
  */
 var compareGameStates = exports.compareGameStates = function(gameStateOne, gameStateTwo) {
-
   gameStateOne.players = _.sortBy(gameStateOne.players, 'id');
   gameStateTwo.players = _.sortBy(gameStateTwo.players, 'id');
 

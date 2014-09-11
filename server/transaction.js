@@ -39,16 +39,17 @@ exports.inOrderByGroup = function inOrderByGroup(group, func) {
 
     var queue = groupQueues[group];
     if (queue === undefined) {
-      groupQueues[group] = [deferred];
-      debug('group ' + group + ' queue length: 1');
+      queue = groupQueues[group] = [deferred];
+      debug('queue[' + group + '] length ' + queue.length);
       execute(group, deferred, func, args);
     } else {
       var prevCall = queue[queue.length - 1].promise;
       prevCall.then(function() {
         execute(group, deferred, func, args);
+        debug('queue[' + group + '] delayed call');
       });
       queue.push(deferred);
-      debug('group ' + group + ' queue length: ' + queue.length);
+      debug('queue[' + group + '] length ' + queue.length);
     }
 
     return deferred.promise;
