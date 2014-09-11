@@ -1,7 +1,7 @@
 angular.module('words')
 .controller('WordsCtrl', [
-  '$scope', '$stateParams', '$state', 'ScopedSocket', 'gameState', 'player', 'lastRoundDetails', 'stateResolver', 'relogin', '$interval',
-  function($scope, $stateParams, $state, ScopedSocket, gameState, player, lastRoundDetails, stateResolver, relogin, $interval) {
+  '$scope', '$stateParams', '$state', 'ScopedSocket', 'gameState', 'player', 'lastRoundDetails', 'stateResolver', 'relogin', '$interval', 'messageService',
+  function($scope, $stateParams, $state, ScopedSocket, gameState, player, lastRoundDetails, stateResolver, relogin, $interval, messageService) {
 
     var socket = new ScopedSocket($scope);
 
@@ -70,10 +70,33 @@ angular.module('words')
 
     socket.on('playerJoined', wordsPlayerJoined);
 
+    socket.on('playerLeft', wordsPlayerLeft);
+
     function wordsPlayerJoined(player) {
       var match = _.findWhere(gameState.custom.score, {id: player.id});
       if (match === undefined) {
         gameState.custom.score.push({name: player.name, id: player.id, score: 0});
+      }
+    }
+
+    function wordsPlayerLeft(data) {
+      // update the game state with the new reader if it changed
+      if (data.custom.newReader !== null) {
+        _.last(gameState.custom.rounds).reader = data.custom.newReader;
+      }
+
+      // redirect you to the proper state if necessary
+      if (data.custom.newReader === gameState.you) {
+        messageService.message(
+          "You have been promoted to be the new " +
+          "reader, as the previous read left the game."
+        ).then(function() {
+          if ($state.current.name === "app.game.words.waitingForPromptReader") {
+            $state.go("^.readPrompt");
+          } else if ($state.current.name === "app.game.words.waitingForChoicesReader") {
+            $state.go("^.readChoices");
+          }
+        });
       }
     }
 

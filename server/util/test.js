@@ -195,14 +195,6 @@ var joinGame = exports.joinGame = function(client, party) {
         }
       }
 
-      // update the game state with the new reader if it changed
-      if (data.custom.newReader !== null) {
-        var latestRound = _.last(gameState.custom.rounds);
-        if (latestRound) {
-          latestRound.reader = data.custom.newReader;
-        }
-      }
-
     });
 
     client.on('playerJoined', function(player) {
@@ -259,6 +251,14 @@ var joinGame = exports.joinGame = function(client, party) {
           gameState.custom.score.push({name: player.name, id: player.id, score: 0});
         }
       });
+
+      client.on('playerLeft', function(data) {
+        // update the game state with the new reader if it changed
+        if (data.custom.newReader !== null) {
+          _.last(gameState.custom.rounds).reader = data.custom.newReader;
+        }
+      });
+
     }
 
     // IMPORTANT: see note above

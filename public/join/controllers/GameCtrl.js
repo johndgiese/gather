@@ -33,14 +33,6 @@ angular.module('join')
         }
       }
 
-      // update the game state with the new reader if it changed
-      if (data.custom.newReader !== null) {
-        var latestRound = _.last(gameState.custom.rounds);
-        if (latestRound) {
-          latestRound.reader = data.custom.newReader;
-        }
-      }
-
     });
 
     socket.on('playerJoined', function(player) {

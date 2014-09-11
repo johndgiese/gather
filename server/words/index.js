@@ -291,7 +291,9 @@ exports.leave = function(socket, player, party, game, playerGameId) {
   // TODO: remove all event listeners associated with this game, as a single
   // socket can only be playing a single game at once
 
-  var customLeaveData = {};
+  var customLeaveData = {
+    newReader: null
+  };
 
   return models.Round.queryLatestByGame(game.id)
   .then(handleInGameStuff, function() {})
@@ -307,7 +309,6 @@ exports.leave = function(socket, player, party, game, playerGameId) {
         customLeaveData.newReader = round.reader;
       });
     } else {
-      customLeaveData.newReader = null;
       promise = Q.when();
     }
 
