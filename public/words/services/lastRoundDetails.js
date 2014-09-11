@@ -1,15 +1,20 @@
 angular.module('words')
 .factory('lastRoundDetails', [function() {
-  var service = {};
+  var exports = {};
   var details = null;
-  service.set = function(details_) {
+
+  exports.set = function(details_) {
     details = details_;
   };
 
-  service.get = function() {
+  exports.get = function() {
     return details;
   };
 
-  return service;
+  exports.clear = function() {
+    details = null;
+  };
+
+  return exports;
 }]);
 
