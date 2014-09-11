@@ -80,23 +80,25 @@ angular.module('words')
     }
 
     function wordsPlayerLeft(data) {
-      // update the game state with the new reader if it changed
-      if (data.custom.newReader !== null) {
-        _.last(gameState.custom.rounds).reader = data.custom.newReader;
-      }
+      if (!data.gameOver) {
+        // update the game state with the new reader if it changed
+        if (data.custom.newReader !== null) {
+          _.last(gameState.custom.rounds).reader = data.custom.newReader;
+        }
 
-      // redirect you to the proper state if necessary
-      if (data.custom.newReader === gameState.you) {
-        messageService.message(
-          "You have been promoted to be the new " +
-          "reader, as the previous read left the game."
-        ).then(function() {
-          if ($state.current.name === "app.game.words.waitingForPromptReader") {
-            $state.go("^.readPrompt");
-          } else if ($state.current.name === "app.game.words.waitingForChoicesReader") {
-            $state.go("^.readChoices");
-          }
-        });
+        // redirect you to the proper state if necessary
+        if (data.custom.newReader === gameState.you) {
+          messageService.message(
+            "You have been promoted to be the new " +
+            "reader, as the previous read left the game."
+          ).then(function() {
+            if ($state.current.name === "app.game.words.waitingForPromptReader") {
+              $state.go("^.readPrompt");
+            } else if ($state.current.name === "app.game.words.waitingForChoicesReader") {
+              $state.go("^.readChoices");
+            }
+          });
+        }
       }
     }
 
