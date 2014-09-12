@@ -1,6 +1,6 @@
 angular.module('join')
-.run(['$rootScope', '$state', 'messageService',
-  function($rootScope, $state, messageService) {
+.run(['$rootScope', '$state', 'messageService', 'socket', 'playerService', 'debugService', 'menuService',
+  function($rootScope, $state, messageService, socket, playerService, debugService, menuService) {
 
     $rootScope.$on('$stateChangeError', function(event, to, toParams, from, fromParams, error) {
 
@@ -23,8 +23,30 @@ angular.module('join')
       console.log(from);
       console.log(fromParams);
       console.log(error);
+      debugService("unhandled state change error: " + error);
 
     });
+
+    // resign in and then reload the state
+    socket.on('reconnect', function() {
+      playerService.sync()
+      .then(function() {
+        debugService('reloading state');
+        $state.reload();
+      });
+    });
+
+    menuService.registerItem({
+      title: 'Logout',
+      action: function() {
+        playerService.logout();
+        $state.go('app.landing');
+      },
+      visible: function() { 
+        return playerService.player !== null;
+      }
+    });
+
   }
 ]);
 

@@ -5,9 +5,10 @@ angular.module('join')
     var service = {};
 
     service.player = null;
-    service.syncOrNull = lockService.inOrderByGroup('lockService', syncOrNull);
-    service.getOrCreate = lockService.inOrderByGroup('lockService', getOrCreate);
-    service.logout = lockService.inOrderByGroup('lockService', logout);
+    service.sync = lockService.inOrderByGroup('playerService', sync);
+    service.syncOrNull = lockService.inOrderByGroup('playerService', syncOrNull);
+    service.getOrCreate = lockService.inOrderByGroup('playerService', getOrCreate);
+    service.logout = lockService.inOrderByGroup('playerService', logout);
 
     return service;
 

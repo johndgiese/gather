@@ -11,7 +11,6 @@ angular.module('join')
     $scope.creator = _.findWhere(gameState.players, {id: creatorId});
     $scope.players = gameState.players;
 
-
     socket.on('playerLeft', function(data) {
       var playerInListAlready = _.findWhere(gameState.players, {id: data.player.id}) !== undefined;
       if (!playerInListAlready) {

@@ -1,7 +1,7 @@
 angular.module('join')
 .controller('AppCtrl', [
-  '$scope', 'playerService', '$rootScope', '$state', '$modal', 'menuService', 'messageService', 'sync',
-  function($scope, playerService, $rootScope, $state, $modal, menuService, messageService, sync) {
+  '$scope', 'playerService', '$rootScope', '$state', '$modal',
+  function($scope, playerService, $rootScope, $state, $modal) {
 
     $scope.player = playerService.player;
     $scope.$watch(function() {
@@ -21,12 +21,6 @@ angular.module('join')
         controller: 'MenuCtrl',
       });
     };
-
-    menuService.registerItem({
-      title: 'Logout',
-      action: $scope.logout,
-      visible: function() { return playerService.player !== null; }
-    });
 
   }
 ]);
