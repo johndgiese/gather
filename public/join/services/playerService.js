@@ -33,10 +33,7 @@ angular.module('join')
       if (service.player !== null) {
         return $q.when(service.player);
       } else {
-        return sync().catch(
-          function() {
-            return createPlayer();
-        });
+        return sync().then(createPlayer, createPlayer);
       }
     }
 

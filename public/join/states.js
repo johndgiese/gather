@@ -8,7 +8,7 @@ angular.module('join')
     controller: 'AppCtrl',
     template: '<ui-view />',
     resolve: {
-      player: ['playerService', function(playerService) {
+      sync: ['playerService', function(playerService) {
         return playerService.syncOrNull();
       }],
     }
@@ -38,6 +38,12 @@ angular.module('join')
     url: '/join/?invalid',
     controller: 'JoinGameCtrl',
     templateUrl: '/static/join/templates/join.html',
+    resolve: {
+      player: ['playerService', function(playerService) {
+        // TODO: handle failure
+        return playerService.getOrCreate();
+      }]
+    }
   })
 
   // staging ground for a game session (you are now leaving the `join` app)
