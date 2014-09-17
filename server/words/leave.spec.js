@@ -26,6 +26,7 @@ describe('The words module can handle players leaving and coming', function() {
   it('should be possible for non-creating players to leave before the game starts', function() {
     return Q.all([
       clients[0].oncep('playerLeft'),
+      clients[1].oncep('playerLeft'),
       clients[2].emitp('leaveGame', {})
     ])
     .then(function() {
