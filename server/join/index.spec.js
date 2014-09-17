@@ -120,6 +120,24 @@ describe('The join socket API', function() {
       return clients[1].emitp('joinGame', {party: 'AAAAAA'}).should.be.rejectedWith(Error);
     });
 
+    it('provides the creator a way to kick another player', function() {
+      return clients[1].emitp('joinGame', {party: party})
+      .then(function(gameState) {
+        var player1Id = gameState.you;
+        var kickedPromise = clients[1].oncep('playerLeft')
+        .then(function(data) {
+          expect(data.player.id).to.equal(player1Id);
+          expect(data.kicked).to.equal(true);
+        });
+        return Q.all([
+          kickedPromise,
+          clients[0].emitp('kickPlayer', {
+            player: player1Id
+          }),
+        ]);
+      });
+    });
+
   });
 
   describe('should never change state if there is an error', function() {

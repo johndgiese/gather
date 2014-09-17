@@ -40,7 +40,12 @@ angular.module('join')
         throw "Inconsistent State: removing player that doesn't exist";
       } else {
 
-        if (data.gameOver) {
+        if (data.player.id === gameState.you && data.kicked) {
+          messageService.message("You have been kicked out of the game!")
+          .then(function() {
+            $state.go('app.landing');
+          });
+        } else if (data.gameOver) {
           messageService.message("The game's creator canceled the game!")
           .then(function() {
             $state.go('app.landing');

@@ -59,15 +59,6 @@ Game.prototype.activePlayers = function() {
   });
 };
 
-Game.prototype.isPlayerActive = function(playerId) {
-  var inserts = [this.id, playerId];
-  var sql = 'SELECT count(*) ' +
-              'FROM tbGame NATURAL JOIN tbPlayerGame NATURAL JOIN tbPlayer ' +
-              'WHERE gId=? AND pId=? AND pgActive=TRUE';
-  var inGame = Game.raw(sql, inserts);
-  return inGame[0] === 1;
-};
-
 var MAX_HASH_ATTEMPTS = 10;
 Game.prototype._save = Game.prototype.save;
 Game.prototype.save = function() {

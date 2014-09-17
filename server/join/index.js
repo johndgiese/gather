@@ -33,6 +33,7 @@ exports.setup = function(socket) {
   socket.on('joinGame', joinGame);
   socket.on('leaveGame', leaveGame);
   socket.on('disconnect', disconnect);
+  socket.on('kickPlayer', kickPlayer);
 
   socket.on('startGame', startGame);
 
@@ -70,9 +71,13 @@ exports.setup = function(socket) {
     }
   }
 
-  function requireStartingPlayer() {
-    // TODO: actually enforce this
-    return true;
+  /**
+   * Require the game's master (for now this is just the creator).
+   */
+  function requireGameMaster() {
+    if (game.createdBy !== player.id) {
+      throw new Error("Must be the games creator");
+    }
   }
 
   /**
@@ -276,34 +281,7 @@ exports.setup = function(socket) {
       requirePlayerInParty();
     })
     .then(function() {
-      return player.leave(party);
-    })
-    .then(function() {
-      var gameModule = require('../' + game.type);
-      var gameCleanupPromise = gameModule.leave(socket, player, party, game, playerGameId);
-
-      // stop the game if the creator leaves
-      var leavingPlayerIsCreator = game.createdBy === player.id;
-      if (leavingPlayerIsCreator) {
-        gameCleanupPromise = gameCleanupPromise
-        .then(function(customLeaveData) {
-          game.party = null;
-          game.save();
-          return customLeaveData;
-        });
-      }
-
-      return gameCleanupPromise
-      .then(function(customLeaveData) {
-        socket.broadcast.to(party).emit('playerLeft', {
-          player: {
-            name: player.name,
-            id: playerGameId
-          },
-          gameOver: leavingPlayerIsCreator,
-          custom: customLeaveData,
-        });
-      });
+      return removeFromGame(player, playerGameId);
     })
     .then(function() {
       socket.leave(party);
@@ -318,10 +296,66 @@ exports.setup = function(socket) {
     });
   }
 
+  function removeFromGame(kickedPlayer, kickedPlayerGameId) {
+    return kickedPlayer.leave(party)
+    .then(function() {
+      var gameModule = require('../' + game.type);
+      var gameCleanupPromise = gameModule.leave(socket, kickedPlayer, party, game, kickedPlayerGameId);
+
+      // stop the game if the creator leaves
+      var leavingPlayerIsCreator = game.createdBy === kickedPlayer.id;
+      if (leavingPlayerIsCreator) {
+        gameCleanupPromise = gameCleanupPromise
+        .then(function(customLeaveData) {
+          game.party = null;
+          game.save();
+          return customLeaveData;
+        });
+      }
+
+      return gameCleanupPromise
+      .then(function(customLeaveData) {
+        var leaveData = {
+          player: {
+            name: kickedPlayer.name,
+            id: kickedPlayerGameId
+          },
+          gameOver: leavingPlayerIsCreator,
+          kicked: player.id !== kickedPlayer.id,
+          custom: customLeaveData,
+        };
+        socket.emit('playerLeft', leaveData);
+        socket.broadcast.to(party).emit('playerLeft', leaveData);
+      });
+    });
+  }
+
   function disconnect() {
     if (playerGameId !== null && party !== null) {
       socket.broadcast.to(party).emit('playerDisconnected', {player: playerGameId});
     }
+  }
+
+  function kickPlayer(data, acknowledge) {
+    Q.fcall(function() {
+      requireGameMaster();
+      // TODO: require playerGame is active
+      // TODO: require the playerGame is in the current party!
+    })
+    .then(function() {
+      var kickedPlayerGameId = data.player;
+      return models.Player.queryFromPlayerGameId(kickedPlayerGameId)
+      .then(function(kickedPlayer) {
+        return removeFromGame(kickedPlayer, kickedPlayerGameId);
+      })
+      .then(function() {
+        acknowledge({});
+      });
+    })
+    .fail(function(error) {
+      logger.error(error);
+      acknowledge({_error: "Unable to kick player"});
+    });
   }
 
 };

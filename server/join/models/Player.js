@@ -53,3 +53,9 @@ Player.prototype.leave = function(party) {
   return this.M.raw(sql, inserts);
 };
 
+Player.queryFromPlayerGameId = function(playerGameId) {
+  var inserts = [playerGameId];
+  var sql = 'SELECT * FROM tbPlayer WHERE pId=(' + 
+              'SELECT pId FROM tbPlayerGame WHERE pgId=?);';
+  return Player.queryOne(sql, inserts);
+};
