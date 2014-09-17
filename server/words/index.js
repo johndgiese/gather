@@ -160,29 +160,32 @@ exports.join = function(socket, player, party, game, playerGameId) {
         var sendData = {player: playerGameId};
         socket.emit('voteCast', sendData);
         socket.broadcast.to(party).emit('voteCast', sendData);
-        return models.Round.numPlayersNeedingToVote(data.round, game.id);
+        return models.Round.queryLatestByGame(game.id);
       })
-      .then(function(playersLeft) {
-        if (playersLeft === 0) {
-          return Q.all([
-            scorer.scoreDifferential(game.id),
-            models.Round.markDoneVoting(game.id)
-          ])
-          .then(function(data) {
-            var sendData = {
-              dscore: data[0],
-              at: data[1]
-            };
-            socket.emit('votingDone', sendData);
-            socket.broadcast.to(party).emit('votingDone', sendData);
-            setupRoundStart(socket, player, game);
-          })
-          .then(function() {
+      .then(function(round) {
+        return round.numPlayersNeedingToVote(game.id)
+        .then(function(playersLeft) {
+          if (playersLeft === 0 && !round.doneVoting) {
+            return Q.all([
+              scorer.scoreDifferential(game.id),
+              round.markDoneVoting(game.id)
+            ])
+            .then(function(data) {
+              var sendData = {
+                dscore: data[0],
+                at: data[1]
+              };
+              socket.emit('votingDone', sendData);
+              socket.broadcast.to(party).emit('votingDone', sendData);
+              setupRoundStart(socket, player, game);
+            })
+            .then(function() {
+              acknowledge({});
+            });
+          } else {
             acknowledge({});
-          });
-        } else {
-          acknowledge({});
-        }
+          }
+        });
       });
     }))
     .fail(function(error) {
@@ -319,7 +322,7 @@ exports.leave = function(socket, player, party, game, playerGameId) {
       if (stage === "choosing") {
         return round.numPlayersNeedingToChoose()
         .then(function(playersLeft) {
-          if (playersLeft === 0) {
+          if (playersLeft === 0 && !round.doneVoting) {
             return models.Round.markDoneChoosing(game.id)
             .then(function(doneAt) {
               socket.emit('choosingDone', {at: doneAt});
