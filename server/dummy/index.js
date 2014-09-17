@@ -11,3 +11,7 @@ exports.join = function(socket, player, party, playerGameId) {
 exports.create = function(game) {
   return Q.when({});
 };
+
+exports.leave = function(socket, kickPlayer, party, game, kickedPlayerGameId) {
+  return Q.when({});
+};
