@@ -11,6 +11,29 @@ angular.module('join')
     $scope.creator = _.findWhere(gameState.players, {id: creatorId});
     $scope.players = gameState.players;
 
+    if ($scope.isCreator) {
+      var removeMenuItems = menuService.registerItemGenerator({
+        generator: function() {
+          var otherPlayers = [];
+          for (var i = 0, len = $scope.players.length; i < len; i++) {
+            var player = $scope.players[i];
+            if (player.id !== creatorId) {
+              otherPlayers.push(player);
+            }
+          }
+          return _.map(otherPlayers, function(player) {
+            return {
+              title: 'Kick ' + player.name,
+              action: ['socket', function(socket) { 
+                return socket.emitp('kickPlayer', {player: player.id});
+              }]
+            };
+          });
+        }
+      });
+      $scope.$on('$destroy', removeMenuItems);
+    }
+
     socket.on('playerLeft', function(data) {
       var playerInListAlready = _.findWhere(gameState.players, {id: data.player.id}) !== undefined;
       if (!playerInListAlready) {
@@ -69,20 +92,4 @@ angular.module('join')
     }
 
   }
-])
-
-
-.config(['menuServiceProvider', function(menuServiceProvider) {
-
-    menuServiceProvider.registerItem({
-      title: 'Leave Game',
-      action: ['$state', 'socket', function($state, socket) { 
-        socket.emitp('leaveGame', {});
-        $state.go('app.landing');
-      }],
-      visible: ['$state', function($state) { 
-        return $state.current.name.substr(0, 3 + 1 + 4) === 'app.game'; 
-      }]
-    });
-
-}]);
+]);

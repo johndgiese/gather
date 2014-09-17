@@ -10,7 +10,7 @@ angular.module('join')
       } else if (to.name === 'app.game') {
         return messageService.message(
           "The game you are attempting to join is over, " +
-          "has been cancelled, or is no longer accepting new players"
+          "has been cancelled, or is no longer accepting new players."
         )
         .then(function() {
           $state.go('app.landing');
@@ -46,6 +46,17 @@ angular.module('join')
       visible: function() { 
         return playerService.player !== null;
       }
+    });
+
+    menuService.registerItem({
+      title: 'Leave Game',
+      action: ['$state', 'socket', function($state, socket) { 
+        socket.emitp('leaveGame', {});
+        $state.go('app.landing');
+      }],
+      visible: ['$state', function($state) { 
+        return $state.current.name.substr(0, 3 + 1 + 4) === 'app.game'; 
+      }]
     });
 
   }
