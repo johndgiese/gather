@@ -88,7 +88,7 @@ angular.module('words')
         }
 
         // redirect you to the proper state if necessary
-        if (data.custom.newReader === gameState.you) {
+        if (data.custom.newReader === gameState.you && $state.current.name !== 'app.game.words.voting') {
           messageService.message(
             "You have been promoted to be the new " +
             "reader, as the previous read left the game."

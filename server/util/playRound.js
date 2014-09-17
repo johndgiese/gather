@@ -1,7 +1,7 @@
 /*jshint loopfunc: true */
 
 var tu = require('./test');
-var debug = require('debug')('gather:tests');
+var debug = require('debug')('gather:playRound');
 var _ = require('underscore');
 
 /**
@@ -69,7 +69,7 @@ module.exports = function playRoundWith(clients, gameStates, hooks, maxDelay) {
     function invokeIndividualHook(hookName, index) {
       return function() {
         if (hooks[hookName] !== undefined) {
-          debug("Calling " + hookName);
+          debug("Calling " + hookName + ' for ' + index);
           return hooks[hookName](clients, gameStates, readerIndex, index);
         } else {
           return Q.when();
@@ -101,36 +101,46 @@ module.exports = function playRoundWith(clients, gameStates, hooks, maxDelay) {
         promise = Q.when();
         _.each(gameStates, function(gameState, i) {
           var client = clients[i];
-          if (client) {
-            promise = promise
-            .then(invokeIndividualHook('beforeChoice', i))
-            .then(function() { return tu.makeChoice(clients[i], gameStates[i]); })
-            .then(invokeIndividualHook('afterChoice', i))
-            .then(function() {
-              var round = _.last(gameStates[i].custom.rounds);
-              if (round.doneChoosing === null) {
-                donePromises.push(clients[i].oncep('choosingDone'));
-              }
-            })
-            .then(function() {}, function() {});
-          }
+          promise = promise
+          .then(invokeIndividualHook('beforeChoice', i))
+          .then(function() { 
+            if (clients[i]) {
+              debug('making choice ' + i);
+              return tu.makeChoice(clients[i], gameStates[i]); 
+            } else {
+              return Q.when();
+            }
+          })
+          .then(invokeIndividualHook('afterChoice', i))
+          .then(function() {
+            var round = _.last(gameStates[i].custom.rounds);
+            if (round.doneChoosing === null) {
+              donePromises.push(clients[i].oncep('choosingDone'));
+            }
+          })
+          .then(function() {}, function() {});
         });
       } else {
         var promises = _.map(gameStates, function(gameState, i) {
           var client = clients[i];
-          if (client) {
-            return Q.delay(_.random(0, maxDelay))
-            .then(invokeIndividualHook('beforeChoice', i))
-            .then(function() { return tu.makeChoice(clients[i], gameStates[i]); })
-            .then(invokeIndividualHook('afterChoice', i))
-            .then(function() {
-              var round = _.last(gameStates[i].custom.rounds);
-              if (round.doneChoosing === null) {
-                donePromises.push(clients[i].oncep('choosingDone'));
-              }
-            })
-            .then(function() {}, function() {});
-          }
+          return Q.delay(_.random(0, maxDelay))
+          .then(invokeIndividualHook('beforeChoice', i))
+          .then(function() { 
+            if (clients[i]) {
+              debug('making choice ' + i);
+              return tu.makeChoice(clients[i], gameStates[i]); 
+            } else {
+              return Q.when();
+            }
+          })
+          .then(invokeIndividualHook('afterChoice', i))
+          .then(function() {
+            var round = _.last(gameStates[i].custom.rounds);
+            if (round.doneChoosing === null) {
+              donePromises.push(clients[i].oncep('choosingDone'));
+            }
+          })
+          .then(function() {}, function() {});
         });
         promise = Q.all(promises);
       }
@@ -153,38 +163,47 @@ module.exports = function playRoundWith(clients, gameStates, hooks, maxDelay) {
       if (serial) {
         promise = Q.when();
         _.each(gameStates, function(gameState, i) {
-          var index = i;
-          var client = clients[index];
-          if (client) {
-            promise = promise
-            .then(invokeIndividualHook('beforeVote', index))
-            .then(function() { return tu.castVote(clients[index], gameStates[index]); })
-            .then(invokeIndividualHook('afterVote', index))
-            .then(function() {
-              var round = _.last(gameStates[index].custom.rounds);
-              if (round.doneVoting === null) {
-                donePromises.push(clients[index].oncep('votingDone'));
-              }
-            })
-            .then(function() {}, function() {});
-          }
+          var client = clients[i];
+          promise = promise
+          .then(invokeIndividualHook('beforeVote', i))
+          .then(function() { 
+            if (clients[i]) {
+              debug('casting vote for ' + i);
+              return tu.castVote(clients[i], gameStates[i]); 
+            } else {
+              return Q.when();
+            }
+          })
+          .then(invokeIndividualHook('afterVote', i))
+          .then(function() {
+            var round = _.last(gameStates[i].custom.rounds);
+            if (round.doneVoting === null) {
+              donePromises.push(clients[i].oncep('votingDone'));
+            }
+          })
+          .then(function() {}, function() {});
         });
       } else {
         var promises = _.map(gameStates, function(gameState, i) {
           var client = clients[i];
-          if (client) {
-            return Q.delay(_.random(0, maxDelay))
-            .then(invokeIndividualHook('beforeVote', i))
-            .then(function() { return tu.castVote(clients[i], gameStates[i]); })
-            .then(invokeIndividualHook('afterVote', i))
-            .then(function() {
-              var round = _.last(gameStates[i].custom.rounds);
-              if (round.doneVoting === null) {
-                donePromises.push(clients[i].oncep('votingDone'));
-              }
-            })
-            .then(function() {}, function() {});
-          }
+          return Q.delay(_.random(0, maxDelay))
+          .then(invokeIndividualHook('beforeVote', i))
+          .then(function() { 
+            if (clients[i]) {
+              debug('casting vote for ' + i);
+              return tu.castVote(clients[i], gameStates[i]); 
+            } else {
+              return Q.when();
+            }
+          })
+          .then(invokeIndividualHook('afterVote', i))
+          .then(function() {
+            var round = _.last(gameStates[i].custom.rounds);
+            if (round.doneVoting === null) {
+              donePromises.push(clients[i].oncep('votingDone'));
+            }
+          })
+          .then(function() {}, function() {});
         });
         promise = Q.all(promises);
       }

@@ -81,7 +81,7 @@ exports.expectSameStateAfterReconnect = function(clients, gameStates, players, p
   }
 
   var gameStateBeforeDisconnect = deepcopy(gameStates[num]);
-  return rejoinGame(clients, gameStates, num, players[num].id, party)
+  return disconnectAndRejoinGame(clients, gameStates, num, players[num].id, party)
   .then(function() {
     var gameStateAfterReconnect = deepcopy(gameStates[num]);
     expect(compareGameStates(gameStateBeforeDisconnect, gameStateAfterReconnect)).to.equal(true);
@@ -149,22 +149,33 @@ var setupPlayers = exports.setupPlayers = function(clients) {
  * @arg {string} - party
  * @returns - a promise for when the player has reconnected
  */
-var rejoinGame = exports.rejoinGame = function(clients, gameStates, index, playerId, party) {
+var disconnectAndRejoinGame = exports.disconnectAndRejoinGame = function(clients, gameStates, index, playerId, party) {
   var promise = clients[index ? index - 1 : index + 1]
   .oncep('playerDisconnected')
   .then(function() {
-    var client = clients[index] = setupClient();
-    return client.emitp('login', {id: playerId})
-    .then(function(player) {
-      return joinGame(client, party)
-      .then(function(gameState) {
-        gameStates[index] = gameState;
-      });
-    });
+    return rejoinGame(clients, gameStates, index, playerId, party);
   });
 
   clients[index].disconnect();
   return promise;
+};
+
+var rejoinGame = exports.rejoinGame = function(clients, gameStates, index, playerId, party) {
+  var client = clients[index] = setupClient();
+  return client.emitp('login', {id: playerId})
+  .then(function(player) {
+    return joinGame(client, party)
+    .then(function(gameState) {
+      gameStates[index] = gameState;
+    });
+  });
+};
+
+var leaveGame = exports.leaveGame = function(clients, index) {
+  return clients[index].emitp('leaveGame', {})
+  .then(function() {
+    clients[index] = false;
+  });
 };
 
 

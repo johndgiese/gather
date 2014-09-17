@@ -1,1 +1,3 @@
-angular.module('socket', []);
+angular.module('socket', [
+  'util',
+]);

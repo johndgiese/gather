@@ -10,7 +10,7 @@ var Round = require('../words/models').Round;
 // keep inter round delay short during tests
 words.INTER_ROUND_DELAY = 200;
 
-describe.only('The words module can handle players leaving and coming', function() {
+describe('The words module can handle players leaving and coming', function() {
 
   var clients, players, party, gameStates = [];
   beforeEach(function() {
@@ -109,6 +109,33 @@ describe.only('The words module can handle players leaving and coming', function
 
     return tu.startGame(clients)
     .then(playRoundWith(clients, gameStates, lastVoterLeaveHooks));
+  });
+
+
+  it('should be possible to leave and rejoin', function() {
+    var leaveRejoinHooks = {
+      beforChoice: function(clients, gameStates, readerIndex, index) {
+        if (index === gameStates.length - 2) {
+          return tu.leaveGame(clients,index)
+          .then(function() { return Q.reject(); });
+        } else {
+          return Q.when();
+        }
+      },
+      beforeVote: function(clients, gameStates, readerIndex, index) {
+        if (index === gameStates.length - 2) {
+          return tu.rejoinGame(clients, gameStates, index, players[index].id, party);
+        } else {
+          return Q.when();
+        }
+      }
+    };
+
+    return tu.startGame(clients)
+    .then(playRoundWith(clients, gameStates, leaveRejoinHooks))
+    .then(playRoundWith(clients, gameStates, {}))
+    .then(playRoundWith(clients, gameStates, {}))
+    .then(playRoundWith(clients, gameStates, {}));
   });
 
 

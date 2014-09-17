@@ -22,7 +22,7 @@ angular.module('join')
 
   // create a new game and session
   .state('app.createGame', {
-    url: '/new/',
+    url: '/new',
     controller: 'CreateGameCtrl',
     templateUrl: '/static/join/templates/create-game.html',
     resolve: {
@@ -35,7 +35,7 @@ angular.module('join')
 
   // join an existing game session
   .state('app.joinGame', {
-    url: '/join/?invalid',
+    url: '/join?invalid',
     controller: 'JoinGameCtrl',
     templateUrl: '/static/join/templates/join.html',
     resolve: {
@@ -48,7 +48,7 @@ angular.module('join')
 
   // staging ground for a game session (you are now leaving the `join` app)
   .state('app.game', {
-    url: '/:party/',
+    url: '/:party',
     controller: 'GameCtrl',
     templateUrl: '/static/join/templates/game.html',
     resolve: {

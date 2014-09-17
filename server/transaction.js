@@ -46,7 +46,6 @@ exports.inOrderByGroup = function inOrderByGroup(group, func) {
       var prevCall = queue[queue.length - 1].promise;
       prevCall.then(function() {
         execute(group, deferred, func, args);
-        debug('queue[' + group + '] delayed call');
       });
       queue.push(deferred);
       debug('queue[' + group + '] length ' + queue.length);
@@ -58,19 +57,17 @@ exports.inOrderByGroup = function inOrderByGroup(group, func) {
 
 
 function execute(group, deferred, func, args) {
-  debug('executing');
+  debug('executing function');
   Q.fapply(func, args)
   .then(function(val) {
-    debug('resolving: ' + val);
     deferred.resolve(val);
   }, function(reason) {
-    debug('rejecting: ' + reason);
     deferred.reject(reason);
   })
   .fin(function() {
     var queue = groupQueues[group];
     queue.shift();
-    debug('group ' + group + ' queue length: ' + queue.length);
+    debug('queue[' + group + '] length ' + queue.length);
     if (queue.length === 0) {
       delete groupQueues[group];
     }

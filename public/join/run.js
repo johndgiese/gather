@@ -5,6 +5,7 @@ angular.module('join')
     $rootScope.$on('$stateChangeError', function(event, to, toParams, from, fromParams, error) {
 
       if (from.name === 'app.joinGame' && to.name === 'app.game') {
+        console.log('SENDING TO join game');
         return $state.go('app.joinGame', {invalid: toParams.party});
       } else if (to.name === 'app.game') {
         return messageService.message(
