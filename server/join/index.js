@@ -13,7 +13,9 @@ exports.setup = function(socket) {
   // null if no player has been created or logged into
   var player = null;
 
-  // null if the player isn't in a party
+  // null --> the player isn't in a party
+  // not null --> player may or may not be in a party
+  // i.e. these values are NOT explicitly nulled upon leaving a game
   var party, playerGameId, game;
 
   function clearPartyState() {
@@ -33,10 +35,6 @@ exports.setup = function(socket) {
   socket.on('disconnect', disconnect);
 
   socket.on('startGame', startGame);
-
-  function debugSocketState() {
-    debug('socket state: player=%j, party=%s, pgId=%s, game=%j', player, party, playerGameId, game);
-  }
 
   function requirePlayer() {
     if (player === null) {
@@ -82,7 +80,6 @@ exports.setup = function(socket) {
    */
   function createPlayer(data, acknowledge) {
     Q.fcall(function() {
-      debugSocketState();
       requireNoPlayer();
       requireValidPlayerName(data.name);
     })
@@ -106,7 +103,6 @@ exports.setup = function(socket) {
   // TODO: make this more secure
   function login(data, acknowledge) {
     Q.fcall(function() {
-      debugSocketState();
       requireNoPlayer();
     })
     .then(function() {
@@ -128,7 +124,6 @@ exports.setup = function(socket) {
    */
   function logout(data, acknowledge) {
     Q.fcall(function() {
-      debugSocketState();
       requirePlayer();
     })
     .then(function() {
@@ -156,12 +151,11 @@ exports.setup = function(socket) {
    */
   function createGame(data, acknowledge) {
     Q.fcall(function() {
-      debugSocketState();
       requirePlayer();
       requireGameOwnership(data.type);
     })
     .then(function() {
-      game = new models.Game({createdBy: player.id, type: data.type});
+      var game = new models.Game({createdBy: player.id, type: data.type});
       if (party !== null) {
         game.party = party;
       }
@@ -188,7 +182,6 @@ exports.setup = function(socket) {
    */
   function joinGame(data, acknowledge) {
     Q.fcall(function() {
-      debugSocketState();
       requirePlayer();
     })
     .then(function() {
@@ -249,8 +242,7 @@ exports.setup = function(socket) {
    */
   function startGame(data, acknowledge) {
     Q.fcall(function() {
-      debugSocketState();
-      requireStartingPlayer();
+      requireGameMaster();
       requirePlayerInParty();
     })
     .then(function() {
@@ -281,7 +273,6 @@ exports.setup = function(socket) {
   // TODO: eventually only close if is the last owener in the game
   function leaveGame(data, acknowledge) {
     Q.fcall(function() {
-      debugSocketState();
       requirePlayerInParty();
     })
     .then(function() {
