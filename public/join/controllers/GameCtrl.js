@@ -46,7 +46,7 @@ angular.module('join')
             $state.go('app.landing');
           });
         } else if (data.gameOver) {
-          messageService.message("The game's master canceled the game!")
+          messageService.message("The game master canceled the game!")
           .then(function() {
             $state.go('app.landing');
           });
