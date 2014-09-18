@@ -291,7 +291,7 @@ var joinGame = exports.joinGame = function(client, party) {
 };
 
 exports.activePlayers = function(party) {
-  return models.Game.getByParty(party)
+  return models.Game.queryByParty(party)
   .then(function(game) {
     return game.activePlayers();
   });

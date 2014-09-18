@@ -34,11 +34,7 @@ Game.prototype.close = function() {
   return Game.raw('UPDATE ?? SET gOpen = FALSE WHERE gId=?', inserts);
 };
 
-Game.get = function(gameId) {
-  return Game.queryOneId(gameId);
-};
-
-Game.getByParty = function(party) {
+Game.queryByParty = function(party) {
   inserts = [this.table, party];
   var sql = 'SELECT * from ?? where gParty=? ORDER BY gCreatedOn DESC LIMIT 1';
   return this.queryOne(sql, inserts);

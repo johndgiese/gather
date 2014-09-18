@@ -201,7 +201,7 @@ exports.setup = function(socket) {
       clearPartyState();
 
       var broadcast;
-      return models.Game.getByParty(data.party)
+      return models.Game.queryByParty(data.party)
       .then(transaction.inOrderByGroup(data.party, function(game_) {
         game = game_;
         party = game.party;

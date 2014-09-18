@@ -47,7 +47,7 @@ describe('The words module can handle players leaving and coming', function() {
       .should.be.rejectedWith(Error);
     })
     .then(function() {
-      return Game.getByParty(party).should.be.rejectedWith(Error);
+      return Game.queryByParty(party).should.be.rejectedWith(Error);
     });
   });
 
