@@ -134,19 +134,7 @@ exports.join = function(socket, player, party, game, playerGameId) {
         return round.numPlayersNeedingToVote(game.id)
         .then(function(playersLeft) {
           if (playersLeft === 0 && !round.doneVoting) {
-            return Q.all([
-              scorer.scoreDifferential(game.id),
-              round.markDoneVoting(game.id)
-            ])
-            .then(function(data) {
-              var sendData = {
-                dscore: data[0],
-                at: data[1]
-              };
-              socket.emit('votingDone', sendData);
-              socket.broadcast.to(party).emit('votingDone', sendData);
-              setupRoundStart(socket, player, game);
-            })
+            return emitVotingDone(socket, game, party, player, round)
             .then(function() {
               acknowledge({});
             });
@@ -221,6 +209,22 @@ function setupRoundStart(socket, player, game) {
   return Q.when();
 }
 
+
+function emitVotingDone(socket, game, party, player, round) {
+  return Q.all([
+    scorer.scoreDifferential(game.id),
+    round.markDoneVoting(game.id)
+  ])
+  .then(function(data) {
+    var sendData = {
+      dscore: data[0],
+      at: data[1]
+    };
+    socket.emit('votingDone', sendData);
+    socket.broadcast.to(party).emit('votingDone', sendData);
+    setupRoundStart(socket, player, game);
+  });
+}
 
 function requireCardInHand(playerGameId, cardId) {
   return models.Card.queryOneId(cardId)
@@ -338,12 +342,7 @@ exports.leave = function(socket, player, party, game, playerGameId) {
         return round.numPlayersNeedingToVote()
         .then(function(playersLeft) {
           if (playersLeft === 0) {
-            return models.Round.markDoneVoting(game.id)
-            .then(function(doneAt) {
-              socket.emit('votingDone', {at: doneAt});
-              socket.broadcast.to(party).emit('votingDone', {at: doneAt});
-              setupRoundStart(socket, player, game);
-            });
+            return emitVotingDone(socket, game, party, player, round);
           }
         });
       }
