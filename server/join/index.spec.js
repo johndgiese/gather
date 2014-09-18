@@ -130,7 +130,7 @@ describe('The join socket API', function() {
       return clients[1].emitp('joinGame', {party: 'AAAAAA'}).should.be.rejectedWith(Error);
     });
 
-    it('provides the creator a way to kick another player', function() {
+    it('provides the master a way to kick another player', function() {
       return clients[1].emitp('joinGame', {party: party})
       .then(function(gameState) {
         var player1Id = gameState.you;

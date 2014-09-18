@@ -6,18 +6,18 @@ angular.module('join')
 
     $scope.link = $location.absUrl();
 
-    var creatorId = gameState.game.createdBy;
-    $scope.isCreator = creatorId === player.id;
-    $scope.creator = _.findWhere(gameState.players, {id: creatorId});
+    var masterId = gameState.game.master;
+    $scope.isMaster = gameState.you === masterId;
+    $scope.master = _.findWhere(gameState.players, {id: masterId});
     $scope.players = gameState.players;
 
-    if ($scope.isCreator) {
+    if ($scope.isMaster) {
       var removeMenuItems = menuService.registerItemGenerator({
         generator: function() {
           var otherPlayers = [];
           for (var i = 0, len = $scope.players.length; i < len; i++) {
             var player = $scope.players[i];
-            if (player.id !== creatorId) {
+            if (player.id !== masterId) {
               otherPlayers.push(player);
             }
           }
@@ -46,7 +46,7 @@ angular.module('join')
             $state.go('app.landing');
           });
         } else if (data.gameOver) {
-          messageService.message("The game's creator canceled the game!")
+          messageService.message("The game's master canceled the game!")
           .then(function() {
             $state.go('app.landing');
           });

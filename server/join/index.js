@@ -75,11 +75,11 @@ exports.setup = function(socket) {
   }
 
   /**
-   * Require the game's master (for now this is just the creator).
+   * Require the game's master (for now this is just the master).
    */
   function requireGameMaster() {
     if (game.master !== playerGameId) {
-      throw new Error("Must be the games creator");
+      throw new Error("Must be the games master");
     }
   }
 
@@ -212,8 +212,14 @@ exports.setup = function(socket) {
         .then(function(data) {
           playerGameId = data.playerGameId;
           broadcast = data.broadcast;
-          game.master = playerGameId;
-          return game.save();
+          var promise;
+          if (player.id === game.createdBy) {
+            game.master = playerGameId;
+            promise = game.save();
+          } else {
+            promise = Q.when();
+          }
+          return promise;
         })
         .then(function() {
           var gameModule = require('../' + game.type);
@@ -343,9 +349,9 @@ exports.setup = function(socket) {
       var gameModule = require('../' + game.type);
       var gameCleanupPromise = gameModule.leave(socket, kickedPlayer, party, game, kickedPlayerGameId);
 
-      // stop the game if the creator leaves
-      var leavingPlayerIsCreator = game.createdBy === kickedPlayer.id;
-      if (leavingPlayerIsCreator) {
+      // stop the game if the master leaves
+      var leavingPlayerIsMaster = game.master === kickedPlayerGameId;
+      if (leavingPlayerIsMaster) {
         gameCleanupPromise = gameCleanupPromise
         .then(function(customLeaveData) {
           game.party = null;
@@ -361,7 +367,7 @@ exports.setup = function(socket) {
             name: kickedPlayer.name,
             id: kickedPlayerGameId
           },
-          gameOver: leavingPlayerIsCreator,
+          gameOver: leavingPlayerIsMaster,
           kicked: player.id !== kickedPlayer.id,
           custom: customLeaveData,
         };

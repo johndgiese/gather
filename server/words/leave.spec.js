@@ -36,7 +36,7 @@ describe('The words module can handle players leaving and coming', function() {
     });
   });
 
-  it('should cancel the game if the creator leaves', function() {
+  it('should cancel the game if the master leaves', function() {
     return Q.all([
       clients[1].oncep('playerLeft'),
       clients[2].oncep('playerLeft'),

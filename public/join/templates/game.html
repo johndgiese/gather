@@ -6,11 +6,11 @@
   </div>
 </div>
 <ui-view>
-  <p ng-show="!isCreator" class="main-instruction">
-    The game will start once <span class="light-blue">{{ creator.name }}</span> clicks begin!
+  <p ng-show="!isMaster" class="main-instruction">
+    The game will start once <span class="light-blue">{{ master.name }}</span> clicks begin!
   </p>
 
-  <div ng-show="isCreator">
+  <div ng-show="isMaster">
     <p class="secondary-instruction" ng-show="players.length >= 2">Wait for everyone to join, then</p>
     <p class="secondary-instruction" ng-show="players.length < 2">This game requires two or more players</p>
     <a id="begin-game" class="action" ng-click="startGame()" ng-disabled="players.length < 2">Begin Game</a>
