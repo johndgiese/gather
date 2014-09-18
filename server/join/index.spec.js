@@ -90,10 +90,20 @@ describe('The join socket API', function() {
       return tu.setupPlayers(clients)
       .then(function(players_) {
         players = players_;
-        return clients[0].emitp('createGame', {type: 'dummy'})
-        .then(function(data) {
-          party = data.party;
-          return clients[0].emitp('joinGame', {party: party});
+        return clients[0].emitp('createGame', {type: 'dummy'});
+      })
+      .then(function(data) {
+        party = data.party;
+        return models.Game.queryByParty(party);
+      })
+      .then(function(game) {
+        expect(game.master).to.equal(null);
+        return clients[0].emitp('joinGame', {party: party});
+      })
+      .then(function(gameState) {
+        return models.Game.queryByParty(party)
+        .then(function(game) {
+          expect(game.master).to.equal(gameState.you);
         });
       });
     });

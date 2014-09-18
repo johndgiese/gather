@@ -16,6 +16,7 @@ CREATE TABLE tbGame (
     gStartedOn TIMESTAMP NULL,
     gCreatedBy INT NOT NULL,
     gType VARCHAR(255) NOT NULL,
+    gMaster INT DEFAULT NULL,
     PRIMARY KEY (gId)
 );
 
@@ -42,4 +43,8 @@ ALTER TABLE tbPlayerGame
 ALTER TABLE tbGame
     ADD CONSTRAINT
     FOREIGN KEY (gCreatedBy) REFERENCES tbPlayer(pId);
+
+ALTER TABLE tbGame
+    ADD CONSTRAINT
+    FOREIGN KEY (gMaster) REFERENCES tbPlayerGame(pgId);
 

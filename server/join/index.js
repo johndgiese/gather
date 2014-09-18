@@ -78,7 +78,7 @@ exports.setup = function(socket) {
    * Require the game's master (for now this is just the creator).
    */
   function requireGameMaster() {
-    if (game.createdBy !== player.id) {
+    if (game.master !== playerGameId) {
       throw new Error("Must be the games creator");
     }
   }
@@ -212,6 +212,10 @@ exports.setup = function(socket) {
         .then(function(data) {
           playerGameId = data.playerGameId;
           broadcast = data.broadcast;
+          game.master = playerGameId;
+          return game.save();
+        })
+        .then(function() {
           var gameModule = require('../' + game.type);
           return gameModule.join(socket, player, party, game, playerGameId);
         })

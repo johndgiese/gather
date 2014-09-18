@@ -9,6 +9,7 @@ var fields = {
   type: 'gType',
   createdOn: 'gCreatedOn',
   startedOn: 'gStartedOn',
+  master: 'gMaster',
 };
 var Game = orm.define('tbGame', fields, 'gId');
 exports.Model = Game;
