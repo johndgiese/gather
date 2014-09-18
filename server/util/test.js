@@ -160,10 +160,24 @@ var disconnectAndRejoinGame = exports.disconnectAndRejoinGame = function(clients
   return promise;
 };
 
+
+/**
+ * Rejoin an existing game.
+ *
+ * If the socket is disconneced, create a new one, and login, otherwise use the
+ * existing socket setup.
+ */
 var rejoinGame = exports.rejoinGame = function(clients, gameStates, index, playerId, party) {
-  var client = clients[index] = setupClient();
-  return client.emitp('login', {id: playerId})
-  .then(function(player) {
+  var client, loggedInPromise;
+  if (clients[index] && clients[index].disconnected) {
+    client = clients[index] = setupClient();
+    loggedInPromise = client.emitp('login', {id: playerId});
+  } else {
+    client = clients[index];
+    loggedInPromise = Q.when();
+  }
+
+  return loggedInPromise.then(function() {
     return joinGame(client, party)
     .then(function(gameState) {
       gameStates[index] = gameState;
@@ -171,11 +185,10 @@ var rejoinGame = exports.rejoinGame = function(clients, gameStates, index, playe
   });
 };
 
-var leaveGame = exports.leaveGame = function(clients, index) {
-  return clients[index].emitp('leaveGame', {})
-  .then(function() {
-    clients[index] = false;
-  });
+
+var leaveGame = exports.leaveGame = function(clients, gameStates, index) {
+  gameStates[index] = false;
+  return clients[index].emitp('leaveGame', {});
 };
 
 
@@ -373,11 +386,7 @@ exports.castVote = function(client, gameState) {
  */
 var allRecieve = exports.allRecieve = function(clients, event, ms) { 
   return Q.all(_.map(clients, function(c) {
-    if (c) {
-      return c.oncep(event);
-    } else {
-      return Q.when();
-    }
+    return c.oncep(event);
   }))
   .then(function(result) {
     if (ms === undefined) {
@@ -394,11 +403,7 @@ var allRecieve = exports.allRecieve = function(clients, event, ms) {
 var anyRecieve = exports.anyRecieve = function(clients, event) { 
   var deferred = Q.defer();
   _.each(clients, function(c) {
-    if (c) {
-      return c.oncep(event);
-    } else {
-      return Q.when();
-    }
+    return c.oncep(event);
   });
   return deferred.promise;
 };

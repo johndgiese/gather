@@ -16,9 +16,13 @@ exports.setup = function(socket) {
   // null --> the player isn't in a party
   // not null --> player may or may not be in a party
   // i.e. these values are NOT explicitly nulled upon leaving a game
-  var party, playerGameId, game;
+  var party, playerGameId, game, gameCleanup;
 
   function clearPartyState() {
+    if (_.isFunction(gameCleanup)) {
+      gameCleanup();
+    }
+    gameCleanup = null;
     party = null;
     playerGameId = null;
     game = null;
@@ -34,7 +38,6 @@ exports.setup = function(socket) {
   socket.on('leaveGame', leaveGame);
   socket.on('disconnect', disconnect);
   socket.on('kickPlayer', kickPlayer);
-
   socket.on('startGame', startGame);
 
   function requirePlayer() {
@@ -215,7 +218,9 @@ exports.setup = function(socket) {
 
         // then build up the game state using custom data returned from the
         // game module setup function
-        .then(function(customGameState) {
+        .then(function(data) {
+          customGameState = data.gameState;
+          gameCleanup = data.cleanup;
           return game.getState()
           .then(function(gameState) {
             gameState.you = playerGameId;
@@ -246,14 +251,15 @@ exports.setup = function(socket) {
    * Start the current game.
    */
   function startGame(data, acknowledge) {
-    Q.fcall(function() {
-      requireGameMaster();
-      requirePlayerInParty();
-    })
-    .then(function() {
-      game.startedOn = new Date();
-      game.startedOn.setMilliseconds(0);
-      game.save()
+    transaction.inOrderByGroup(party, function() {
+      return Q.fcall(function() {
+        requireGameMaster();
+        requirePlayerInParty();
+
+        game.startedOn = new Date();
+        game.startedOn.setMilliseconds(0);
+        return game.save();
+      })
       .then(function() {
         var gameModule = require('../' + game.type);
         return gameModule.startGame(socket, player, game);
@@ -262,12 +268,12 @@ exports.setup = function(socket) {
         socket.emit('gameStarted', {startedOn: game.startedOn});
         socket.broadcast.to(party).emit('gameStarted', {startedOn: game.startedOn});
         acknowledge({});
+      })
+      .fail(function(error) {
+        logger.error(error);
+        acknowledge({_error: "Unable to start game"});
       });
-    })
-    .fail(function(error) {
-      logger.error(error);
-      acknowledge({_error: "Unable to start game"});
-    });
+    })();
   }
 
   /**
@@ -277,23 +283,54 @@ exports.setup = function(socket) {
    */
   // TODO: eventually only close if is the last owener in the game
   function leaveGame(data, acknowledge) {
-    Q.fcall(function() {
-      requirePlayerInParty();
-    })
-    .then(function() {
-      return removeFromGame(player, playerGameId);
-    })
-    .then(function() {
-      socket.leave(party);
-      party = null;
-      playerGameId = null;
-      game = null;
-      acknowledge({});
-    })
-    .fail(function(error) {
-      logger.error(error);
-      acknowledge({_error: "Unable to leave game"});
-    });
+    transaction.inOrderByGroup(party, function() {
+      return Q.fcall(function() {
+        requirePlayerInParty();
+        return removeFromGame(player, playerGameId);
+      })
+      .then(function() {
+        socket.leave(party);
+        party = null;
+        playerGameId = null;
+        game = null;
+        acknowledge({});
+      })
+      .fail(function(error) {
+        logger.error(error);
+        acknowledge({_error: "Unable to leave game"});
+      });
+    })();
+  }
+
+
+  function disconnect() {
+    if (playerGameId !== null && party !== null) {
+      socket.broadcast.to(party).emit('playerDisconnected', {player: playerGameId});
+    }
+  }
+
+  function kickPlayer(data, acknowledge) {
+    transaction.inOrderByGroup(party, function() {
+      return Q.fcall(function() {
+        requireGameMaster();
+        // TODO: require playerGame is active
+        // TODO: require the playerGame is in the current party!
+      })
+      .then(function() {
+        var kickedPlayerGameId = data.player;
+        return models.Player.queryFromPlayerGameId(kickedPlayerGameId)
+        .then(function(kickedPlayer) {
+          return removeFromGame(kickedPlayer, kickedPlayerGameId);
+        })
+        .then(function() {
+          acknowledge({});
+        });
+      })
+      .fail(function(error) {
+        logger.error(error);
+        acknowledge({_error: "Unable to kick player"});
+      });
+    })();
   }
 
   function removeFromGame(kickedPlayer, kickedPlayerGameId) {
@@ -327,34 +364,6 @@ exports.setup = function(socket) {
         socket.emit('playerLeft', leaveData);
         socket.broadcast.to(party).emit('playerLeft', leaveData);
       });
-    });
-  }
-
-  function disconnect() {
-    if (playerGameId !== null && party !== null) {
-      socket.broadcast.to(party).emit('playerDisconnected', {player: playerGameId});
-    }
-  }
-
-  function kickPlayer(data, acknowledge) {
-    Q.fcall(function() {
-      requireGameMaster();
-      // TODO: require playerGame is active
-      // TODO: require the playerGame is in the current party!
-    })
-    .then(function() {
-      var kickedPlayerGameId = data.player;
-      return models.Player.queryFromPlayerGameId(kickedPlayerGameId)
-      .then(function(kickedPlayer) {
-        return removeFromGame(kickedPlayer, kickedPlayerGameId);
-      })
-      .then(function() {
-        acknowledge({});
-      });
-    })
-    .fail(function(error) {
-      logger.error(error);
-      acknowledge({_error: "Unable to kick player"});
     });
   }
 

@@ -79,13 +79,13 @@ describe('The words module can handle players leaving and coming', function() {
         if (index === gameStates.length - 1) {
           return clients[index].emitp('leaveGame', {})
           .then(function() {
-            clients[index] = false;
+            gameStates[index] = false;
             return Q.reject();
           });
         } else {
           return Q.when();
         }
-      }
+      },
     };
 
     return tu.startGame(clients)
@@ -99,7 +99,7 @@ describe('The words module can handle players leaving and coming', function() {
         if (index === gameStates.length - 1) {
           return clients[index].emitp('leaveGame', {})
           .then(function() {
-            clients[index] = false;
+            gameStates[index] = false;
             return Q.reject();
           });
         } else {
@@ -117,7 +117,7 @@ describe('The words module can handle players leaving and coming', function() {
     var leaveRejoinHooks = {
       beforChoice: function(clients, gameStates, readerIndex, index) {
         if (index === gameStates.length - 2) {
-          return tu.leaveGame(clients,index)
+          return tu.leaveGame(clients, gameStates, index)
           .then(function() { return Q.reject(); });
         } else {
           return Q.when();
@@ -134,8 +134,6 @@ describe('The words module can handle players leaving and coming', function() {
 
     return tu.startGame(clients)
     .then(playRoundWith(clients, gameStates, leaveRejoinHooks))
-    .then(playRoundWith(clients, gameStates, {}))
-    .then(playRoundWith(clients, gameStates, {}))
     .then(playRoundWith(clients, gameStates, {}));
   });
 

@@ -30,32 +30,7 @@ exports.startGame = function(socket, player, game) {
  */
 exports.join = function(socket, player, party, game, playerGameId) {
 
-  socket.on('doneReadingPrompt', doneReadingPrompt);
-  socket.on('chooseCard', chooseCard);
-  socket.on('doneReadingChoices', doneReadingChoices);
-  socket.on('castVote', castVote);
-
-  return Q.all([
-    dealer.dealResponses(playerGameId, game.id),
-    models.Round.forApiByGame(game.id),
-    scorer.currentScore(game.id),
-    models.Vote.alreadyVotedByGame(game.id),
-    models.Card.queryLatestByGame(game.id),
-  ])
-  .then(function(data) {
-    var gs = {
-      hand: data[0],
-      rounds: data[1],
-      score: data[2],
-      votes: data[3],
-      choices: data[4],
-    };
-
-    debug(gs);
-    return gs;
-  });
-
-  function doneReadingPrompt(data, acknowledge) {
+  var doneReadingPrompt = function(data, acknowledge) {
     Q.fcall(function() {
       return Q.all([
         requireReader(playerGameId, game.id),
@@ -74,16 +49,14 @@ exports.join = function(socket, player, party, game, playerGameId) {
       logger.error(error);
       acknowledge({_error: "Unable to signal reading prompt is over"});
     });
-  }
+  };
 
-  function chooseCard(data, acknowledge) {
-    Q.fcall(function() {
-      return Q.all([
-        requireCardInHand(playerGameId, data.card),
-        requireNotPlayedThisRound(playerGameId, game.id)
-      ]);
-    })
-    .then(transaction.inOrderByGroup(party, function() {
+  var chooseCard = transaction.inOrderByGroup(party, function(data, acknowledge) {
+    return Q.all([
+      requireCardInHand(playerGameId, data.card),
+      requireNotPlayedThisRound(playerGameId, game.id)
+    ])
+    .then(function() {
       return models.Card.play(data.card, data.round)
       .then(function() {
         return models.Card.forApi(data.card);
@@ -114,20 +87,18 @@ exports.join = function(socket, player, party, game, playerGameId) {
       .then(function(card) {
         acknowledge(card);
       });
-    }))
+    })
     .fail(function(error) {
       logger.error(error);
       acknowledge({_error: "Unable to send back response card"});
     });
-  }
+  });
 
-  function doneReadingChoices(data, acknowledge) {
-    Q.fcall(function() {
-      return Q.all([
-        requireReader(playerGameId, game.id),
-        // TODO: ensure in proper stage of the game
-      ]);
-    })
+  var doneReadingChoices = function(data, acknowledge) {
+    return Q.all([
+      requireReader(playerGameId, game.id),
+      // TODO: ensure in proper stage of the game
+    ])
     .then(function() {
       return models.Round.markDoneReadingChoices(game.id);
     })
@@ -140,17 +111,14 @@ exports.join = function(socket, player, party, game, playerGameId) {
       logger.error(error);
       acknowledge({_error: "Unable to signal reading choices is over"});
     });
-  }
+  };
 
-  function castVote(data, acknowledge) {
-    Q.fcall(function() {
-      return Q.all([
-        requireValidVote(data.card, playerGameId, game.id),
-        requireNotVotedThisRound(playerGameId, game.id),
-      ]);
-    })
-    // transactions ensure `setupRoundStart` is called only once
-    .then(transaction.inOrderByGroup(party, function() {
+  var castVote = transaction.inOrderByGroup(party, function(data, acknowledge) {
+    return Q.all([
+      requireValidVote(data.card, playerGameId, game.id),
+      requireNotVotedThisRound(playerGameId, game.id),
+    ])
+    .then(function() {
       return new models.Vote({
         voter: playerGameId,
         card: data.card,
@@ -187,12 +155,48 @@ exports.join = function(socket, player, party, game, playerGameId) {
           }
         });
       });
-    }))
+    })
     .fail(function(error) {
       logger.error(error);
       acknowledge({_error: "Unable to register vote"});
     });
-  }
+  });
+
+  socket.on('doneReadingPrompt', doneReadingPrompt);
+  socket.on('chooseCard', chooseCard);
+  socket.on('doneReadingChoices', doneReadingChoices);
+  socket.on('castVote', castVote);
+
+  var cleanup = function() {
+    socket.removeListener('doneReadingPrompt', doneReadingPrompt);
+    socket.removeListener('chooseCard', chooseCard);
+    socket.removeListener('doneReadingChoices', doneReadingChoices);
+    socket.removeListener('castVote', castVote);
+  };
+
+  return Q.all([
+    dealer.dealResponses(playerGameId, game.id),
+    models.Round.forApiByGame(game.id),
+    scorer.currentScore(game.id),
+    models.Vote.alreadyVotedByGame(game.id),
+    models.Card.queryLatestByGame(game.id),
+  ])
+  .then(function(data) {
+    var gs = {
+      hand: data[0],
+      rounds: data[1],
+      score: data[2],
+      votes: data[3],
+      choices: data[4],
+    };
+
+    debug(gs);
+    return {
+      gameState: gs,
+      cleanup: cleanup
+    };
+  });
+
 };
 
 

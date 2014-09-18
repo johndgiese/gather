@@ -4,6 +4,17 @@ var tu = require('./test');
 var debug = require('debug')('gather:playRound');
 var _ = require('underscore');
 
+function allActiveRecieve(clients, gameStates, event) {
+  var activeClients = [];
+  for (var i = 0; i < clients.length; i++) {
+    if (gameStates[i]) {
+      activeClients.push(clients[i]);
+    }
+  }
+  debug("setup all recieve " + event + " for " + activeClients.length + " clients");
+  return tu.allRecieve(activeClients, event);
+}
+
 /**
  * Return a function that plays through a round of the game.
  * @arg - array of clients with state listeners setup etc.
@@ -39,7 +50,7 @@ var _ = require('underscore');
  * after the next round has started, so you can chain them together.
  *
  * ALSO IMPORTANT: If you have a hook that disconnects a client, you need to
- * set that client to false, and if you are in a individual hook (and not a
+ * set that gameState to false, and if you are in a individual hook (and not a
  * group hook) you also need to reject the promise.
  */
 // TODO reduce code duplication
@@ -53,14 +64,22 @@ module.exports = function playRoundWith(clients, gameStates, hooks, maxDelay) {
       hooks = {};
     }
 
-    var readerIndex = null;
+    function readerIndex() {
+      var readerId = _.last(gameStates[0].custom.rounds).reader;
+      for(var i = 0; i < gameStates.length; i++) {
+        if (gameStates[i].you === readerId) {
+          return i;
+        }
+      }
+    }
 
     function invokeGroupHook(hookName) {
       return function() {
         if (hooks[hookName] !== undefined) {
           debug("Calling " + hookName);
-          return hooks[hookName](clients, gameStates, readerIndex);
+          return hooks[hookName](clients, gameStates, readerIndex());
         } else {
+          debug("No listener " + hookName);
           return Q.when();
         }
       };
@@ -70,27 +89,19 @@ module.exports = function playRoundWith(clients, gameStates, hooks, maxDelay) {
       return function() {
         if (hooks[hookName] !== undefined) {
           debug("Calling " + hookName + ' for ' + index);
-          return hooks[hookName](clients, gameStates, readerIndex, index);
+          return hooks[hookName](clients, gameStates, readerIndex(), index);
         } else {
+          debug("No listener " + hookName);
           return Q.when();
         }
       };
     }
 
-    return Q.fcall(function() {
-      var readerId = _.last(gameStates[0].custom.rounds).reader;
-      for(var i = 0; i < gameStates.length; i++) {
-        if (gameStates[i].you === readerId) {
-          readerIndex = i;
-          break;
-        }
-      }
-    })
-    .then(invokeGroupHook('beforeReadingPrompt'))
+    return Q.fcall(invokeGroupHook('beforeReadingPrompt'))
     .then(function() {
       return Q.all([
-        tu.allRecieve(clients, 'readingPromptDone'),
-        clients[readerIndex].emitp('doneReadingPrompt', {}),
+        allActiveRecieve(clients, gameStates, 'readingPromptDone'),
+        clients[readerIndex()].emitp('doneReadingPrompt', {}),
       ]);
     })
     .then(invokeGroupHook('beforeChoosing'))
@@ -104,7 +115,7 @@ module.exports = function playRoundWith(clients, gameStates, hooks, maxDelay) {
           promise = promise
           .then(invokeIndividualHook('beforeChoice', i))
           .then(function() { 
-            if (clients[i]) {
+            if (gameStates[i]) {
               debug('making choice ' + i);
               return tu.makeChoice(clients[i], gameStates[i]); 
             } else {
@@ -126,7 +137,7 @@ module.exports = function playRoundWith(clients, gameStates, hooks, maxDelay) {
           return Q.delay(_.random(0, maxDelay))
           .then(invokeIndividualHook('beforeChoice', i))
           .then(function() { 
-            if (clients[i]) {
+            if (gameStates[i]) {
               debug('making choice ' + i);
               return tu.makeChoice(clients[i], gameStates[i]); 
             } else {
@@ -152,8 +163,8 @@ module.exports = function playRoundWith(clients, gameStates, hooks, maxDelay) {
     .then(invokeGroupHook('beforeReadingChoices'))
     .then(function() {
       return Q.all([
-        tu.allRecieve(clients, 'readingChoicesDone'),
-        clients[readerIndex].emitp('doneReadingChoices', {}),
+        allActiveRecieve(clients, gameStates, 'readingChoicesDone'),
+        clients[readerIndex()].emitp('doneReadingChoices', {}),
       ]);
     })
     .then(invokeGroupHook('beforeVoting'))
@@ -167,7 +178,7 @@ module.exports = function playRoundWith(clients, gameStates, hooks, maxDelay) {
           promise = promise
           .then(invokeIndividualHook('beforeVote', i))
           .then(function() { 
-            if (clients[i]) {
+            if (gameStates[i]) {
               debug('casting vote for ' + i);
               return tu.castVote(clients[i], gameStates[i]); 
             } else {
@@ -189,7 +200,7 @@ module.exports = function playRoundWith(clients, gameStates, hooks, maxDelay) {
           return Q.delay(_.random(0, maxDelay))
           .then(invokeIndividualHook('beforeVote', i))
           .then(function() { 
-            if (clients[i]) {
+            if (gameStates[i]) {
               debug('casting vote for ' + i);
               return tu.castVote(clients[i], gameStates[i]); 
             } else {
@@ -213,7 +224,7 @@ module.exports = function playRoundWith(clients, gameStates, hooks, maxDelay) {
       ]);
     })
     .then(function() {
-      return tu.allRecieve(clients, 'roundStarted');
+      return allActiveRecieve(clients, gameStates, 'roundStarted');
     });
   };
 };
