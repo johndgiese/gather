@@ -65,8 +65,10 @@ module.exports = function(grunt) {
         mangle: false
       },
       build: {
-        dest: 'public/_dist/index.js',
-        src: ['<%= clientSrc %>', '<%= externalClientSrc %>']
+        files: {
+          'public/_dist/index.js': ['<%= clientSrc %>', '<%= externalClientSrc %>'],
+          'public/_dist/landing.js': ['public/landing.js']
+        }
       }
     },
 
@@ -139,12 +141,11 @@ module.exports = function(grunt) {
         options: {
           paths: '<%= lessSrc %>',
           sourceMap: true,
-          sourceMapFilename: 'public/_dist/index.map.css',
-          sourceMapURL: '/_dist/index.map.css',
           strictImports: true
         },
         files: {
-          'public/_dist/index.css': 'public/index.less'
+          'public/_dist/index.css': 'public/index.less',
+          'public/_dist/landing.css': 'public/landing.less',
         }
       }
     },

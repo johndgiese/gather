@@ -10,6 +10,7 @@
 @import "_vendor/bootstrap/less/tables.less";
 @import "_vendor/bootstrap/less/forms.less";
 @import "_vendor/bootstrap/less/buttons.less";
+@import "_vendor/bootstrap/less/responsive-utilities.less";
 
 @import "modal/index.less";
 @import "join/hamburger.less";
@@ -51,15 +52,15 @@ body {
     padding-left: 5px;
 }
 
-.dark-blue { 
+.dark-blue {
     color: @brand-dark-blue;
 }
 
-.light-blue { 
+.light-blue {
     color: @brand-light-blue;
 }
 
-.yellow { 
+.yellow {
     color: @brand-yellow;
 }
 
@@ -134,6 +135,26 @@ a.login {
     }
 }
 
+.btn-yellow {
+    .btn();
+    .btn-lg();
+    height: 50px;
+    width: 100%;
+    .btn-warning();
+    color: @brand-dark-blue;
+    display: inline-block;
+    &:hover {
+        color: @brand-dark-blue;
+    }
+}
+
+// TODO: think of much better name
+.input-yellow {
+    .form-control();
+    .input-lg();
+    height: 50px;
+}
+
 .action-next {
     color: @brand-yellow;
     float: right;
@@ -178,6 +199,32 @@ a.login {
     height: 30px;
 }
 
+.img-facebook {
+    background-image: url('/static/img/facebook.png');
+    background-size: 50px 50px;
+    height: 50px;
+    width: 50px;
+    background-repeat: no-repeat;
+    background-position: center;
+    display: inline-block;
+    vertical-align: middle;
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+.img-twitter {
+    background-image: url('/static/img/twitter.png');
+    background-size: 50px 50px;
+    height: 50px;
+    width: 50px;
+    background-repeat: no-repeat;
+    background-position: center;
+    display: inline-block;
+    margin-left: 10px;
+    vertical-align: middle;
+}
+
+
 // use bigger version of the logo for high density displays
 @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
 only screen and (-o-min-device-pixel-ratio: 3/2),
@@ -188,6 +235,9 @@ only screen and (min-device-pixel-ratio: 1.5) {
     }
     .logo-small {
         background-image: url(/static/img/logo@2x.png);
+    }
+    .img-facebook {
+        background-image: url(/static/img/facebook@2x.png);
     }
 }
 
@@ -253,3 +303,4 @@ only screen and (min-device-pixel-ratio: 1.5) {
 .pull-down {
     margin-bottom: 2px;
 }
+

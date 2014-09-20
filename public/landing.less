@@ -1,0 +1,123 @@
+@import "_vendor/bootstrap/less/variables.less";
+@import "_vendor/bootstrap/less/mixins.less";
+@import "variables.less";
+
+p {
+    font-size: 120%;
+}
+
+.dark {
+    background-color: @brand-dark-blue;
+    color: @brand-yellow;
+}
+
+#call-to-action {
+    .dark {
+        border-radius: 4px;
+        padding-top: 10px;
+        padding-bottom: 30px;
+    }
+    h1 {
+        font-size: 180%;
+    }
+
+    .or {
+        margin-top: 8px;
+        font-size: 180%;
+    }
+}
+
+@media (max-width: @screen-xs-max) { 
+    #call-to-action .dark {
+        border-radius: 0;
+    }
+}
+
+@media (min-width: @screen-md-min) {
+    #how-to-play {
+        p {
+            font-size: 105%;
+        }
+    }
+}
+
+
+.question {
+    font-size: 160%;
+    color: @brand-light-blue;
+}
+
+.main-catch {
+    font-size: 160%;
+    font-weight: bold;
+}
+
+
+// images
+
+.img-suitcase,
+.img-decks,
+.img-alamo {
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+
+.img-suitcase {
+    background-image: url('/static/img/suitcase.png');
+    background-size: 277px 153px;
+    height: 153px;
+}
+
+.img-decks {
+    margin-top: 15px;
+    background-image: url('/static/img/decks.png');
+    background-size: 275px 116px;
+    height: 116px;
+}
+
+.img-alamo {
+    margin-top: 15px;
+    background-image: url('/static/img/alamo.png');
+    background-size: 270px 160px;
+    height: 160px;
+}
+
+// use bigger version of the logo for high density displays
+@media only screen and (-webkit-min-device-pixel-ratio: 1.5),
+only screen and (-o-min-device-pixel-ratio: 3/2),
+only screen and (min--moz-device-pixel-ratio: 1.5),
+only screen and (min-device-pixel-ratio: 1.5) {
+    .img-suitcase {
+        background-image: url(/static/img/suitcase@2x.png);
+    }
+    .img-decks {
+        background-image: url(/static/img/decks@2x.png);
+    }
+    .img-alamo {
+        background-image: url(/static/img/alamo@2x.png);
+    }
+}
+
+.feature {
+    margin-top: 14px;
+}
+
+footer > div {
+    margin-top: 20px;
+    padding-top: 15px;
+    padding-bottom: 15px;
+    border-top-left-radius: @border-radius-base;
+    border-top-right-radius: @border-radius-base;
+}
+
+@media (max-width: @screen-xs-max) { 
+    footer > div {
+        border-top-left-radius: 0;
+        border-top-right-radius: 0;
+    }
+}
+
+.also-follow {
+    font-size: 130%;
+}
