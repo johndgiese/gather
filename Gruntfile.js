@@ -67,7 +67,6 @@ module.exports = function(grunt) {
       build: {
         files: {
           'public/_dist/index.js': ['<%= clientSrc %>', '<%= externalClientSrc %>'],
-          'public/_dist/landing.js': ['public/landing.js']
         }
       }
     },
