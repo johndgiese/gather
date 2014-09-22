@@ -15,7 +15,7 @@ angular.module('join')
   })
 
   .state('app.landing', {
-    url: '/',
+    url: '/beta',
     controller: 'LandingCtrl',
     templateUrl: '/static/join/templates/landing.html',
   })

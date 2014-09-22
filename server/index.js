@@ -18,7 +18,7 @@ app.use(function(request, response, next){
 
 app.use('/static', express.static(__dirname + '/../public'));
 
-app.use('/', function(request, response) {
+app.get('/', function(request, response) {
   var pagePath = path.resolve(__dirname, '../public/landing.html');
   response.sendfile(pagePath, function(error) {
     if (error) {
@@ -28,21 +28,21 @@ app.use('/', function(request, response) {
   });
 });
 
-//app.use(function(request, response) {
-  //var indexPagePath = path.resolve(__dirname, '../public/index.html');
-  //response.sendfile(indexPagePath, function(error) {
-    //if (error) {
-      //console.log("error");
-      //logger.log("Error serving index.html: " + reason);
-    //}
-  //});
-//});
+app.use('/', function(request, response) {
+  var indexPagePath = path.resolve(__dirname, '../public/index.html');
+  response.sendfile(indexPagePath, function(error) {
+    if (error) {
+      console.log("error");
+      logger.log("Error serving index.html: " + reason);
+    }
+  });
+});
 
 
 // USE SOCKETS FOR EVERYTHING ELSE
-//var socket = require('socket.io');
-//var io = socket.listen(server);
+var socket = require('socket.io');
+var io = socket.listen(server);
 
-//var join = require('./join');
-//io.sockets.on('connection', join.setup);
+var join = require('./join');
+io.sockets.on('connection', join.setup);
 
