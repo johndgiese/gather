@@ -12,6 +12,7 @@ angular.module('join')
     $scope.players = gameState.players;
 
     if ($scope.isMaster) {
+
       var removeMenuItems = menuService.registerItemGenerator({
         generator: function() {
           var otherPlayers = [];
@@ -90,6 +91,18 @@ angular.module('join')
         // TODO: make this generic
         $state.go('app.game.words.score');
       });
+
+
+      // TODO: only display once to each user
+      if ($scope.isMaster) {
+        messageService.message(
+          "WARNING: This game is extremely crude and offensive! " +
+          "Don't invite your grandma or young children unless you know what you " +
+          "are getting into.  We are not liable for any emotional or physical harm " +
+          "that may be caused by you ignoring this warning.",
+          "I am at least 18 years old"
+        );
+      }
 
     } else {
       // TODO: make the state resolver generic
