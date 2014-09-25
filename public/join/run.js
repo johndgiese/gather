@@ -2,6 +2,10 @@ angular.module('join')
 .run(['$rootScope', '$state', 'messageService', 'socket', 'playerService', 'debugService', 'menuService',
   function($rootScope, $state, messageService, socket, playerService, debugService, menuService) {
 
+    $rootScope.$on('$stateChangeSuccess', function(event, to, toParams, from, fromParams, error) {
+      ga('send', 'event', 'navigate', 'success', to.name);
+    });
+
     $rootScope.$on('$stateChangeError', function(event, to, toParams, from, fromParams, error) {
 
       if (from.name === 'app.joinGame' && to.name === 'app.game') {
