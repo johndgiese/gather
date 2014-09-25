@@ -32,7 +32,7 @@ var DEAL_CARDS_SQL = 'INSERT INTO tbCard (resId, pgId) ' +
   'SELECT resId, ? FROM tbResponse WHERE ' +
   'resId NOT IN (' +
     'SELECT resId FROM tbCard NATURAL JOIN tbPlayerGame WHERE gId=?' +
-  ') ' +
+  ') AND resActive=TRUE ' +
   'ORDER BY RAND() LIMIT ?';
 
 /**
