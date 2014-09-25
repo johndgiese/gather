@@ -18,6 +18,16 @@ app.use(function(request, response, next){
 
 app.use('/static', express.static(__dirname + '/../public'));
 
+app.get('/ut', function(request, response) {
+  var pagePath = path.resolve(__dirname, '../public/landing-ut.html');
+  response.sendfile(pagePath, function(error) {
+    if (error) {
+      console.log("error");
+      logger.log("Error serving index.html: " + reason);
+    }
+  });
+});
+
 app.get('/', function(request, response) {
   var pagePath = path.resolve(__dirname, '../public/landing.html');
   response.sendfile(pagePath, function(error) {
