@@ -14,7 +14,6 @@ CREATE TABLE tbResponse (
 CREATE TABLE tbPrompt (
     proId INT NOT NULL AUTO_INCREMENT,
     proText VARCHAR(255) NOT NULL,
-    proType ENUM('fill', 'assoc', 'overhear') NOT NULL,
     proActive BOOLEAN NOT NULL DEFAULT TRUE,
     PRIMARY KEY (proId)
 );

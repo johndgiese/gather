@@ -6,20 +6,11 @@ var db = require('../../db');
 var Q = require('q');
 var debug = require('debug')('gather:words');
 
-// categories used in the google doc are too long for the database, so
-// translate them using this
-var typeMap = {
-  'Fill in the Blank': 'fill',
-  'Word Association': 'assoc',
-  'Overhear': 'overhear',
-  'Answer': 'answer',
-};
-
 var responseCount = 0, promptCount = 0, promises = [];
 var csvStream = csv({trim: true})
   .on("record", function(data) {
     var text = data[0];
-    var type = typeMap[data[1]];
+    var type = data[1];
     var tagText = data[2] || null;
     var tags = [];
     if (tagText !== null) {
@@ -30,11 +21,11 @@ var csvStream = csv({trim: true})
     }
 
     var p;
-    if (type == "answer") {
+    if (type == "Answer") {
       p = models.Response.create(text, tags);
       responseCount++;
     } else {
-      p = models.Prompt.create(text, type, tags);
+      p = models.Prompt.create(text, tags);
       promptCount++;
     }
     promises.push(p);
