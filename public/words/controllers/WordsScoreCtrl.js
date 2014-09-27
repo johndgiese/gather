@@ -1,7 +1,7 @@
 angular.module('words')
 .controller('WordsScoreCtrl', [
-  '$scope', '$stateParams', 'gameState', '$interval', '$timeout', 'lastRoundDetails', 
-  function($scope, $stateParams, gameState, $interval, $timeout, lastRoundDetails) {
+  '$scope', '$stateParams', 'gameState', '$interval', '$timeout', 'lastRoundDetails', 'wordsTweetService',
+  function($scope, $stateParams, gameState, $interval, $timeout, lastRoundDetails, wordsTweetService) {
 
     $scope.round = _.last(gameState.custom.rounds);
     $scope.score = _.sortBy(gameState.custom.score, 'score').reverse();
@@ -19,6 +19,25 @@ angular.module('words')
           response: _.findWhere(details.choices, {player: s.id}).card.text,
         };
       });
+
+      $scope.perfectWin = true; //$scope.getDifferential(gameState.you) === $scope.players.length - 1 && $scope.players.length > 2;
+      if ($scope.perfectWin) {
+        $scope.winAdjective = _.sample([
+          'Crushing',
+          'Grandslam',
+          'Demonstrable',
+          'Annihilating',
+          'Major',
+          'Sizable',
+          'Dominant',
+          'Ultra',
+          'Perfect',
+          'Non-insignificant',
+          'Annoyingly good',
+        ]);
+        $scope.tweetWin = wordsTweetService.win($scope.round.prompt, $scope.winners[0].response);
+      }
+
     }
 
     $scope.getDifferential = function(playerId) {
