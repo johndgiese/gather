@@ -195,7 +195,6 @@ exports.setup = function(socket) {
     .then(function() {
       // TODO: add throttling to help prevent people from joining other
       // people's parties by guessing the party code
-      // TODO: teardown any listeners from previous games
       // TODO: make this more efficient for the person making the game (who
       // already has the game reference)
       clearPartyState();
