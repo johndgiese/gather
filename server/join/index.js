@@ -164,9 +164,9 @@ exports.setup = function(socket) {
     })
     .then(function() {
       var game = new models.Game({createdBy: player.id, type: data.type});
-      if (party !== null) {
-        game.party = party;
-      }
+      //if (party !== null) {
+        //game.party = party;
+      //}
       return game.save()
       .then(function() {
         var gameModule = require('../' + game.type);
