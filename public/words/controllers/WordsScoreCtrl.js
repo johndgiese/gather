@@ -49,7 +49,8 @@ angular.module('words')
       }
     };
 
-    var INTER_ROUND_DELAY = 10000;  // in ms
+
+    var INTER_ROUND_DELAY = 15000;  // in ms
 
     // 1. determine ms before next round starts
     // 2. round counter up to nearest sec
