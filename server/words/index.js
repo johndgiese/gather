@@ -355,5 +355,5 @@ exports.leave = function(socket, player, party, game, playerGameId) {
  * @constant {number} - delay between finishing a round, and starting the next
  * round, in milliseconds
  */
-exports.INTER_ROUND_DELAY = 15000;
+exports.INTER_ROUND_DELAY = 12000;
 
