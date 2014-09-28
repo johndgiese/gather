@@ -47,7 +47,7 @@ grunt watch:tests
 # or
 grunt watch:static
 # or 
-grunt karma:unit:start watch:karma
+grunt karma
 ```
 
 I don't know how to only run client tests without the watch server.

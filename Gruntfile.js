@@ -24,14 +24,12 @@ module.exports = function(grunt) {
       'public/util/index.js',
       'public/socket/index.js',
       'public/words/index.js',
-      'public/words_analytics/index.js',
 
       'public/join/**/*.js',
       'public/util/**/*.js',
       'public/socket/**/*.js',
       'public/modal/**/*.js',
       'public/words/**/*.js',
-      'public/words_analytics/**/*.js',
 
       '!public/**/*.spec.js',
     ],
@@ -45,11 +43,16 @@ module.exports = function(grunt) {
       'public/**/*.less',
       '!public/_vendor/**/*.less'
     ],
-    externalClientSrc: [
+    uglifiedExternalClientSrc: [
       'public/_vendor/angular-ui-router/release/angular-ui-router.js',
       'public/_vendor/socket.io-client/socket.io.js',
       'public/_vendor/underscore/underscore.js',
     ],
+    separateExternalClientSrc: [
+      'public/_vendor/angular/angular.js',
+      'public/_vendor/angular-mocks/angular-mocks.js',
+    ],
+
 
     uglify: {
       options: {
@@ -59,7 +62,7 @@ module.exports = function(grunt) {
       },
       build: {
         files: {
-          'public/_dist/index.js': ['<%= clientSrc %>', '<%= externalClientSrc %>'],
+          'public/_dist/index.js': ['<%= clientSrc %>', '<%= uglifiedExternalClientSrc %>'],
         }
       }
     },
@@ -82,10 +85,27 @@ module.exports = function(grunt) {
 
     karma: {
       unit: {
-        background: true,
-        configFile: 'karma.conf.js',
-        singleRun: true,
-      },
+        options: {
+          "basePath": './',
+          "colors": true,
+          "files": [
+            '<%= separateExternalClientSrc %>',
+            '<%= clientSrc %>',
+            '<%= uglifiedExternalClientSrc %>',
+            '<%= clientTests %>',
+          ],
+          "frameworks": ['mocha', 'expect'],
+          "browsers": ['Chrome'],
+          "reporters": ['dots', 'beep'],
+          "plugins": [
+            'karma-chrome-launcher',
+            'karma-firefox-launcher',
+            'karma-expect',
+            'karma-mocha',
+            'karma-beep-reporter',
+          ]
+        }
+      }
     },
 
     watch: {

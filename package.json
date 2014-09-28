@@ -35,7 +35,8 @@
     "karma-minimalist-reporter": "~0.2.0",
     "karma-beep-reporter": "~0.1.4",
     "chai-as-promised": "~4.1.1",
-    "chai": "~1.9.1"
+    "chai": "~1.9.1",
+    "karma-expect": "~1.1.0"
   },
   "repository": "https://bitbucket.org/jdgiese/gather-games-word-association",
   "author": "",
