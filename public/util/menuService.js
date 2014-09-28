@@ -28,10 +28,10 @@ angular.module('util.menuService', [])
         return item.visible === undefined || $injector.invoke(item.visible);
       });
 
-      itemGenerators.forEach(function(itemGenerator) {
+      _.forEach(itemGenerators, function(itemGenerator) {
         var baseOrder = itemGenerator.order;
         var items = $injector.invoke(itemGenerator.generator);
-        items.forEach(function(item, index) {
+        _.forEach(items, function(item, index) {
           item.order = baseOrder + index*0.001;
           visibleItems.push(item);
         });

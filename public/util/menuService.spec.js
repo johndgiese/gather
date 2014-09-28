@@ -2,15 +2,15 @@ describe('The menu service', function() {
 
   beforeEach(module('util.menuService'));
 
-  var menuService;
-  beforeEach(inject(function(_menuService_) {
-    menuService = _menuService_;
-  }));
-
-  beforeEach(module(function($provide) {
+  beforeEach(module(['$provide', function($provide) {
     $provide.factory('testService', function() {
       return {visible: true};
     });
+  }]));
+
+  var menuService;
+  beforeEach(inject(function(_menuService_) {
+    menuService = _menuService_;
   }));
 
   it('allows you to register and retrieve menu items', function() {
@@ -36,7 +36,7 @@ describe('The menu service', function() {
 
   }));
 
-  it('should be possible to register item generators', function() {
+  it('should be possible to register item generators', inject(function(testService) {
     menuService.registerItemGenerator({
       generator: ['testService', function(testService) {
         var items = [
@@ -44,14 +44,15 @@ describe('The menu service', function() {
         ];
 
         if (testService.visible) {
-          items.push({title: 'b', action() {}});
+          items.push({title: 'b', action: function() {}});
         }
-      }];
-    })
+        return items;
+      }]
+    });
 
     expect(menuService.currentItems().length).to.be(2);
     testService.visible = false;
     expect(menuService.currentItems().length).to.be(1);
-  });
+  }));
 
 });
