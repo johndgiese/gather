@@ -35,7 +35,8 @@ angular.module('words')
           'Non-insignificant',
           'Annoyingly good',
         ]);
-        $scope.tweetWin = wordsTweetService.win($scope.round.prompt, $scope.winners[0].response);
+        // TODO: replace with actual card ids
+        $scope.tweetWin = wordsTweetService.win(1, 2);
       }
 
     }
