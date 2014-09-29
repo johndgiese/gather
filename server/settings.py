@@ -1,5 +1,6 @@
 import os
 import json
+from django.conf.global_settings import TEMPLATE_CONTEXT_PROCESSORS as TCP
 
 
 BASE_DIR = os.path.dirname(__file__)
@@ -14,6 +15,10 @@ DEBUG = True
 TEMPLATE_DEBUG = True
 
 ALLOWED_HOSTS = []
+
+TEMPLATE_CONTEXT_PROCESSORS = TCP + (
+    'django.core.context_processors.request',
+)
 
 
 INSTALLED_APPS = (

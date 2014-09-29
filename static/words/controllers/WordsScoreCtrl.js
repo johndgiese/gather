@@ -1,13 +1,25 @@
 angular.module('words')
 .controller('WordsScoreCtrl', [
-  '$scope', '$stateParams', 'gameState', '$interval', '$timeout', 'lastRoundDetails', 'wordsTweetService',
-  function($scope, $stateParams, gameState, $interval, $timeout, lastRoundDetails, wordsTweetService) {
+  '$scope', '$stateParams', 'gameState', '$interval', '$timeout', 'lastRoundDetails', 'wordsTweetService', 'player',
+  function($scope, $stateParams, gameState, $interval, $timeout, lastRoundDetails, wordsTweetService, player) {
 
     $scope.round = _.last(gameState.custom.rounds);
     $scope.score = _.sortBy(gameState.custom.score, 'score').reverse();
 
     var details = lastRoundDetails.get();
     $scope.haveLastRoundDetails = !_.isNull(details);
+
+
+    $scope.getDifferential = function(playerId) {
+      if ($scope.haveLastRoundDetails) {
+        var playersScoreThisRound = _.findWhere(details.dscore, {id: playerId});
+        if (playersScoreThisRound !== undefined) {
+          return "+" + playersScoreThisRound.score;
+        }
+      }
+    };
+
+    $scope.perfectWin = false;
 
     if ($scope.haveLastRoundDetails) {
       var maxDifferential = _.max(details.dscore, function(d) { return d.score; }).score;
@@ -20,7 +32,7 @@ angular.module('words')
         };
       });
 
-      $scope.perfectWin = true; //$scope.getDifferential(gameState.you) === $scope.players.length - 1 && $scope.players.length > 2;
+      $scope.perfectWin = $scope.getDifferential(player.id) === $scope.players.length - 1 && $scope.players.length > 2;
       if ($scope.perfectWin) {
         $scope.winAdjective = _.sample([
           'Crushing',
@@ -40,16 +52,6 @@ angular.module('words')
       }
 
     }
-
-    $scope.getDifferential = function(playerId) {
-      if ($scope.haveLastRoundDetails) {
-        var playersScoreThisRound = _.findWhere(details.dscore, {id: playerId});
-        if (playersScoreThisRound !== undefined) {
-          return "+" + playersScoreThisRound.score;
-        }
-      }
-    };
-
 
     var INTER_ROUND_DELAY = 12000;  // in ms
 

@@ -7,8 +7,10 @@ from django.core.urlresolvers import reverse_lazy
 from django.views.generic import TemplateView
 from django.views.generic.edit import CreateView
 from django.contrib.auth.decorators import login_required
+from django.http import Http404
 
 from models import Prompt, Response, Tag, FunnyVote
+from constants import CARDS_IN_HAND
 
 
 # CREATE NEW
@@ -101,4 +103,34 @@ response_validate = login_required(ValidateWordView.as_view(
 prompt_validate = login_required(ValidateWordView.as_view(
     AddClass=Prompt,
     MatchClass=Response))
+
+
+# SHARE VIEWS
+
+class ShareCardsView(TemplateView):
+
+    def get_context_data(self, **kwargs):
+        context = super(ShareCardsView, self).get_context_data(**kwargs)
+
+        prompt_str = kwargs.get('prompt', None)
+        if not prompt_str is None:
+            prompt_id = int(prompt_str)
+            context['prompt'] = Prompt.objects.get(pk=prompt_id)
+
+        # TODO: make more efficient
+        # TODO: ensure CAH cards don't leak
+        card_id_keys = [c for c in kwargs.keys() if c.startswith('card_')]
+        card_id_keys.sort(lambda c1, c2: int(c1[5:]) - int(c2[5:]))
+        card_ids = [kwargs[c] for c in card_id_keys]
+        context['cards'] = [Response.objects.get(pk=c) for c in card_ids]
+
+        for c in context['cards']:
+            if c.is_cah:
+                raise Http404
+
+        return context
+
+
+share_hand = ShareCardsView.as_view(template_name="words/share_hand.html")
+share_hand_after = ShareCardsView.as_view(template_name="words/share_hand_after.html")
 

@@ -7,23 +7,24 @@
 </span>
 </p>
 
-<!--<div ng-show="haveLastRoundDetails && !tie && perfectWin">-->
-<div ng-show="true">
-  <span class="secondary-instruction">{{winAdjective}} win by <span class="light-blue">{{ winners[0].name }}</span> with</span><br>
-  <p class="prompt-sm">{{ winners[0].response }}</p>
-  <a class="img-twitter" href="{{ tweetWin }}"></a>
-  <a class="facebook"></a>
-</div>
+<div ng-show="haveLastRoundDetails">
+  <div ng-show="!tie && perfectWin">
+    <span class="secondary-instruction">{{winAdjective}} win by <span class="light-blue">{{ winners[0].name }}</span> with</span><br>
+    <p class="prompt-sm">{{ winners[0].response }}</p>
+    <a class="img-twitter" href="{{ tweetWin }}"></a>
+    <a class="facebook"></a>
+  </div>
 
-<div ng-show="haveLastRoundDetails && !tie">
-  <span class="secondary-instruction">The winner is <span class="light-blue">{{ winners[0].name }}</span> with</span><br>
-  <p class="prompt-sm">{{ winners[0].response }}</p>
-</div>
+  <div ng-show="!tie && !perfectWin">
+    <span class="secondary-instruction">The winner is <span class="light-blue">{{ winners[0].name }}</span> with</span><br>
+    <p class="prompt-sm">{{ winners[0].response }}</p>
+  </div>
 
-<div ng-show="haveLastRoundDetails && tie">
-  <div ng-repeat="w in winners">
-    <span class="secondary-instruction"><span class="light-blue">{{ w.name }}</span> tied with</span><br>
-    <p class="prompt-sm">{{ w.response }}</p>
+  <div ng-show="tie">
+    <div ng-repeat="w in winners">
+      <span class="secondary-instruction"><span class="light-blue">{{ w.name }}</span> tied with</span><br>
+      <p class="prompt-sm">{{ w.response }}</p>
+    </div>
   </div>
 </div>
 

@@ -1,0 +1,1 @@
+CARDS_IN_HAND = 7

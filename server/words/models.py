@@ -7,6 +7,15 @@ class Response(models.Model):
     text = models.CharField(max_length=255, db_column='resText')
     active = models.BooleanField(default=True, db_column='resActive')
     tags = models.ManyToManyField('Tag', through='ResponseTag')
+
+    @property
+    def is_cah(self):
+        try:
+            self.tags.get(text="Cards Against Humanity")
+        except Exception as e:
+            print(e)
+            return False
+        return True
     
     class Meta:
         db_table = 'tbResponse'
@@ -21,6 +30,15 @@ class Prompt(models.Model):
     text = models.CharField(max_length=255, db_column='proText')
     active = models.BooleanField(default=True, db_column='proActive')
     tags = models.ManyToManyField('Tag', through='PromptTag')
+
+    @property
+    def is_cah(self):
+        try:
+            self.tags.get(text="Cards Against Humanity")
+        except Exception as e:
+            print(e)
+            return False
+        return True
 
     class Meta:
         db_table = 'tbPrompt'
