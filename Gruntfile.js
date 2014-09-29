@@ -1,6 +1,6 @@
 var fs = require('fs');
 
-serverConfig = require('./server/config');
+serverConfig = require('./realtime_server/config');
 
 module.exports = function(grunt) {
 
@@ -14,43 +14,45 @@ module.exports = function(grunt) {
 
   grunt.initConfig({
     config: serverConfig,
+    STATIC_ROOT: 'static',
+    NODE_ROOT: 'realtime_server',
     pkg: grunt.file.readJSON('package.json'),
     clientSrc: [
 
       // defined modules in order
-      'public/index.js',
+      '<%= STATIC_ROOT %>/index.js',
 
-      'public/join/index.js',
-      'public/util/index.js',
-      'public/socket/index.js',
-      'public/words/index.js',
+      '<%= STATIC_ROOT %>/join/index.js',
+      '<%= STATIC_ROOT %>/util/index.js',
+      '<%= STATIC_ROOT %>/socket/index.js',
+      '<%= STATIC_ROOT %>/words/index.js',
 
-      'public/join/**/*.js',
-      'public/util/**/*.js',
-      'public/socket/**/*.js',
-      'public/modal/**/*.js',
-      'public/words/**/*.js',
+      '<%= STATIC_ROOT %>/join/**/*.js',
+      '<%= STATIC_ROOT %>/util/**/*.js',
+      '<%= STATIC_ROOT %>/socket/**/*.js',
+      '<%= STATIC_ROOT %>/modal/**/*.js',
+      '<%= STATIC_ROOT %>/words/**/*.js',
 
-      '!public/**/*.spec.js',
+      '!<%= STATIC_ROOT %>/**/*.spec.js',
     ],
     clientTests: [
-      'public/**/*.spec.js',
+      '<%= STATIC_ROOT %>/**/*.spec.js',
     ],
     serverSrc: [
-      'server/**/*.js',
+      '<%= NODE_ROOT %>/**/*.js',
     ],
     lessSrc: [
-      'public/**/*.less',
-      '!public/_vendor/**/*.less'
+      '<%= STATIC_ROOT %>/**/*.less',
+      '!<%= STATIC_ROOT %>/_vendor/**/*.less'
     ],
     uglifiedExternalClientSrc: [
-      'public/_vendor/angular-ui-router/release/angular-ui-router.js',
-      'public/_vendor/socket.io-client/socket.io.js',
-      'public/_vendor/underscore/underscore.js',
+      '<%= STATIC_ROOT %>/_vendor/angular-ui-router/release/angular-ui-router.js',
+      '<%= STATIC_ROOT %>/_vendor/socket.io-client/socket.io.js',
+      '<%= STATIC_ROOT %>/_vendor/underscore/underscore.js',
     ],
     separateExternalClientSrc: [
-      'public/_vendor/angular/angular.js',
-      'public/_vendor/angular-mocks/angular-mocks.js',
+      '<%= STATIC_ROOT %>/_vendor/angular/angular.js',
+      '<%= STATIC_ROOT %>/_vendor/angular-mocks/angular-mocks.js',
     ],
 
 
@@ -62,7 +64,7 @@ module.exports = function(grunt) {
       },
       build: {
         files: {
-          'public/_dist/index.js': ['<%= clientSrc %>', '<%= uglifiedExternalClientSrc %>'],
+          '<%= STATIC_ROOT %>/_dist/index.js': ['<%= clientSrc %>', '<%= uglifiedExternalClientSrc %>'],
         }
       }
     },
@@ -79,7 +81,7 @@ module.exports = function(grunt) {
           reporter: 'spec',
           clearRequireCache: true
         },
-        src: ['server/**/*.spec.js']
+        src: ['<%= NODE_ROOT %>/**/*.spec.js']
       }
     },
 
@@ -149,31 +151,30 @@ module.exports = function(grunt) {
           strictImports: true
         },
         files: {
-          'public/_dist/index.css': 'public/index.less',
-          'public/_dist/landing.css': 'public/landing.less',
+          '<%= STATIC_ROOT %>/_dist/index.css': '<%= STATIC_ROOT %>/index.less',
+          '<%= STATIC_ROOT %>/_dist/landing.css': '<%= STATIC_ROOT %>/landing.less',
         }
       }
     },
 
     shell: {
       setupDirectories: {
-        command: 'mkdir server/_var',
+        command: 'mkdir <%= NODE_ROOT %>/_var',
         options: {
           failOnError: false,
         }
       },
       setupDatabase: {
         command: [
-          'cd server',
+          'cd <%= NODE_ROOT %>',
           'mysql -u<%= config.DB_USERNAME %> -p<%= config.DB_PASSWORD %> <%= config.DB_NAME %> < schema.sql',
           'cd -'
         ].join(' && ')
       },
       loadWords: {
-        command: 'node server/words/data/loadWords server/words/data/words.csv'
+        command: 'node <%= NODE_ROOT %>/words/data/loadWords <%= NODE_ROOT %>/words/data/words.csv'
       }
     }
-
   });
 
 

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src="https://code.jquery.com/jquery-1.11.1.min.js"></script>
+    <script>
+
+      var matchNum = 0;
+      var numFunny = 0;
+      var matches = [
+        {% for m in matches %}
+        {
+          text: "{{ m.text|safe }}",
+        },
+        {% endfor %}
+      ];
+
+      var nextMatch = function(isFunny) {
+
+        // mark formset entry row as funny
+        var checkbox = $('#id_form-' + matchNum + '-funny').attr('checked', isFunny);
+
+        numFunny = numFunny + (isFunny ? 1 : 0);
+        matchNum++;
+
+        if (matchNum === matches.length) {
+          next();
+        } else {
+          var selector = '#{{ match_class }}';
+          $(selector).text(matches[matchNum].text);
+          $('#out-of').text(matchNum);
+          $('#funny').text(numFunny);
+        }
+      };
+
+      funny = function() {
+        nextMatch(true);
+      };
+
+      notFunny = function() {
+        nextMatch(false);
+      };
+
+      next = function() {
+        $('#validate-form').submit();
+      };
+
+    </script>
+  </head>
+  <body>
+    <h1><span id="funny">0</span> / <span id="out-of">0</span></h1>
+    <br>
+    <h1>Prompt</h1>
+    <h3 id="prompt">{{ prompt }}</h3>
+    <br>
+    <h1>Response</h1>
+    <h3 id="response">{{ response }}</h3>
+
+    <form id="validate-form" action="" method="post" style="display: none;">
+      {% csrf_token %}
+      {{ formset }}
+    </form>
+
+    <button type="button" onclick="funny()">Funny</button>
+    <button type="button" onclick="notFunny()">Not Funny</button>
+    
+    <a href="/admin/words/{{ add_class }}/">Cancel</a>
+  </body>
+</html>

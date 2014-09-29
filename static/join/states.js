@@ -5,6 +5,7 @@ angular.module('join')
 
   .state('app', {
     abstract: true,
+    url: '/game',
     controller: 'AppCtrl',
     template: '<ui-view />',
     resolve: {
@@ -15,7 +16,7 @@ angular.module('join')
   })
 
   .state('app.landing', {
-    url: '/beta',
+    url: '/',
     controller: 'LandingCtrl',
     templateUrl: '/static/join/templates/landing.html',
   })

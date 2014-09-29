@@ -1,0 +1,8 @@
+{
+  "DB_PASSWORD":  "CHANGEME",
+  "DB_USERNAME":  "CHANGEME",
+  "DB_NAME": "gather",
+  "SERVER_PORT": 3000,
+  "NODE_PORT": 4000,
+  "ENV": "DEV | PROD"
+}

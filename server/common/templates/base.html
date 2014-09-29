@@ -4,23 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
     <link rel="shortcut icon" href="/static/img/favicon.ico">
+    {% block meta %}
+    {% endblock %}
 
-    <title>Gather</title>
+    <title>{% block title %}Gather{% endblock %}</title>
 
-    <script src="/static/_vendor/angular/angular.min.js"></script>
-    <link rel="stylesheet" type="text/css" href="/static/_dist/index.css">
     <script>
       (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
       (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
       m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
       })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
-
       ga('create', 'UA-51682843-1', 'auto');
       ga('send', 'pageview');
     </script>
 
     <script>
-      // Twitter intent handling
       (function() {
         if (window.__twitterIntentHandler) return;
         var intentRegex = /twitter\.com(\:\d{2,4})?\/intent\/(\w+)/,
@@ -29,34 +27,26 @@
             height = 420,
             winHeight = screen.height,
             winWidth = screen.width;
-       
         function handleIntent(e) {
           e = e || window.event;
-          var target = e.target || e.srcElement,
-              m, left, top;
-       
+          var target = e.target || e.srcElement, m, left, top;
           while (target && target.nodeName.toLowerCase() !== 'a') {
             target = target.parentNode;
           }
-       
           if (target && target.nodeName.toLowerCase() === 'a' && target.href) {
             m = target.href.match(intentRegex);
             if (m) {
               left = Math.round((winWidth / 2) - (width / 2));
               top = 0;
-       
               if (winHeight > height) {
                 top = Math.round((winHeight / 2) - (height / 2));
               }
-       
-              window.open(target.href, 'intent', windowOptions + ',width=' + width +
-                                                 ',height=' + height + ',left=' + left + ',top=' + top);
+              window.open(target.href, 'intent', windowOptions + ',width=' + width + ',height=' + height + ',left=' + left + ',top=' + top);
               e.returnValue = false;
               e.preventDefault && e.preventDefault();
             }
           }
         }
-       
         if (document.addEventListener) {
           document.addEventListener('click', handleIntent, false);
         } else if (document.attachEvent) {
@@ -66,17 +56,26 @@
       }());
     </script>
 
+    {% block scripts_top %}
+    {% endblock %}
+
+    {% block style %}
+    {% endblock %}
   </head>
 
+  {% block body %}
   <body ontouchstart="">
     <div class="container">
       <div class="row">
-        <div class="col-xs-12 col-sm-offset-1 col-sm-10 col-md-offset-2 col-md-8 col-lg-offset-3 col-lg-6" ng-app="app" ui-view>
+        <div class="col-xs-12 col-sm-offset-1 col-sm-10 col-md-offset-2 col-md-8 col-lg-offset-3 col-lg-6">
+          {% block content %}
+          {% endblock %}
         </div>
       </div>
     </div>
   </body>
+  {% endblock %}
 
-  <script src="/static/_dist/index.js"></script>
-
+  {% block scripts_bottom %}
+  {% endblock %}
 </html>

@@ -12,7 +12,7 @@ var stateResolver = require('../words/stateResolver');
 
 var debug = require('debug')('gather:test');
 
-var SOCKET_URL = "http://localhost:" + config.PORT;
+var SOCKET_URL = "http://localhost:" + config.NODE_PORT;
 var SOCKET_OPTIONS = {
   transports: ['websocket'],
   'force new connection': true,

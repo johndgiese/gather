@@ -3,33 +3,44 @@
 A simple group-based word game designed to be played on phones and tablets
 while at the same location.
 
+The code is organized into three main folders.
+
+1. `server` - a django based server (serving non-game files)
+2. `static` - all the static files for the game (which is a single page application)
+3. `realtime_server` - a nodejs server for the realtime game API
 
 ## Installation
 
 ## Install Dependencies
 
-You will need to install `mysql` and `node` first.
+You will need to install `mysql`, `node`, `python`, `pip`, and `virtualenv` first.
 
 ```bash
 npm install -g grunt-cli bower
 bower install
 npm install
+virtualenv env
+pip install -r requirements.txt
 ```
 
 ## Setup Database and static files
 
 ```bash
-cp server/local.template.js server/_local.js
-vim server/_local.js  # fill in details
+cp local.template.json server/_local.json
+vim _local.json  # fill in details
 grunt setup
 ```
 
-## Run Server
-
-Starting from the root of the repository:
+## Run Test Server
 
 ```bash
-node server/index.js
+# start node real time server
+node node/index.js
+
+# in a separate terminal/tmux pane
+virtualenv env/bin/activate  # enter virtual environment
+cd django
+python manage.py runserver  # start the python test server
 ```
 
 ## Development
@@ -49,5 +60,3 @@ grunt watch:static
 # or 
 grunt karma
 ```
-
-I don't know how to only run client tests without the watch server.

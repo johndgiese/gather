@@ -1,7 +1,8 @@
-public/_vendor
-public/_dist
+static/_vendor
+static/_dist
 node_modules
-server/_local.js
-server/_var
+_local.json
+realtime_server/_var
+env
 
 .DS_Store

@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}
+Gather: Join My Game
+{% endblock %}
+
+{% block scripts_top %}
+  <script src="/static/_vendor/angular/angular.min.js"></script>
+{% endblock %}
+
+{% block style %}
+  <link rel="stylesheet" type="text/css" href="/static/_dist/index.css">
+{% endblock %}
+
+{% block content %}
+  <div ng-app="app" ui-view></div>
+{% endblock %}
+
+{% block scripts_bottom %}
+  <script src="/static/_dist/index.js"></script>
+{% endblock %}
+

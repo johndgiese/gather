@@ -6,7 +6,7 @@ angular.module('app', [
 ])
 
 .config(['socketProvider', function(socketProvider) {
-  socketProvider.setUrl('/');
+  socketProvider.setUrl(':4000/');
 }])
 
 .config(['$urlRouterProvider', function($urlRouterProvider) {
