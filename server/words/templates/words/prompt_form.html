@@ -1,8 +1,16 @@
+{% extends "game_mock.html" %}
+
+{% block mock %}
+<p class="main-instruction">
+  Write a new prompt
+</p>
 <form action="" method="post">
   {% csrf_token %}
-  {{ form.as_p }}
-  <input type="submit" value="Create Prompt" />
+  <div class="form-group">
+    <input class="form-control" id="id_text" maxlength="255" name="text" type="text">
+  </div>
+  <input class="action" type="submit" value="Create Prompt">
 </form>
 
-<br>
-<a href="/admin/words/prompt/">Cancel</a>
+<a class="action" href="/admin/words/prompt/">Back to all prompts</a>
+{% endblock %}

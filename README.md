@@ -60,3 +60,9 @@ grunt watch:static
 # or 
 grunt karma
 ```
+
+## Run Production Server
+
+1. run manage.py collectstatic
+2. enable apache modwsgi and rewrite
+3. sym link apache config and enable

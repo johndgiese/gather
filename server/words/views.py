@@ -1,4 +1,5 @@
 import random
+import logging
 
 from django.shortcuts import render, redirect
 from django import forms
@@ -12,6 +13,7 @@ from django.http import Http404
 from models import Prompt, Response, Tag, FunnyVote
 from constants import CARDS_IN_HAND
 
+logger = logging.getLogger(__name__)
 
 # CREATE NEW
 
@@ -40,7 +42,7 @@ prompt_new = login_required(PromptCreate.as_view())
 
 # VALIDATION
 
-NUM_COMPARES = 5
+NUM_COMPARES = 12
 
 FunnyVoteFormset = modelformset_factory(FunnyVote, extra=NUM_COMPARES, fields=('response', 'prompt', 'funny'))
 
@@ -54,8 +56,13 @@ class ValidateWordView(TemplateView):
         context = super(ValidateWordView, self).get_context_data(**kwargs)
 
         # randomly select from opposite class to compare against
-        validate_using = list(self.request.session['validate_using'])
-        validate_subset = random.sample(validate_using, NUM_COMPARES)
+        validate_using = self.request.session.get('validate_using', None)
+        if not validate_using is None:
+            validate_using = list(self.request.session['validate_using'])
+            validate_subset = random.sample(validate_using, NUM_COMPARES)
+        else:
+            validate_subset = random.sample([o.id for o in self.MatchClass.objects.filter(active=True)], NUM_COMPARES)
+
         validate_instances = self.MatchClass.objects.filter(id__in=validate_subset)
         matches = validate_instances
         context['matches'] = matches
@@ -85,12 +92,20 @@ class ValidateWordView(TemplateView):
     def post(self, request, *args, **kwargs):
 
         formset = FunnyVoteFormset(request.POST)
-        print(request.POST)
-        formset.save()
+        funny_votes = formset.save()
+        should_be_active = request.POST.get('should_be_active', "off") == "on"
+        logger.info(should_be_active)
+        logger.info(request.POST)
 
         if self.AddClass == Prompt:
+            prompt = funny_votes[0].prompt
+            prompt.active = should_be_active
+            prompt.save()
             return redirect('prompt_new')
         elif self.AddClass == Response:
+            response = funny_votes[0].response
+            response.active = should_be_active
+            response.save()
             return redirect('response_new')
         else:
             raise Exception("Invalid class")

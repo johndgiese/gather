@@ -1,7 +1,16 @@
+{% extends "game_mock.html" %}
+
+{% block mock %}
+<p class="main-instruction">
+  Write a new response
+</p>
 <form action="" method="post">
   {% csrf_token %}
-  {{ form.as_p }}
-  <input type="submit" value="Create Response" />
+  <div class="form-group">
+    <input class="form-control" id="id_text" maxlength="255" name="text" type="text">
+  </div>
+  <input class="action" type="submit" value="Create Response">
 </form>
-<br>
-<a href="/admin/words/response/">Cancel</a>
+
+<a class="action" href="/admin/words/response/">Back to all responses</a>
+{% endblock %}

@@ -6,5 +6,5 @@ urlpatterns = patterns('',
     url(r'^game/', include('join.urls')),
     url(r'^share/', include('words.share_urls')),
     url(r'^admin/', include(admin.site.urls)),
-    url(r'^addwords/', include('words.admin_urls')),
+    url(r'^add/', include('words.admin_urls')),
 )
