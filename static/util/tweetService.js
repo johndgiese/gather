@@ -1,23 +1,11 @@
-angular.module('util.tweetService', [])
+angular.module('util.tweetService', [
+  'util.encodeParams',
+])
 
-.service('tweetService', function() {
+.service('tweetService', ['encodeParams', function(encodeParams) {
   var exports = {};
 
   var BASE_URL = exports.BASE_URL = "https://twitter.com/intent/";
-
-  function encodeParams(params) {
-    return _.map(params, function(value, key) {
-      var encodedValue;
-      if (_.isString(value)) {
-        encodedValue = encodeURIComponent(value);
-      } else if (_.isArray(value)) {
-        encodedValue = _.map(value, encodeURIComponent).join(",");
-      } else {
-        throw Error("invalid param value");
-      }
-      return key + "=" + encodedValue;
-    }).join("&");
-  }
 
   exports.tweet = function(params) {
     var tweet = BASE_URL + "tweet?" + encodeParams(params);
@@ -25,4 +13,4 @@ angular.module('util.tweetService', [])
   };
 
   return exports;
-});
+}]);

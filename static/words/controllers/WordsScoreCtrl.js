@@ -1,7 +1,7 @@
 angular.module('words')
 .controller('WordsScoreCtrl', [
-  '$scope', '$stateParams', 'gameState', '$interval', '$timeout', 'lastRoundDetails', 'wordsTweetService', 'player',
-  function($scope, $stateParams, gameState, $interval, $timeout, lastRoundDetails, wordsTweetService, player) {
+  '$scope', '$stateParams', 'gameState', '$interval', '$timeout', 'lastRoundDetails', 'wordsShareService', 'player',
+  function($scope, $stateParams, gameState, $interval, $timeout, lastRoundDetails, wordsShareService, player) {
 
     $scope.round = _.last(gameState.custom.rounds);
     $scope.score = _.sortBy(gameState.custom.score, 'score').reverse();
@@ -10,9 +10,9 @@ angular.module('words')
     $scope.haveLastRoundDetails = !_.isNull(details);
 
 
-    $scope.getDifferential = function(playerId) {
+    $scope.getDifferential = function(playerGameId) {
       if ($scope.haveLastRoundDetails) {
-        var playersScoreThisRound = _.findWhere(details.dscore, {id: playerId});
+        var playersScoreThisRound = _.findWhere(details.dscore, {id: playerGameId});
         if (playersScoreThisRound !== undefined) {
           return "+" + playersScoreThisRound.score;
         }
@@ -32,7 +32,7 @@ angular.module('words')
         };
       });
 
-      $scope.perfectWin = $scope.getDifferential(player.id) === $scope.players.length - 1 && $scope.players.length > 2;
+      $scope.perfectWin = $scope.getDifferential(gameState.you) === $scope.players.length - 1 && $scope.players.length > 2;
       if ($scope.perfectWin) {
         $scope.winAdjective = _.sample([
           'Crushing',
@@ -48,7 +48,9 @@ angular.module('words')
           'Annoyingly good',
         ]);
         // TODO: replace with actual card ids
-        $scope.tweetWin = wordsTweetService.win(1, 2);
+        shareLinks = wordsShareService.win(1, 2);
+        $scope.tweetWin = shareLinks.twitter;
+        $scope.facebookWin = shareLinks.facebook;
       }
 
     }

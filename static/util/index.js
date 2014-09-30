@@ -3,4 +3,6 @@ angular.module('util', [
   'util.messageService',
   'util.debugService',
   'util.tweetService',
+  'util.facebookService',
+  'util.encodeParams',
 ]);
