@@ -1,0 +1,27 @@
+{% extends "game_mock.html" %}
+
+{% block title %}Gather: Share my response{% endblock %}
+
+{% block meta_sub %}
+  <meta name="description" content="My response to the prompt: {{ prompt.text }}">
+
+  <meta property="og:url" content="http://gather.gg{{ request.get_full_path }}">
+  <meta property="og:title" content="My response in a game of Gather">
+  <meta property="og:description" content="Prompt: {{ prompt.text }}">
+  <meta property="og:image" content="http://gather.gg/static/img/logo_no_word.png">
+{% endblock %}
+
+{% block mock %}
+<br>
+<p class="secondary-instruction pull-down">When prompted with</p>
+<p class="prompt">{{ prompt.text }}</p>
+<p class="secondary-instruction pull-down">I responded</p>
+<p class="prompt">{{ cards.0.text }}</p>
+
+<br>
+<p class="main-instruction">
+  Gather is a comical group word game,<br class="visible-md-block visible-lg-block"> played on your phones, instead of with cards.
+</p>
+<a class="action" href="/">Learn More</a>
+{% endblock %}
+

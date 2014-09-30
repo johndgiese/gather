@@ -1,0 +1,24 @@
+{% extends "game_mock.html" %}
+
+{% block meta_sub %}
+  <meta name="description" content="Inspired by Cards Against Humanity™, Gather is a comical group word game that is played on your phones, instead of with cards. Invite friends by sharing a link, no account or app download required!">
+
+  <meta property="og:url" content="{{ request.get_full_path }}">
+  <meta property="og:title" content="Gather: Thanks for voting!">
+  <meta property="og:description" content="Inspired by Cards Against Humanity™, Gather is a comical group word game that is played on your phones, instead of with cards. Invite friends by sharing a link, no account or app download required!">
+  <meta property="og:image" content="http://gather.gg/static/img/logo_no_word.png">
+{% endblock %}
+
+{% block mock %}
+  <p class="secondary-instruction pull-down">Thanks for voting!</p>
+  <p class="prompt">{{ prompt.text }}</p>
+  <p class="prompt">{{ cards.0.text }}</p>
+  <br>
+
+  <p class="main-instruction">
+    Gather is a comical group word game,<br class="visible-md-block visible-lg-block"> played on your phones, instead of with cards.
+  </p>
+  <br>
+  <a class="action" href="/">Learn More</a>
+{% endblock %}
+

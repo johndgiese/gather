@@ -1,11 +1,11 @@
 {% extends "game_mock.html" %}
 
 {% block meta_sub %}
-  <meta name="description" content="How would you respond: '{{ prompt.text }}'?">
+  <meta name="description" content="These were the responses to: {{ prompt.text }}">
 
   <meta property="og:url" content="http://gather.gg{{ request.get_full_path }}">
-  <meta property="og:title" content="How would you respond?">
-  <meta property="og:description" content="{{ prompt.text }}">
+  <meta property="og:title" content="Which would you vote for?">
+  <meta property="og:description" content="These were the responses to: {{ prompt.text }}">
   <meta property="og:image" content="http://gather.gg/static/img/logo_no_word.png">
 {% endblock %}
 
@@ -13,12 +13,12 @@
 <p class="secondary-instruction pull-down">Prompted with</p>
 <p class="prompt">{{ prompt.text }}</p>
 
-<p class="secondary-instruction pull-down">Which response would you pick?</p>
+<p class="secondary-instruction pull-down">Which response would you vote for?</p>
 
 <ul id="choices">
   {% for card in cards %}
   <li>
-    <a class="action-card" href="/share/prompt/{{ prompt.id }}/choice/{{ card.id }}/after/">{{ card.text }}</a>
+    <a class="action-card" href="/share/prompt/{{ prompt.id }}/groupchoices/{{ card.id }}/after/">{{ card.text }}</a>
   </li>
   {% endfor %}
 </ul>

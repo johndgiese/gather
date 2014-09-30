@@ -3,4 +3,5 @@ angular.module('join', [
   'util',
   'ui.router',
   'ui.bootstrap',
+  'words',
 ]);

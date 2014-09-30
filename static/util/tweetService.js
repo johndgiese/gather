@@ -9,7 +9,9 @@ angular.module('util.tweetService', [
 
   exports.tweet = function(params) {
     var tweet = BASE_URL + "tweet?" + encodeParams(params);
-    return tweet;
+    return function() {
+      window.open(tweet, '_blank');
+    };
   };
 
   return exports;

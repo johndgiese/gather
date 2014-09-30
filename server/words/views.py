@@ -148,4 +148,8 @@ class ShareCardsView(TemplateView):
 
 share_hand = ShareCardsView.as_view(template_name="words/share_hand.html")
 share_hand_after = ShareCardsView.as_view(template_name="words/share_hand_after.html")
+share_mychoice = ShareCardsView.as_view(template_name="words/share_mychoice.html")
+share_groupchoices = ShareCardsView.as_view(template_name="words/share_groupchoices.html")
+share_groupchoices_after = ShareCardsView.as_view(template_name="words/share_groupchoices_after.html")
+share_mywin = ShareCardsView.as_view(template_name="words/share_mywin.html")
 

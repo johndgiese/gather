@@ -9,8 +9,10 @@ angular.module('util.facebookService', [
 
   // valid params: u -- url, t -- title
   exports.share = function(params) {
-    var tweet = BASE_URL + "?" + encodeParams(params);
-    return tweet;
+    var url = BASE_URL + "?" + encodeParams(params);
+    return function() {
+      window.open(url, '_blank');
+    };
   };
 
   return exports;
