@@ -8,7 +8,7 @@ angular.module('words.wordsShareService', [
   var exports = {};
 
   exports.win = function(promptId, responseId) {
-    var title = "I won the last round with: ";
+    var title = "Check out my win";
     var url = "http://gather.gg/share/prompt/" + promptId + "/mywin/" + responseId + "/";
 
     var params = {
@@ -27,7 +27,7 @@ angular.module('words.wordsShareService', [
 
   exports.hand = function(promptId, responseIds) {
     var title = "Check out my hand";
-    var url = "http://gather.gg/share/prompt/" + promptId + "/mywin/" + responseIds.join("/") + "/";
+    var url = "http://gather.gg/share/prompt/" + promptId + "/hand/" + responseIds.join("/") + "/";
     var params = {
      text: title,
      url: url,
@@ -60,7 +60,7 @@ angular.module('words.wordsShareService', [
 
 
   exports.groupchoices = function(promptId, responseIds) {
-    var title = "Check out what everyone's responses this round";
+    var title = "Check out everyone's responses this round";
     var url = "http://gather.gg/share/prompt/" + promptId + "/groupchoices/" + responseIds.join("/") + "/";
     var params = {
      text: title,

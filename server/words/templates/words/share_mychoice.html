@@ -7,7 +7,7 @@
 
   <meta property="og:url" content="http://gather.gg{{ request.get_full_path }}">
   <meta property="og:title" content="My response in a game of Gather">
-  <meta property="og:description" content="Prompt: {{ prompt.text }}">
+  <meta property="og:description" content="{{ prompt.text }} → {{ cards.0.text }}">
   <meta property="og:image" content="http://gather.gg/static/img/logo_no_word.png">
 {% endblock %}
 
