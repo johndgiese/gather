@@ -30,6 +30,8 @@ angular.module('join')
 
     $scope.p = {};
     $scope.p.name = _.sample(adjectives) + ' ' + _.sample(nouns);
+    $scope.validNickname = true;
+    $scope.$watch('p.name', function() { $scope.validNickname = $scope.p.name.length >= 3; });
 
     $scope.createPlayer = function() {
       $modalInstance.close({name: $scope.p.name});

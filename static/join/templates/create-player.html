@@ -10,10 +10,13 @@
 
 <form novalidation role="form" name="form">
   <div class="form-group">
-    <input ng-model="p.name" class="form-control" type="text" name="playerName" autofocus>
-    <small class="light-blue">Use the suggestion, or write your own</small>
+    <input ng-model="p.name" class="form-control" type="text" name="playerName" autofocus ng-class="{'text-danger': !validNickname}">
+    <small class="light-blue">
+      <span ng-show="validNickname">Use the suggestion, or write your own</span>
+      <span ng-hide="validNickname" class="text-danger">Your nickname is too short</span>
+    </small>
   </div>
 
-  <input id="create-player" type="submit" class="action" ng-click="createPlayer()" ng-disabled="form.$invalid" value="Continue">
+  <input id="create-player" type="submit" class="action" ng-click="createPlayer()" ng-disabled="!validNickname" value="Continue">
   <a class="action" ng-click="$dismiss()">Cancel</a>
 </form>

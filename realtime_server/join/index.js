@@ -59,7 +59,7 @@ exports.setup = function(socket) {
   }
 
   function requireValidPlayerName(name) {
-    var validName = _.isString(name) && name.length >= 1 && name.length <= 100;
+    var validName = _.isString(name) && name.length >= 3 && name.length <= 100;
     if (!validName) {
       throw new Error("Invalid nickname");
     }
