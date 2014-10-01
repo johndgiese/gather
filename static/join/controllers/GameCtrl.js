@@ -11,6 +11,10 @@ angular.module('join')
     $scope.master = _.findWhere(gameState.players, {id: masterId});
     $scope.players = gameState.players;
 
+    $scope.showShareHelp = function() {
+      messageService.template("/static/join/templates/share-help.html");
+    };
+
     if ($scope.isMaster) {
 
       var removeMenuItems = menuService.registerItemGenerator({

@@ -11,20 +11,19 @@
   </p>
 
   <div ng-show="isMaster">
-    <p class="secondary-instruction" ng-show="players.length >= 2">Wait for everyone to join, then</p>
-    <p class="secondary-instruction" ng-show="players.length < 2">This game requires two or more players</p>
-    <a id="begin-game" class="action" ng-click="startGame()" ng-disabled="players.length < 2">Begin game</a>
+    <p class="secondary-instruction pull-down" ng-show="players.length >= 2">Wait for everyone to join, then</p>
+    <p class="secondary-instruction pull-down text-danger" ng-show="players.length < 2">This game requires two or more players</p>
+    <a id="begin-game" class="action" ng-click="startGame()" ng-disabled="players.length < 2">Begin Game</a>
   </div>
 
-  <br>
-  <br>
-
-  <p class="secondary-instruction">
-  Invite your friends by sharing<br class="hidden-md hidden-lg">a link to the current page
+  <p class="secondary-instruction pull-down">
+  Friends can join the game by visiting
   </p>
-  <p id="share-link">{{ link }}</a>
+  <p id="share-link">{{ link }}</p>
+  <a class="action-card" ng-click="showShareHelp()">Tell me a trick to make this easier</a>
 
-  <p class="secondary-instruction">Currently in game</p>
+  <br>
+  <p class="secondary-instruction pull-down">Currently in game</p>
   <ul class="player-list">
     <li ng-repeat="p in players">{{ p.name }}</li>
   </ul>

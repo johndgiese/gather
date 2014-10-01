@@ -5,7 +5,7 @@ angular.module('join')
 
   .state('app', {
     abstract: true,
-    url: '/game',
+    url: '/g',
     controller: 'AppCtrl',
     template: '<ui-view />',
     resolve: {

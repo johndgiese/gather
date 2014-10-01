@@ -1,5 +1,8 @@
 <p class="secondary-instruction">Logged in as <span class="light-blue">{{player.name}}</span></p>
 <ul class="list-unstyled">
+  <li>
+  <a class="action-card" href="mailto:info@gather.gg?subject=In%20Game%20Feedback%20[{{player.id}}]"><span class="light-blue">Leave Feedback</span></a>
+  </li>
   <li ng-repeat="item in menu">
     <a class="action-card" ng-click="$dismiss(); item.action();">{{item.title}}</a>
   </li>
