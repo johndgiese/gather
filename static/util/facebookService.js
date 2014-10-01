@@ -9,9 +9,9 @@ angular.module('util.facebookService', [
 
   // valid params: u -- url, t -- title
   exports.share = function(label, params) {
-    ga('send', 'event', 'share', "facebook", label);
     var url = BASE_URL + "?" + encodeParams(params);
     return function() {
+      ga('send', 'event', 'share', "facebook", label);
       window.open(url, '_blank');
     };
   };
