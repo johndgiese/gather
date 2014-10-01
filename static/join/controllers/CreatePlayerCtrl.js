@@ -28,10 +28,11 @@ angular.module('join')
       'Graffiti Artist', 'Gunman', 'Gymnast', 'Groundhog',
     ];
 
-    $scope.playerName = _.sample(adjectives) + ' ' + _.sample(nouns);
+    $scope.p = {};
+    $scope.p.name = _.sample(adjectives) + ' ' + _.sample(nouns);
 
     $scope.createPlayer = function() {
-      $modalInstance.close({name: $scope.playerName});
+      $modalInstance.close({name: $scope.p.name});
     };
 
   }

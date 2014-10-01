@@ -1,7 +1,7 @@
 <p class="secondary-instruction">Logged in as <span class="light-blue">{{player.name}}</span></p>
 <ul class="list-unstyled">
   <li ng-repeat="item in menu">
-    <a class="action" ng-click="$dismiss(); item.action();">{{item.title}}</a>
+    <a class="action-card" ng-click="$dismiss(); item.action();">{{item.title}}</a>
   </li>
 </ul>
-<a class="action" ng-click="$dismiss()">Cancel</a>
+<a style="margin-top: 10px;" class="action-card" ng-click="$dismiss()">Cancel</a>
