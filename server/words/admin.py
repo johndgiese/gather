@@ -176,7 +176,7 @@ class Card(admin.ModelAdmin):
 @admin.register(WordGame)
 class WordGameAdmin(admin.ModelAdmin):
 
-    list_display = ('created_on', 'party', 'created_by', 'num_players') #, 'num_rounds')
+    list_display = ('id', 'created_on', 'party', 'created_by', 'num_players') #, 'num_rounds')
 
     def get_queryset(self, request):
         qs = super(WordGameAdmin, self).get_queryset(request)

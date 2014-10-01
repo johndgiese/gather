@@ -116,6 +116,7 @@ Round.queryByGame = function(party) {
 
 Round.forApiByGame = function(gameId) {
   var sql = 'SELECT rId AS id, pgId AS reader, rNumber AS number, proText AS prompt, ' +
+    'proId AS promptId, ' +
     'rDoneReadingPrompt AS doneReadingPrompt, ' +
     'rDoneChoosing AS doneChoosing, ' +
     'rDoneReadingChoices AS doneReadingChoices, ' +
@@ -143,6 +144,7 @@ Round.prototype.forApi = function() {
       reader: self.reader,
       number: self.number,
       prompt: data[0].proText,
+      promptId: self.prompt,
       doneReadingPrompt: self.doneReadingPrompt,
       doneChoosing: self.doneChoosing,
       doneReadingChoices: self.doneReadingChoices,

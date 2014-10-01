@@ -29,10 +29,11 @@ angular.module('words')
         return {
           name: _.findWhere($scope.score, {id: s.id}).name,
           response: _.findWhere(details.choices, {player: s.id}).card.text,
+          responseId: _.findWhere(details.choices, {player: s.id}).card.responseId,
         };
       });
 
-      $scope.perfectWin = $scope.getDifferential(gameState.you) === $scope.players.length - 1 && $scope.players.length > 2;
+      $scope.perfectWin = (Number($scope.getDifferential(gameState.you)) === $scope.players.length - 1) && ($scope.players.length > 2);
       if ($scope.perfectWin) {
         $scope.winAdjective = _.sample([
           'Crushing',
@@ -47,10 +48,7 @@ angular.module('words')
           'Non-insignificant',
           'Annoyingly good',
         ]);
-        // TODO: replace with actual card ids
-        shareLinks = wordsShareService.win(1, 2);
-        $scope.tweetWin = shareLinks.twitter;
-        $scope.facebookWin = shareLinks.facebook;
+        $scope.shareWin = wordsShareService.win($scope.round.promptId, $scope.winners[0].responseId);
       }
 
     }

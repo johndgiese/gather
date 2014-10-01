@@ -21,7 +21,7 @@ Card.play = function(cardId, roundId) {
 
 
 Card.serializeHand = function(playerGameId) {
-  var sql = 'SELECT cId AS id, resText AS text FROM tbCard ' +
+  var sql = 'SELECT cId AS id, resText AS text, resId AS responseId FROM tbCard ' +
     'NATURAL JOIN tbPlayerGame ' +
     'NATURAL JOIN tbResponse ' +
     'WHERE rId IS NULL AND pgId=?';
@@ -31,7 +31,7 @@ Card.serializeHand = function(playerGameId) {
 };
 
 Card.forApi = function(cardId) {
-  var sql = 'SELECT cId AS id, resText AS text FROM ' +
+  var sql = 'SELECT cId AS id, resText AS text, resId AS responseId FROM ' +
     'tbCard JOIN tbPlayerGame USING (pgId) JOIN tbResponse USING (resId) ' +
     'WHERE cId=?';
 
@@ -42,7 +42,7 @@ Card.forApi = function(cardId) {
 Card.queryLatestByGame = function(gameId) {
   // get latest batch of choices for a game
   inserts = [gameId];
-  var sql = 'SELECT pgId, cId AS id, resText AS text FROM ' +
+  var sql = 'SELECT pgId, cId AS id, resText AS text, resId AS responseId FROM ' +
     'tbCard JOIN tbPlayerGame USING (pgId) JOIN tbResponse USING (resId) ' +
     'WHERE rId=(SELECT rId FROM tbRound WHERE gId=? AND rDoneVoting IS NULL)';
   return this.raw(sql, inserts)
@@ -52,7 +52,8 @@ Card.queryLatestByGame = function(gameId) {
         player: c.pgId,
         card: {
           id: c.id,
-          text: c.text
+          text: c.text,
+          responseId: c.responseId
         }
       };
     });

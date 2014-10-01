@@ -1,11 +1,12 @@
 angular.module('words')
 .controller('WordsChoosingCtrl', [
-  '$scope', '$stateParams', '$state', 'socket', 'gameState',
-  function($scope, $stateParams, $state, socket, gameState) {
+  '$scope', '$stateParams', '$state', 'socket', 'gameState', 'wordsShareService',
+  function($scope, $stateParams, $state, socket, gameState, wordsShareService) {
 
     $scope.hand = gameState.custom.hand;
 
-    $scope.prompt = _.last(gameState.custom.rounds).prompt;
+    var round = _.last(gameState.custom.rounds);
+    $scope.prompt = round.prompt;
 
     $scope.play = function(cardId, cardIndex) {
       var currentRound = _.last(gameState.custom.rounds);
@@ -17,6 +18,9 @@ angular.module('words')
         gameState.custom.hand[cardIndex] = newCard;
       });
     };
+
+    var responseIds = _.pluck(gameState.custom.hand, 'responseId');
+    $scope.shareHand = wordsShareService.hand(round.promptId, responseIds);
 
   }
 ]);

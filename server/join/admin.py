@@ -12,7 +12,7 @@ class PlayerAdmin(admin.ModelAdmin):
 @admin.register(Game)
 class GameAdmin(admin.ModelAdmin):
 
-    list_display = ('created_on', 'party', 'created_by', 'num_players')
+    list_display = ('id', 'created_on', 'party', 'created_by', 'num_players')
 
     def get_queryset(self, request):
         qs = super(GameAdmin, self).get_queryset(request)

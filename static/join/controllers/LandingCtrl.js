@@ -8,7 +8,6 @@ angular.module('join')
     $scope.win = wordsShareService.win(promptId, responseIds[0]);
     $scope.hand = wordsShareService.hand(promptId, responseIds);
     $scope.mychoice = wordsShareService.mychoice(promptId, responseIds[0]);
-    $scope.groupchoices = wordsShareService.groupchoices(promptId, responseIds);
   }
 ]);
 

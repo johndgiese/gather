@@ -1,7 +1,7 @@
 angular.module('words')
 .controller('WordsVotingCtrl', [
-  '$scope', '$stateParams', '$state', 'socket', 'gameState',
-  function($scope, $stateParams, $state, socket, gameState) {
+  '$scope', '$stateParams', '$state', 'socket', 'gameState', 'wordsShareService',
+  function($scope, $stateParams, $state, socket, gameState, wordsShareService) {
 
     // shuffle the list of choices to avoid voting order bias
     $scope.responses = _.shuffle(gameState.custom.choices);
@@ -29,6 +29,9 @@ angular.module('words')
         }, function() {});
       }
     };
+
+    var responseIds = _.pluck(_.pluck($scope.responses, 'card'), 'responseId');
+    $scope.shareGroupchoices = wordsShareService.groupchoices(round.promptId, responseIds);
 
   }
 ]);
