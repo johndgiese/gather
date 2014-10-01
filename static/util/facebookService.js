@@ -8,7 +8,8 @@ angular.module('util.facebookService', [
   var BASE_URL = exports.BASE_URL = "https://www.facebook.com/sharer/sharer.php";
 
   // valid params: u -- url, t -- title
-  exports.share = function(params) {
+  exports.share = function(label, params) {
+    ga('send', 'event', 'share', "facebook", label);
     var url = BASE_URL + "?" + encodeParams(params);
     return function() {
       window.open(url, '_blank');

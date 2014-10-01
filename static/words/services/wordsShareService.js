@@ -19,8 +19,8 @@ angular.module('words.wordsShareService', [
     };
 
     return {
-      twitter: tweetService.tweet(params),
-      facebook: facebookService.share({t: title, u: url})
+      twitter: tweetService.tweet("perfect win", params),
+      facebook: facebookService.share("perfect win", {t: title, u: url})
     };
   };
 
@@ -36,8 +36,8 @@ angular.module('words.wordsShareService', [
     };
 
     return {
-      twitter: tweetService.tweet(params),
-      facebook: facebookService.share({t: title, u: url})
+      twitter: tweetService.tweet("hand", params),
+      facebook: facebookService.share("hand", {t: title, u: url})
     };
   };
 
@@ -53,8 +53,8 @@ angular.module('words.wordsShareService', [
     };
 
     return {
-      twitter: tweetService.tweet(params),
-      facebook: facebookService.share({t: title, u: url})
+      twitter: tweetService.tweet("my choice", params),
+      facebook: facebookService.share("my choice", {t: title, u: url})
     };
   };
 
@@ -70,8 +70,8 @@ angular.module('words.wordsShareService', [
     };
 
     return {
-      twitter: tweetService.tweet(params),
-      facebook: facebookService.share({t: title, u: url})
+      twitter: tweetService.tweet("group choices", params),
+      facebook: facebookService.share("group choices", {t: title, u: url})
     };
   };
 
