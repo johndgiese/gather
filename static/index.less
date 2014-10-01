@@ -140,18 +140,27 @@ a.login {
     }
 }
 
-.btn-yellow {
+.btn-yellow,
+.btn-blue {
     .btn();
     .btn-lg();
     height: 50px;
     width: 100%;
-    .btn-warning();
-    color: @brand-dark-blue;
     display: inline-block;
+    color: @brand-dark-blue !important;
     &:hover {
-        color: @brand-dark-blue;
+        color: @brand-dark-blue !important;
     }
 }
+
+.btn-yellow {
+    .btn-warning();
+}
+
+.btn-blue {
+    .btn-info();
+}
+
 
 // TODO: think of much better name
 .input-yellow {
