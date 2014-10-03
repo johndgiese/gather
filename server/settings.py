@@ -21,6 +21,8 @@ CONFIG = json.load(open(os.path.join(BASE_DIR, "../_local.json")))
 SECRET_KEY_PATH = os.path.join(BASE_DIR, '../_var/secret.txt')
 SECRET_KEY = grab_or_generate_secret_key(SECRET_KEY_PATH)
 
+INTERNAL_IPS = ('127.0.0.1',)
+
 DEBUG = CONFIG['ENV'] == "DEV"
 
 TEMPLATE_DEBUG = CONFIG['ENV'] == "DEV"

@@ -48,13 +48,15 @@ module.exports = function(grunt) {
     uglifiedExternalClientSrc: [
       '<%= STATIC_ROOT %>/_vendor/angular-ui-router/release/angular-ui-router.js',
       '<%= STATIC_ROOT %>/_vendor/socket.io-client/socket.io.js',
-      '<%= STATIC_ROOT %>/_vendor/underscore/underscore.js',
     ],
     separateExternalClientSrc: [
       '<%= STATIC_ROOT %>/_vendor/angular/angular.js',
       '<%= STATIC_ROOT %>/_vendor/angular-mocks/angular-mocks.js',
+      '<%= STATIC_ROOT %>/_vendor/underscore/underscore.js',
     ],
-
+    globalSrc: [
+      '<%= STATIC_ROOT %>/global/gather.js',
+    ],
 
     uglify: {
       options: {
@@ -65,6 +67,7 @@ module.exports = function(grunt) {
       build: {
         files: {
           '<%= STATIC_ROOT %>/_dist/index.js': ['<%= clientSrc %>', '<%= uglifiedExternalClientSrc %>'],
+          '<%= STATIC_ROOT %>/_dist/gather.js': ['<%= globalSrc %>'],
         }
       }
     },
@@ -111,28 +114,13 @@ module.exports = function(grunt) {
     },
 
     watch: {
-      uglify: {
-        files: '<%= clientSrc %>',
-        tasks: ['uglify']
-      },
-      jshint: {
-        files: ['<%= serverSrc %>', '<%= clientSrc %>'],
-        tasks: ['jshint'],
-        options: {
-          spawn: false,
-        },
-      },
-      style: {
-        files: '<%= lessSrc %>',
-        tasks: ['less'],
+      static: {
+        files: ['<%= serverSrc %>', '<%= clientSrc %>', '<%= lessSrc %>', '<%= globalSrc %>'],
+        tasks: ['static'],
       },
       tests: {
         files: ['<%= serverSrc %>'],
         tasks: ['tests']
-      },
-      static: {
-        files: ['<%= serverSrc %>', '<%= clientSrc %>', '<%= lessSrc %>'],
-        tasks: ['static'],
       },
       karma: {
         files: ['<%= clientSrc %>', '<%= clientTests %>'],
