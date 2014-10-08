@@ -51,7 +51,10 @@ angular.module('words')
           round: round.id
         })
         .then(function() {
-          $state.go('^.waitingForVotes');
+          var currentState = _.last($state.current.name.split("."));
+          if (currentState === "voting") {
+            $state.go('^.waitingForVotes');
+          }
         }, function() {
           $scope.votedIndex = null;
         });

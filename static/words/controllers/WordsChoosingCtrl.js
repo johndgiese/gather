@@ -21,8 +21,11 @@ angular.module('words')
       .then(function(newCard) {
         $scope.playedIndex = null;
         $scope.hand.splice(cardIndex, 1);  // trigger leave animation
-        $state.go('^.waitingForChoices');
         gameState.custom.hand[cardIndex] = newCard;
+        var currentState = _.last($state.current.name.split("."));
+        if (currentState === "choosing") {
+          $state.go('^.waitingForChoices');
+        }
       }, function() {
         $scope.playedIndex = null;
       });
