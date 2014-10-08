@@ -1,7 +1,7 @@
 angular.module('join')
 .controller('GameCtrl', [
-  '$scope', '$state', 'ScopedSocket', 'gameState', '$location', '$rootScope', 'stateResolver', 'player', 'menuService', 'messageService',
-  function($scope, $state, ScopedSocket, gameState, $location, $rootScope, stateResolver, player, menuService, messageService) {
+  '$scope', '$state', 'ScopedSocket', 'gameState', '$location', '$rootScope', 'stateResolver', 'player', 'menuService', 'messageService', 'lockService',
+  function($scope, $state, ScopedSocket, gameState, $location, $rootScope, stateResolver, player, menuService, messageService, lockService) {
     var socket = new ScopedSocket($scope);
 
     $scope.link = $location.absUrl();
@@ -81,15 +81,15 @@ angular.module('join')
         gameState.game.startedOn = data.startedOn;
       });
 
-      $scope.startGame = function() {
-        socket.emitp('startGame', {})
+      $scope.startGame = lockService.lockByGroup("ui", function() {
+        return socket.emitp('startGame', {})
         .then(function(data) {
           // TODO: make this generic
           // TODO: handle the fact that this may get called twice; once from the
           // ack, once from the broadcast
           $state.go('app.game.words.score');
         });
-      };
+      });
 
       socket.on('gameStarted', function() {
         // TODO: make this generic

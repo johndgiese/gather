@@ -13,6 +13,8 @@ angular.module('socket')
        * Return a promise for the acknowledged data.
        * Reject if it has an `_error` field.
        */
+      // TODO: reject promises after a timeout (so that a closed socket won't
+      // leave a never-ending promise)
       socket.emitp = function(event, data) {
         var deferred = $q.defer();
         debugService('SENDING: ' + event, {color: 'blue'});

@@ -1,7 +1,7 @@
 angular.module('words')
 .controller('WordsVotingCtrl', [
-  '$scope', '$stateParams', '$state', 'socket', 'gameState', 'wordsShareService',
-  function($scope, $stateParams, $state, socket, gameState, wordsShareService) {
+  '$scope', '$stateParams', '$state', 'socket', 'gameState', 'wordsShareService', 'lockService', '$q',
+  function($scope, $stateParams, $state, socket, gameState, wordsShareService, lockService, $q) {
 
     // shuffle the list of choices to avoid voting order bias
     $scope.responses = _.shuffle(gameState.custom.choices);
@@ -37,18 +37,26 @@ angular.module('words')
 
     var round = _.last(gameState.custom.rounds);
     $scope.prompt = round.prompt;
+    $scope.votedIndex = null;
 
-    $scope.vote = function(response) {
+    $scope.vote = lockService.lockByGroup('ui', function(response, responseIndex) {
       if (response.player === gameState.you) {
         $scope.insult = getNextInsult($scope.insult);
+        return $q.when();
       } else {
-        $state.go('^.waitingForVotes');
-        socket.emit('castVote', {
+        $scope.insult = null;
+        $scope.votedIndex = responseIndex;
+        return socket.emitp('castVote', {
           card: response.card.id,
           round: round.id
-        }, function() {});
+        })
+        .then(function() {
+          $state.go('^.waitingForVotes');
+        }, function() {
+          $scope.votedIndex = null;
+        });
       }
-    };
+    });
 
     var responseIds = _.pluck(_.pluck($scope.responses, 'card'), 'responseId');
     $scope.shareGroupchoices = wordsShareService.groupchoices(round.promptId, responseIds);

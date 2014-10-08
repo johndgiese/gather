@@ -129,6 +129,18 @@ a.login {
         background-color: fadeout(@brand-dark-blue, 20%);
     }
     margin-bottom: 6px;
+
+    &.locked {
+        .animation(pulse-color-light-blue 1s ease 0 infinite);
+    }
+}
+
+@keyframes pulse-color-light-blue {
+    50% { color: @brand-light-blue; }
+}
+
+@-webkit-keyframes pulse-bg-color-light-blue {
+    50% { color: @brand-light-blue; }
 }
 
 .action,

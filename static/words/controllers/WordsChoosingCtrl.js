@@ -1,23 +1,32 @@
 angular.module('words')
 .controller('WordsChoosingCtrl', [
-  '$scope', '$stateParams', '$state', 'socket', 'gameState', 'wordsShareService',
-  function($scope, $stateParams, $state, socket, gameState, wordsShareService) {
+  '$scope', '$stateParams', '$state', 'socket', 'gameState', 'wordsShareService', 'lockService',
+  function($scope, $stateParams, $state, socket, gameState, wordsShareService, lockService) {
 
-    $scope.hand = gameState.custom.hand;
+    // copy the hand, so that you don't see the new card (just before the state
+    // change) when the game state is updated
+    $scope.hand = _.map(gameState.custom.hand, _.clone);
 
     var round = _.last(gameState.custom.rounds);
     $scope.prompt = round.prompt;
 
-    $scope.play = function(cardId, cardIndex) {
+    $scope.playedIndex = null;
+    $scope.play = lockService.lockByGroup('ui', function(cardId, cardIndex) {
+      $scope.playedIndex = cardIndex;
       var currentRound = _.last(gameState.custom.rounds);
-      $state.go('^.waitingForChoices');
-      socket.emit('chooseCard', {
+      return socket.emitp('chooseCard', {
         round: currentRound.id,
         card: cardId
-      }, function(newCard) {
+      })
+      .then(function(newCard) {
+        $scope.playedIndex = null;
+        $scope.hand.splice(cardIndex, 1);  // trigger leave animation
+        $state.go('^.waitingForChoices');
         gameState.custom.hand[cardIndex] = newCard;
+      }, function() {
+        $scope.playedIndex = null;
       });
-    };
+    });
 
     var responseIds = _.pluck(gameState.custom.hand, 'responseId');
     $scope.shareHand = wordsShareService.hand(round.promptId, responseIds);

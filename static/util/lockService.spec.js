@@ -4,5 +4,6 @@ describe('The lockService provides several decorators', function() {
     it('will not work for functions that do not return promises', function() {});
     it('should preserve the `this` and `arguments` references', function() {});
     it('will return a rejected promise for calls made with an outstanding call', function() {});
+    // TODO: test group locking functionality
   });
 });

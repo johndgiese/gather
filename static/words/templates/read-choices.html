@@ -8,4 +8,4 @@
 
 <a id="back" class="action-back" ng-show="currentResponse > 0" ng-click="back()">Back</a>
 <a id="next" class="action-next" ng-show="currentResponse < (responses.length - 1)" ng-click="next()">Next</a>
-<a id="done" class="action-next" ng-show="currentResponse == (responses.length - 1)" ng-click="done()">Done</a>
+<a id="done" class="action-next" ng-show="currentResponse == (responses.length - 1)" ng-click="done()" ng-class="{locked: done.lock}">Done</a>

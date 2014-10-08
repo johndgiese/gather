@@ -1,4 +1,4 @@
-angular.module('util')
+angular.module('util.lockService', [])
 
 .factory('lockService', ['$q',
   function lockService($q) {
@@ -22,6 +22,32 @@ angular.module('util')
           });
         } else {
           return $q.reject("Function is locked");
+        }
+      };
+      return decorated;
+    };
+
+
+    /**
+     * Decorator that ensures there is only one outstanding call in the
+     * specified group (group must be a string).  The function must be
+     * promise-returning.  Calls to the decorated function, while the group is
+     * locked, return a rejected promise.  Places a `lock` property on the
+     * returned function to indicate whether it is locked.
+     */
+    var groupLocks = {};
+    exports.lockByGroup = function lockByGroup(group, func) {
+      var decorated = function() {
+        if (groupLocks[group] === undefined) {
+          decorated.lock = true;
+          groupLocks[group] = true;
+          return func.apply(this, arguments)
+          .finally(function(val) {
+            decorated.lock = false;
+            delete groupLocks[group];
+          });
+        } else {
+          return $q.reject("Function not called because group '" + group + "' is locked");
         }
       };
       return decorated;

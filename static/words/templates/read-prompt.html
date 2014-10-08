@@ -2,4 +2,4 @@
 
 <p class="prompt">{{ prompt }}</p>
 
-<a id="done-reading" class="action" ng-click="doneReading()">Done Reading</a>
+<a id="done-reading" class="action" ng-click="doneReading()" ng-class="{locked: doneReading.lock}">Done Reading</a>

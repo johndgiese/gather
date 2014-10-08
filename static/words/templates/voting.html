@@ -4,8 +4,8 @@
 <p class="secondary-instruction text-danger pull-down" ng-hide="insult === null">{{ insult }}</p>
 
 <ul id="responses">
-  <li ng-repeat="r in responses">
-    <a class="action-card" ng-click="vote(r)">{{ r.card.text }}</a>
+  <li ng-repeat="(responseIndex, response) in responses">
+  <a class="action-card" ng-click="vote(response, responseIndex)" ng-class="{locked: votedIndex===responseIndex}">{{ response.card.text }}</a>
   </li>
 </ul>
 
