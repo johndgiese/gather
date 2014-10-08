@@ -3,8 +3,10 @@ angular.module('util.menuService', [])
   '$injector',
   function MenuServiceFactory($injector) {
 
-    items = [];
-    itemGenerators = [];
+    var exports = {};
+
+    var items = [];
+    var itemGenerators = [];
 
     function removeItem(items, id) {
       for (var i = 0; i < items.length; i++) {
@@ -17,13 +19,10 @@ angular.module('util.menuService', [])
       throw new Error("Unable to remove item");
     }
 
-    var exports = {};
-    idCounter = 0;
-
-    orderCounter = 0;
+    var idCounter = 0;
+    var orderCounter = 0;
 
     exports.currentItems = function() {
-
       var visibleItems = _.filter(items, function(item) { 
         return item.visible === undefined || $injector.invoke(item.visible);
       });
