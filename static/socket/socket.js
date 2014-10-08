@@ -7,7 +7,34 @@ angular.module('socket')
     this.setUrl = function(url) { socketUrl = url; };
     this.getUrl = function() { return socketUrl; };
     this.$get = ['$q', 'debugService', function($q, debugService) { 
-      var socket = io.connect(socketUrl); 
+      var socket = io.connect(socketUrl, {
+        reconnectionDelay: 100,
+        reconnectionDelayMax: 1000,
+      }); 
+
+      socket.on('connect', function() {
+        debugService('CONNECTED');
+      });
+
+      socket.on('reconnect', function() {
+        debugService('RE-CONNECTED');
+      });
+
+      socket.on('reconnect_error', function() {
+        debugService('RECONNECT ERROR', {color: 'red'});
+      });
+
+      socket.on('connect_error', function() {
+        debugService('CONNECT ERROR', {color: 'red'});
+      });
+
+      socket.on('reconnecting', function() {
+        debugService('RECONNECTING');
+      });
+
+      socket.on('reconnect_attempt', function(number) {
+        debugService('RECONNECT ATTEMPT ' + number);
+      });
 
       /**
        * Return a promise for the acknowledged data.
