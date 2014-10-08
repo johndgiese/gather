@@ -6,7 +6,7 @@ from models import Player, Game, PlayerGame
 
 @admin.register(Player)
 class PlayerAdmin(admin.ModelAdmin):
-    list_display = ('created_on', 'name')
+    list_display = ('id', 'created_on', 'name')
 
 
 @admin.register(Game)
