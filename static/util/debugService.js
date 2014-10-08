@@ -1,11 +1,11 @@
 angular.module('util.debugService', [])
 .service('debugService', [
-  '$timeout', '$location',
-  function($timeout, $location) {
-    if ($location.host() === 'localhost') {
+  '$timeout', '$location', 'localStorageService',
+  function($timeout, $location, localStorageService) {
+    if ($location.host() === 'localhost' || localStorageService.get('gatherDebug')) {
 
       var logContainer = angular.element(
-        '<div style="position: fixed; background-color: rgba(255, 255, 255, 0.8); width: 100%;"></div>'
+        '<div style="position: fixed; background-color: rgba(255, 255, 255, 0.8); width: 100%; pointer-events: none;"></div>'
       );
 
       window.onload = function() {

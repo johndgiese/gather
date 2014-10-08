@@ -5,4 +5,5 @@ angular.module('util', [
   'util.tweetService',
   'util.facebookService',
   'util.encodeParams',
+  'util.lockService',
 ]);
