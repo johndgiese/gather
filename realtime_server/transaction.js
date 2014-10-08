@@ -40,7 +40,7 @@ exports.inOrderByGroup = function inOrderByGroup(group, func) {
     var queue = groupQueues[group];
     if (queue === undefined) {
       queue = groupQueues[group] = [deferred];
-      debug('queue[' + group + '] length ' + queue.length);
+      debug('pushing on queue[' + group + '], new length is ' + queue.length);
       execute(group, deferred, func, args);
     } else {
       var prevCall = queue[queue.length - 1].promise;
@@ -48,7 +48,7 @@ exports.inOrderByGroup = function inOrderByGroup(group, func) {
         execute(group, deferred, func, args);
       });
       queue.push(deferred);
-      debug('queue[' + group + '] length ' + queue.length);
+      debug('pushing on queue[' + group + '], new length is ' + queue.length);
     }
 
     return deferred.promise;
@@ -57,20 +57,26 @@ exports.inOrderByGroup = function inOrderByGroup(group, func) {
 
 
 function execute(group, deferred, func, args) {
-  debug('executing function');
   Q.fapply(func, args)
   .then(function(val) {
+    cleanup(group);
     deferred.resolve(val);
   }, function(reason) {
+    cleanup(group);
     deferred.reject(reason);
-  })
-  .fin(function() {
+  });
+}
+
+function cleanup(group) {
+  try {
     var queue = groupQueues[group];
     queue.shift();
-    debug('queue[' + group + '] length ' + queue.length);
+    debug('poping from queue[' + group + '], new length is ' + queue.length);
     if (queue.length === 0) {
       delete groupQueues[group];
     }
-  });
+  } catch(e) {
+    debug("Failed to cleanup queue");
+  }
 }
 
