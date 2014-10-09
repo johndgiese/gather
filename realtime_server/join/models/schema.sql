@@ -42,9 +42,11 @@ ALTER TABLE tbPlayerGame
 
 ALTER TABLE tbGame
     ADD CONSTRAINT
-    FOREIGN KEY (gCreatedBy) REFERENCES tbPlayer(pId);
+    FOREIGN KEY (gCreatedBy) REFERENCES tbPlayer(pId)
+    ON DELETE CASCADE;
 
 ALTER TABLE tbGame
     ADD CONSTRAINT
-    FOREIGN KEY (gMaster) REFERENCES tbPlayerGame(pgId);
+    FOREIGN KEY (gMaster) REFERENCES tbPlayerGame(pgId)
+    ON DELETE SET NULL;
 
