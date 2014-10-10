@@ -51,11 +51,16 @@ angular.module('words')
           round: round.id
         })
         .then(function() {
+          return $state.transition;
+        })
+        .then(function() {
           var currentState = _.last($state.current.name.split("."));
           if (currentState === "voting") {
             $state.go('^.waitingForVotes');
           }
-        }, function() {
+          return $state.transition;
+        })
+        .catch(function() {
           $scope.votedIndex = null;
         });
       }

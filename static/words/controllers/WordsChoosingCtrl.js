@@ -22,11 +22,16 @@ angular.module('words')
         $scope.playedIndex = null;
         $scope.hand.splice(cardIndex, 1);  // trigger leave animation
         gameState.custom.hand[cardIndex] = newCard;
+        return $state.transition;
+      })
+      .then(function() {
         var currentState = _.last($state.current.name.split("."));
         if (currentState === "choosing") {
           $state.go('^.waitingForChoices');
         }
-      }, function() {
+        return $state.transition;
+      })
+      .catch(function() {
         $scope.playedIndex = null;
       });
     });
