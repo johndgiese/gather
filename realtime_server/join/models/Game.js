@@ -1,5 +1,5 @@
 var orm = require('../../orm');
-var partyHash = require('../partyHash');
+var partyCode = require('../partyCode');
 var logger = require('../../logger');
 
 var fields = {
@@ -67,7 +67,7 @@ Game.prototype.save = function() {
     var attempts = 0;
     while (attempts < MAX_HASH_ATTEMPTS) {
       attempts++;
-      this.party = partyHash(this.createdBy);
+      this.party = partyCode();
       try {
         return this._save();
       } catch (e) {
