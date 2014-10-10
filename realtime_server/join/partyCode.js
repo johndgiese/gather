@@ -8,4 +8,4 @@ module.exports = function partyCode() {
     result += possible.charAt(Math.floor(Math.random()*numPossible));
   }
   return result;
-}
+};
