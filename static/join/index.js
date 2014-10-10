@@ -4,4 +4,5 @@ angular.module('join', [
   'ui.router',
   'ui.bootstrap',
   'words',
+  'monospaced.qrcode',
 ]);

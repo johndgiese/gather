@@ -15,6 +15,10 @@ angular.module('join')
       messageService.template("/static/join/templates/share-help.html");
     };
 
+    $scope.showQRCode = function() {
+      messageService.template("/static/join/templates/qr-code.html", $scope);
+    };
+
     if ($scope.isMaster) {
 
       var removeMenuItems = menuService.registerItemGenerator({

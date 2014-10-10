@@ -25,9 +25,15 @@ angular.module('util.messageService', [
     };
 
 
-    exports.template = function(templateUrl) {
+    exports.template = function(templateUrl, scope) {
+
+      if (scope === undefined) {
+        scope = $rootScope.$new();
+      }
+
       var modalInstance = $modal.open({
         templateUrl: templateUrl,
+        scope: scope,
       });
 
       return modalInstance.result

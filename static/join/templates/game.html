@@ -20,7 +20,14 @@
   Friends can join the game by visiting
   </p>
   <p id="share-link">{{ link }}</p>
-  <a class="action-card" ng-click="showShareHelp()">Tell me a trick to make this easier</a>
+
+  <div class="row">
+    <div class="col-xs-6">
+      <a class="action-card" ng-click="showShareHelp()">Help</a>
+    </div>
+    <div class="col-xs-6">
+      <a class="action-card" ng-click="showQRCode()">QR Code</a>
+    </div>
 
   <br>
   <p class="secondary-instruction pull-down">Currently in game</p>

@@ -49,6 +49,8 @@ module.exports = function(grunt) {
     uglifiedExternalClientSrc: [
       '<%= STATIC_ROOT %>/_vendor/angular-ui-router/release/angular-ui-router.js',
       '<%= STATIC_ROOT %>/_vendor/socket.io-client/socket.io.js',
+      '<%= STATIC_ROOT %>/_vendor/angular-qrcode/qrcode.js',
+      '<%= STATIC_ROOT %>/_vendor/qrcode-generator/js/qrcode.js',
     ],
     separateExternalClientSrc: [
       '<%= STATIC_ROOT %>/_vendor/angular/angular.js',
