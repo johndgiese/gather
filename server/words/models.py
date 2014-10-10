@@ -98,7 +98,7 @@ class FunnyVote(models.Model):
 
 class Round(models.Model):
     id = models.AutoField(primary_key=True, db_column='rId')
-    game = models.ForeignKey('join.Game', db_column='gId')
+    game = models.ForeignKey('join.Game', db_column='gId', related_name="rounds")
     prompt = models.ForeignKey('Prompt', db_column='proId')
     reader = models.ForeignKey('join.PlayerGame', db_column='pgId')
     number = models.IntegerField(db_column='rNumber')

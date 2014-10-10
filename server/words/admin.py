@@ -6,6 +6,7 @@ from django.db.models import Count
 from django.contrib.messages import ERROR
 
 from models import Response, Prompt, Tag, ResponseTag, PromptTag, FunnyVote, Vote, Card, Round, WordGame
+from join.models import PlayerGame
 
 # ACTIONS
 
@@ -133,8 +134,15 @@ class FunnyVoteAdmin(admin.ModelAdmin):
     list_display = ['funny', 'prompt', 'response']
 
 
+class CardInline(admin.TabularInline):
+    model = Card
+    extra = 0
+    can_delete = False
+
 @admin.register(Round)
 class Round(admin.ModelAdmin):
+    inlines = [CardInline]
+
     list_display = [
         'id',
         'game', 
@@ -173,22 +181,51 @@ class Card(admin.ModelAdmin):
     pass
 
 
+class PlayerGameInline(admin.TabularInline):
+    model = PlayerGame
+    fk_name = 'game'
+    extra = 0
+    can_delete = False
+
+
+class GameLengthFilter(admin.SimpleListFilter):
+    title = 'game length'
+    parameter_name = 'gamelength'
+
+    def lookups(self, request, model_admin):
+        return (
+            ('short', '1 - 5 rounds'),
+            ('medium', '6 - 19 rounds'),
+            ('long', '20+  rounds'),
+        )
+
+    def queryset(self, request, queryset):
+        if self.value() == "short":
+            return queryset.annotate(n_rounds=Count('rounds')).filter(n_rounds__lte=5)
+        elif self.value() == "medium":
+            return queryset.annotate(n_rounds=Count('rounds')).filter(n_rounds__gte=6, n_rounds__lte=19)
+        elif self.value() == "long":
+            return queryset.annotate(n_rounds=Count('rounds')).filter(n_rounds__gte=20)
+        else:
+            return queryset
+
+
 @admin.register(WordGame)
 class WordGameAdmin(admin.ModelAdmin):
+    inlines = [PlayerGameInline]
 
-    list_display = ('id', 'created_on', 'party', 'created_by', 'num_players') #, 'num_rounds')
+    list_display = ('id', 'started_on', 'party', 'created_by', 'num_players', 'num_rounds')
+    list_filter = ('started_on', GameLengthFilter)
+
+    def num_players(self, obj):
+        return obj.players.count()
+
+    def num_rounds(self, obj):
+        return obj.rounds.count()
 
     def get_queryset(self, request):
         qs = super(WordGameAdmin, self).get_queryset(request)
-        qs = qs.annotate(num_players=models.Count('playergame'), num_rounds=models.Count('round'))
+        qs = qs.exclude(started_on=None)  # filter out games that don't start
+        qs = qs.filter(started_on__gte='2014-9-30')  # filter out pre-beta games
         return qs
-
-    def num_players(self, obj):
-        return obj.num_players
-    num_players.admin_order_field = 'num_players'
-
-    # TODO: figure out why this isn't working
-    #def num_rounds(self, obj):
-        #return obj.num_rounds
-    #num_rounds.admin_order_field = 'num_rounds'
 
