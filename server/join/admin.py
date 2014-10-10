@@ -9,7 +9,8 @@ class PlayerAdmin(admin.ModelAdmin):
     list_display = ('id', 'created_on', 'name')
 
 
-@admin.register(Game)
+# disable for now, to avoid confusion
+#@admin.register(Game)
 class GameAdmin(admin.ModelAdmin):
 
     list_display = ('id', 'created_on', 'party', 'created_by', 'num_players')
