@@ -10,7 +10,7 @@
     var matches = [
       {% for m in matches %}
       {
-        text: "{{ m.text|safe }}",
+        text: "{{ m.text|safe|escapejs }}",
       },
       {% endfor %}
     ];
