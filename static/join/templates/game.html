@@ -12,7 +12,7 @@
 
   <div ng-show="isMaster">
     <p class="secondary-instruction pull-down" ng-show="players.length >= 3">Wait for everyone to join, then</p>
-    <p class="secondary-instruction pull-down text-danger" ng-show="players.length < 3">This game requires three or more players</p>
+    <p class="secondary-instruction pull-down text-danger" ng-show="players.length < 3">This game requires <span class="hidden-xs">at least three</span><span class="visible-xs-inline">3+</span> players</p>
     <a id="begin-game" class="action" ng-click="startGame()" ng-class="{'locked': startGame.lock}" ng-hide="players.length < 3">Begin Game</a>
   </div>
 
