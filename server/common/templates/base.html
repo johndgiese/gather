@@ -34,8 +34,6 @@
       ga('create', 'UA-51682843-1', 'auto');
       ga('send', 'pageview');
     </script>
-    <script src="/static/_vendor/underscore/underscore.js"></script>
-    <script src="/static/_dist/gather.js"></script>
 
 
     <script>
@@ -80,7 +78,7 @@
     {% endblock %}
 
     {% block style %}
-      <link rel="stylesheet" type="text/css" href="/static/_dist/index.css">
+      <link rel="stylesheet" type="text/css" href="/static/_dist/index.min.css">
     {% endblock %}
   </head>
 
@@ -97,6 +95,8 @@
   </body>
   {% endblock %}
 
+  <script src="/static/_vendor/underscore/underscore-min.js"></script>
+  <script src="/static/_dist/gather.js"></script>
   {% block scripts_bottom %}
   {% endblock %}
 </html>

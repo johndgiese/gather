@@ -19,7 +19,7 @@
     "bootstrap": "3.2",
     "socket.io-client": "1.0",
     "angular-ui-router": "0.2",
-    "underscore": "~1.6.0"
+    "underscore": "~1.7.0"
   },
   "devDependencies": {
     "angular-mocks": "~1.2.23"

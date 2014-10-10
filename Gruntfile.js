@@ -11,6 +11,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-mocha-test');
   grunt.loadNpmTasks('grunt-shell');
   grunt.loadNpmTasks('grunt-karma');
+  grunt.loadNpmTasks('grunt-contrib-cssmin');
 
   grunt.initConfig({
     config: serverConfig,
@@ -145,6 +146,18 @@ module.exports = function(grunt) {
       }
     },
 
+    cssmin: {
+      dist: {
+        files: [{
+          expand: true,
+          cwd: '<%= STATIC_ROOT %>/_dist/',
+          src: ['*.css', '!*.min.css'],
+          dest: '<%= STATIC_ROOT %>/_dist',
+          ext: '.min.css',
+        }]
+      }
+    },
+
     shell: {
       setupDirectories: {
         command: 'mkdir <%= NODE_ROOT %>/_var',
@@ -169,6 +182,6 @@ module.exports = function(grunt) {
   grunt.registerTask('default', ['jshint', 'mochaTest', 'less', 'uglify', 'watch']);
   grunt.registerTask('tests', ['jshint', 'mochaTest']);
   grunt.registerTask('setup', ['shell:setupDirectories', 'shell:setupDatabase', 'shell:loadWords', 'static']);
-  grunt.registerTask('static', ['jshint', 'less', 'uglify']);
+  grunt.registerTask('static', ['jshint', 'less', 'uglify', 'cssmin']);
 
 };
