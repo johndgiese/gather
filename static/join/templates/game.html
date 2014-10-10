@@ -23,10 +23,10 @@
 
   <div class="row">
     <div class="col-xs-6">
-      <a class="action-card" ng-click="showShareHelp()">Help</a>
+      <a class="action-card" ng-click="showShareHelp()" ng-class="{'locked': showShareHelp.lock}">Help</a>
     </div>
     <div class="col-xs-6">
-      <a class="action-card" ng-click="showQRCode()">QR Code</a>
+      <a class="action-card" ng-click="showQRCode()" ng-class="{'locked': showQRCode.lock}">QR Code</a>
     </div>
 
   <br>

@@ -11,13 +11,13 @@ angular.module('join')
     $scope.master = _.findWhere(gameState.players, {id: masterId});
     $scope.players = gameState.players;
 
-    $scope.showShareHelp = function() {
-      messageService.template("/static/join/templates/share-help.html");
-    };
+    $scope.showShareHelp = lockService.lockByGroup('ui', function() {
+      return messageService.template("/static/join/templates/share-help.html");
+    });
 
-    $scope.showQRCode = function() {
-      messageService.template("/static/join/templates/qr-code.html", $scope);
-    };
+    $scope.showQRCode = lockService.lockByGroup('ui', function() {
+      return messageService.template("/static/join/templates/qr-code.html", $scope);
+    });
 
     if ($scope.isMaster) {
 
