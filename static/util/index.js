@@ -6,4 +6,5 @@ angular.module('util', [
   'util.facebookService',
   'util.encodeParams',
   'util.lockService',
+  'util.selectOnClickDirective',
 ]);
