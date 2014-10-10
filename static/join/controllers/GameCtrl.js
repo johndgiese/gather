@@ -1,7 +1,7 @@
 angular.module('join')
 .controller('GameCtrl', [
-  '$scope', '$state', 'ScopedSocket', 'gameState', '$location', '$rootScope', 'stateResolver', 'player', 'menuService', 'messageService', 'lockService',
-  function($scope, $state, ScopedSocket, gameState, $location, $rootScope, stateResolver, player, menuService, messageService, lockService) {
+  '$scope', '$state', 'ScopedSocket', 'gameState', '$location', '$rootScope', 'stateResolver', 'player', 'menuService', 'messageService', 'lockService', 'localStorageService',
+  function($scope, $state, ScopedSocket, gameState, $location, $rootScope, stateResolver, player, menuService, messageService, lockService, localStorageService) {
     var socket = new ScopedSocket($scope);
 
     $scope.link = $location.absUrl();
@@ -100,9 +100,8 @@ angular.module('join')
         $state.go('app.game.words.score');
       });
 
-
-      // TODO: only display once to each user
-      if ($scope.isMaster) {
+      var shownWarningAlready = !!localStorageService.get('shownWarningAlready');
+      if ($scope.isMaster && !shownWarningAlready) {
         messageService.message(
           "WARNING: This game is extremely crude and offensive! " +
           "Don't invite your grandma or young children unless you know what you " +
@@ -110,6 +109,7 @@ angular.module('join')
           "that may be caused by you ignoring this warning.",
           "I am at least 18 years old"
         );
+        localStorageService.set('shownWarningAlready', true);
       }
 
     } else {
