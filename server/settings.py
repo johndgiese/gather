@@ -25,6 +25,10 @@ INTERNAL_IPS = ('127.0.0.1',)
 
 DEBUG = CONFIG['ENV'] == "DEV"
 
+if DEBUG == True:
+    # load test admin user
+    FIXTURE_DIRS = (BASE_DIR,)
+
 TEMPLATE_DEBUG = CONFIG['ENV'] == "DEV"
 
 if CONFIG['ENV'] == "DEV":

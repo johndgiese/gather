@@ -16,6 +16,7 @@ module.exports = function(grunt) {
   grunt.initConfig({
     config: serverConfig,
     STATIC_ROOT: 'static',
+    SERVER_ROOT: 'server',
     NODE_ROOT: 'realtime_server',
     pkg: grunt.file.readJSON('package.json'),
     clientSrc: [
@@ -171,7 +172,10 @@ module.exports = function(grunt) {
         command: [
           'cd <%= NODE_ROOT %>',
           'mysql -u<%= config.DB_USERNAME %> -p<%= config.DB_PASSWORD %> <%= config.DB_NAME %> < schema.sql',
-          'cd -'
+          'cd -',
+          'cd <%= SERVER_ROOT %>',
+          './manage.py migrate',
+          'cd -',
         ].join(' && ')
       },
       loadWords: {
