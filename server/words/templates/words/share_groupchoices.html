@@ -9,26 +9,6 @@
   <meta property="og:image" content="http://gather.gg/static/img/logo_no_word.png">
 {% endblock %}
 
-{% block scripts_top %}
-<script>
-  var shareGroupchoices = (function() {
-    var title = "{{ prompt.text }}";
-    var url = "http://gather.gg{{ request.get_full_path }}";
-    var params = {
-     text: title,
-     url: url,
-     hashtags: ["gather"],
-     related: ["Gathergg:Be the first to know when we add new decks or features."],
-    };
-    return {
-      twitter: gather.tweetService.tweet("reshare group choices", params),
-      facebook: gather.facebookService.share("reshare group choices", {t: title, u: url})
-    };
-  })();
-
-</script>
-{% endblock %}
-
 {% block mock %}
 <p class="secondary-instruction pull-down">Below are everyone's responses to</p>
 <p class="prompt">{{ prompt.text }}</p>
@@ -38,15 +18,13 @@
 <ul id="choices">
   {% for card in cards %}
   <li>
-    <a class="action-card" href="/share/prompt/{{ prompt.id }}/groupchoices/{{ card.id }}/after/">{{ card.text }}</a>
+    <form action="." method="post">
+      {% csrf_token %}
+      <input type="number" name="answer" value="{{ card.id }}" style="display: none;">
+      <input type="submit" class="action-card" value="{{ card.text }}">
+    </form>
   </li>
   {% endfor %}
 </ul>
 
-<div>
-  Share on
-  <a href="#" class="img-twitter" onclick="shareGroupchoices.twitter()"></a>
-  or
-  <a href="#" class="img-facebook" onclick="shareGroupchoices.facebook()"></a>.
-</div>
 {% endblock %}

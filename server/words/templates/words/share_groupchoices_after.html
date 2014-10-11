@@ -10,9 +10,18 @@
 {% endblock %}
 
 {% block mock %}
-  <p class="secondary-instruction pull-down">Thanks for voting!</p>
   <p class="prompt">{{ prompt.text }}</p>
-  <p class="prompt">{{ cards.0.text }}</p>
+  <p class="secondary-instruction pull-down">The winners are</p>
+  {% for card in cards %}
+  <p class="prompt-sm text-left">{{ card.text }} <span class="light-blue" style="float: right; display: inline-block;">{{ card.num_votes }}</span></p> 
+  {% endfor %}
+
+  <div>
+    Share on
+    <a href="#" class="img-twitter" onclick="shareGroupchoices.twitter()"></a>
+    or
+    <a href="#" class="img-facebook" onclick="shareGroupchoices.facebook()"></a>.
+  </div>
   <br>
 
   <p class="main-instruction">
@@ -23,3 +32,21 @@
   <a class="action" href="/">Learn more</a>
 {% endblock %}
 
+{% block scripts_bottom %}
+<script>
+  var shareGroupchoices = (function() {
+    var title = "{{ prompt.text }}";
+    var url = "{{ share_link }}";
+    var params = {
+     text: title,
+     url: url,
+     hashtags: ["gather"],
+     related: ["Gathergg:Be the first to know when we add new decks or features."],
+    };
+    return {
+      twitter: gather.tweetService.tweet("reshare group choices", params),
+      facebook: gather.facebookService.share("reshare group choices", {t: title, u: url})
+    };
+  })();
+</script>
+{% endblock %}

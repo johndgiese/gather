@@ -96,6 +96,7 @@ class FunnyVote(models.Model):
         return u'{} <--> {}'.format(self.prompt, self.response)
 
 
+
 class Round(models.Model):
     id = models.AutoField(primary_key=True, db_column='rId')
     game = models.ForeignKey('join.Game', db_column='gId', related_name="rounds")

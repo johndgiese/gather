@@ -9,25 +9,6 @@
   <meta property="og:image" content="http://gather.gg/static/img/logo_no_word.png">
 {% endblock %}
 
-{% block scripts_top %}
-<script>
-  var shareHand = (function() {
-    var title = "{{ prompt.text }}";
-    var url = "http://gather.gg{{ request.get_full_path }}";
-    var params = {
-     text: title,
-     url: url,
-     hashtags: ["gather"],
-     related: ["Gathergg:Be the first to know when we add new decks or features."],
-    };
-    return {
-      twitter: gather.tweetService.tweet("reshare hand", params),
-      facebook: gather.facebookService.share("reshare hand", {t: title, u: url})
-    };
-  })();
-
-</script>
-{% endblock %}
 
 {% block mock %}
 <p class="secondary-instruction pull-down">Prompted with</p>
@@ -38,15 +19,13 @@
 <ul id="choices">
   {% for card in cards %}
   <li>
-    <a class="action-card" href="/share/prompt/{{ prompt.id }}/choice/{{ card.id }}/after/">{{ card.text }}</a>
+    <form action="." method="post">
+      {% csrf_token %}
+      <input type="number" name="answer" value="{{ card.id }}" style="display: none;">
+      <input type="submit" class="action-card" value="{{ card.text }}">
+    </form>
   </li>
   {% endfor %}
 </ul>
 
-<div>
-  Share on
-  <a href="#" class="img-twitter" onclick="shareHand.twitter()"></a>
-  or
-  <a href="#" class="img-facebook" onclick="shareHand.facebook()"></a>.
-</div>
 {% endblock %}

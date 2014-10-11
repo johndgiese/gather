@@ -8,9 +8,11 @@ from django.core.urlresolvers import reverse_lazy
 from django.views.generic import TemplateView
 from django.views.generic.edit import CreateView
 from django.contrib.auth.decorators import login_required
-from django.http import Http404
+from django.http import Http404, HttpResponseRedirect
+from django.db.models import Count
 
 from models import Prompt, Response, Tag, FunnyVote
+from util.models import Answer
 from constants import CARDS_IN_HAND
 
 logger = logging.getLogger(__name__)
@@ -124,6 +126,8 @@ prompt_validate = login_required(ValidateWordView.as_view(
 
 class ShareCardsView(TemplateView):
 
+    http_method_names = ['get']
+
     def get_context_data(self, **kwargs):
         context = super(ShareCardsView, self).get_context_data(**kwargs)
 
@@ -138,6 +142,7 @@ class ShareCardsView(TemplateView):
         card_id_keys.sort(lambda c1, c2: int(c1[5:]) - int(c2[5:]))
         card_ids = [kwargs[c] for c in card_id_keys]
         context['cards'] = [Response.objects.get(pk=c) for c in card_ids]
+        print("TESTING")
 
         for c in context['cards']:
             if c.is_cah:
@@ -146,10 +151,43 @@ class ShareCardsView(TemplateView):
         return context
 
 
-share_hand = ShareCardsView.as_view(template_name="words/share_hand.html")
-share_hand_after = ShareCardsView.as_view(template_name="words/share_hand_after.html")
+class VotingView(ShareCardsView):
+
+    after_view_name = None
+    http_method_names = ['get', 'post']
+
+    def post(self, request, *args, **kwargs):
+        url = request.build_absolute_uri()
+        ip_address = request.META['REMOTE_ADDR']
+        answer = request.POST.get('answer', None)
+        if answer is None:
+            return HttpResponseRedirect(url)
+        #try:
+            #existing_answer = Answer.objects.get(ip_address=ip_address, question=url)
+        #except Answer.DoesNotExist:
+        Answer.objects.create(ip_address=ip_address, question=url, answer=answer)
+        return HttpResponseRedirect(url + 'after/')
+
+
+class VotedView(ShareCardsView):
+
+    def get_context_data(self, **kwargs):
+        context = super(VotedView, self).get_context_data(**kwargs)
+        question_url = self.request.build_absolute_uri()[:-len("after/")]
+        results = Answer.objects.filter(question=question_url).values('answer').annotate(num_votes=Count('answer'))
+
+        for card in context['cards']:
+            card.num_votes = next((r['num_votes'] for r in results if r['answer'] == card.id), 0)
+
+        context['share_link'] = question_url
+        return context
+
 share_mychoice = ShareCardsView.as_view(template_name="words/share_mychoice.html")
-share_groupchoices = ShareCardsView.as_view(template_name="words/share_groupchoices.html")
-share_groupchoices_after = ShareCardsView.as_view(template_name="words/share_groupchoices_after.html")
 share_mywin = ShareCardsView.as_view(template_name="words/share_mywin.html")
+
+share_hand = VotingView.as_view(template_name="words/share_hand.html")
+share_hand_after = VotedView.as_view(template_name="words/share_hand_after.html")
+
+share_groupchoices = VotingView.as_view(template_name="words/share_groupchoices.html")
+share_groupchoices_after = VotedView.as_view(template_name="words/share_groupchoices_after.html")
 

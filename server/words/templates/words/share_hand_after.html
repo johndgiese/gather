@@ -10,16 +10,49 @@
 {% endblock %}
 
 {% block mock %}
-  <p class="secondary-instruction pull-down">Thanks for voting!</p>
   <p class="prompt">{{ prompt.text }}</p>
-  <p class="prompt">{{ cards.0.text }}</p>
+
+  <p class="secondary-instruction pull-down">The winners are</p>
+  {% for card in cards %}
+  <p class="prompt-sm text-left">{{ card.text }} <span class="light-blue" style="float: right; display: inline-block;">{{ card.num_votes }}</span></p> 
+  {% endfor %}
+
+  <div>
+    Share on
+    <a href="#" class="img-twitter" onclick="shareHand.twitter()"></a>
+    or
+    <a href="#" class="img-facebook" onclick="shareHand.facebook()"></a>.
+  </div>
   <br>
 
   <p class="main-instruction">
     Gather is a comical group word game<br class="visible-md-block visible-lg-block"> for friends to play when they're together.
   </p>
-  <br>
+
   <a class="action" href="/g/"><span class="light-blue">Play now</span></a>
   <a class="action" href="/">Learn more</a>
+
+  <br>
 {% endblock %}
 
+
+{% block scripts_bottom %}
+{{ super }}
+<script>
+  var shareHand = (function() {
+    var title = "{{ prompt.text }}";
+    var url = "{{ share_link }}";
+    var params = {
+     text: title,
+     url: url,
+     hashtags: ["gather"],
+     related: ["Gathergg:Be the first to know when we add new decks or features."],
+    };
+    return {
+      twitter: gather.tweetService.tweet("reshare hand", params),
+      facebook: gather.facebookService.share("reshare hand", {t: title, u: url})
+    };
+  })();
+
+</script>
+{% endblock %}
