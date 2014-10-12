@@ -142,7 +142,6 @@ class ShareCardsView(TemplateView):
         card_id_keys.sort(lambda c1, c2: int(c1[5:]) - int(c2[5:]))
         card_ids = [kwargs[c] for c in card_id_keys]
         context['cards'] = [Response.objects.get(pk=c) for c in card_ids]
-        print("TESTING")
 
         for c in context['cards']:
             if c.is_cah:
@@ -162,10 +161,10 @@ class VotingView(ShareCardsView):
         answer = request.POST.get('answer', None)
         if answer is None:
             return HttpResponseRedirect(url)
-        #try:
-            #existing_answer = Answer.objects.get(ip_address=ip_address, question=url)
-        #except Answer.DoesNotExist:
-        Answer.objects.create(ip_address=ip_address, question=url, answer=answer)
+        try:
+            existing_answer = Answer.objects.get(ip_address=ip_address, question=url)
+        except Answer.DoesNotExist:
+            Answer.objects.create(ip_address=ip_address, question=url, answer=answer)
         return HttpResponseRedirect(url + 'after/')
 
 
@@ -178,8 +177,11 @@ class VotedView(ShareCardsView):
 
         for card in context['cards']:
             card.num_votes = next((r['num_votes'] for r in results if r['answer'] == card.id), 0)
+        
+        context['cards'] = sorted(context['cards'], lambda a, b: b.num_votes - a.num_votes)
 
-        context['share_link'] = question_url
+        # for some reason facebook doesn't like the trailing slash
+        context['share_link'] = question_url[:-1]  
         return context
 
 share_mychoice = ShareCardsView.as_view(template_name="words/share_mychoice.html")
