@@ -19,9 +19,29 @@ angular.module('join')
       return messageService.template("/static/join/templates/qr-code.html", $scope);
     });
 
-    if ($scope.isMaster) {
+    var removeLeaveMenuItem = menuService.registerItemGenerator({
+      generator: function() {
+        return [
+          {
+            title: function() {
+              if ($scope.isMaster) {
+                return 'Cancel Game';
+              } else {
+                return 'Leave Game';
+              }
+            },
+            action: ['$state', 'socket', function($state, socket) { 
+              socket.emitp('leaveGame', {});
+              $state.go('app.landing');
+            }],
+          }
+        ];
+      }
+    });
+    $scope.$on('$destroy', removeLeaveMenuItem);
 
-      var removeMenuItems = menuService.registerItemGenerator({
+    if ($scope.isMaster) {
+      var removeKickPlayerMenuItems = menuService.registerItemGenerator({
         generator: function() {
           var otherPlayers = [];
           for (var i = 0, len = $scope.players.length; i < len; i++) {
@@ -40,7 +60,7 @@ angular.module('join')
           });
         }
       });
-      $scope.$on('$destroy', removeMenuItems);
+      $scope.$on('$destroy', removeKickPlayerMenuItems);
     }
 
     socket.on('playerLeft', function(data) {

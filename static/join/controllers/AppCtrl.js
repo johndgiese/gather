@@ -1,7 +1,7 @@
 angular.module('join')
 .controller('AppCtrl', [
-  '$scope', 'playerService', '$rootScope', '$state', '$modal',
-  function($scope, playerService, $rootScope, $state, $modal) {
+  '$scope', 'playerService', '$rootScope', '$state', '$modal', 'lockService',
+  function($scope, playerService, $rootScope, $state, $modal, lockService) {
 
     $scope.player = playerService.player;
     $scope.$watch(function() {
@@ -15,12 +15,12 @@ angular.module('join')
       $state.go('app.landing');
     };
 
-    $scope.menu = function() {
+    $scope.menu = lockService.lockByGroup('ui', function() {
       return $modal.open({
         templateUrl: '/static/join/templates/menu.html',
         controller: 'MenuCtrl',
-      });
-    };
+      }).result;
+    });
 
   }
 ]);

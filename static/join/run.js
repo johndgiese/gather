@@ -52,17 +52,6 @@ angular.module('join')
       }
     });
 
-    menuService.registerItem({
-      title: 'Leave Game',
-      action: ['$state', 'socket', function($state, socket) { 
-        socket.emitp('leaveGame', {});
-        $state.go('app.landing');
-      }],
-      visible: ['$state', function($state) { 
-        return $state.current.name.substr(0, 3 + 1 + 4) === 'app.game'; 
-      }]
-    });
-
   }
 ]);
 
