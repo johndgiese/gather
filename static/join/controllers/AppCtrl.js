@@ -19,6 +19,7 @@ angular.module('join')
       return $modal.open({
         templateUrl: '/static/join/templates/menu.html',
         controller: 'MenuCtrl',
+        backdrop: 'static',
       }).result;
     });
 

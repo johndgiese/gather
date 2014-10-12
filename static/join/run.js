@@ -42,10 +42,10 @@ angular.module('join')
     });
 
     menuService.registerItem({
-      title: 'Logout',
+      title: 'Logout of Device',
       action: function() {
         playerService.logout();
-        $state.go('app.landing');
+        return $state.go('app.landing');
       },
       visible: function() { 
         return playerService.player !== null;

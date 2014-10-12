@@ -1,7 +1,7 @@
 angular.module('util.menuService', [])
 .factory('menuService', [
-  '$injector',
-  function MenuServiceFactory($injector) {
+  '$injector', 'lockService',
+  function MenuServiceFactory($injector, lockService) {
 
     var exports = {};
 
@@ -38,12 +38,17 @@ angular.module('util.menuService', [])
 
       var sortedItems = _.sortBy(visibleItems, function(item) { return item.order; });
 
-      return _.map(sortedItems, function(item) {
+      var publicItems = [];
+      _.each(sortedItems, function(item, itemIndex) {
         var publicItem = {};
 
-        publicItem.action = function() {
-          return $injector.invoke(item.action);
-        };
+        publicItem.action = lockService.lockByGroup('menu', function() {
+          return $injector.invoke(item.action, null, {
+            menuItems: publicItems,
+            menuItem: item,
+            menuItemIndex: itemIndex,
+          });
+        });
 
         if (angular.isFunction(item.title)) {
           publicItem.title = $injector.invoke(item.title);
@@ -57,8 +62,9 @@ angular.module('util.menuService', [])
           };
         }
 
-        return publicItem;
+        publicItems.push(publicItem);
       });
+      return publicItems;
     };
 
     exports.registerItem = registerItem;

@@ -1,7 +1,7 @@
 angular.module('join')
 .controller('GameCtrl', [
-  '$scope', '$state', 'ScopedSocket', 'gameState', '$location', '$rootScope', 'stateResolver', 'player', 'menuService', 'messageService', 'lockService', 'localStorageService',
-  function($scope, $state, ScopedSocket, gameState, $location, $rootScope, stateResolver, player, menuService, messageService, lockService, localStorageService) {
+  '$scope', '$state', 'ScopedSocket', 'gameState', '$location', '$rootScope', 'stateResolver', 'player', 'menuService', 'messageService', 'lockService', 'localStorageService', '$q',
+  function($scope, $state, ScopedSocket, gameState, $location, $rootScope, stateResolver, player, menuService, messageService, lockService, localStorageService, $q) {
     var socket = new ScopedSocket($scope);
 
     $scope.link = $location.absUrl();
@@ -31,8 +31,10 @@ angular.module('join')
               }
             },
             action: ['$state', 'socket', function($state, socket) { 
-              socket.emitp('leaveGame', {});
-              $state.go('app.landing');
+              return socket.emitp('leaveGame', {})
+              .then(function() {
+                $state.go('app.landing');
+              });
             }],
           }
         ];
@@ -53,8 +55,13 @@ angular.module('join')
           return _.map(otherPlayers, function(player) {
             return {
               title: 'Kick ' + player.name,
-              action: ['socket', function(socket) { 
-                return socket.emitp('kickPlayer', {player: player.id});
+              action: ['socket', 'menuItems', 'menuItemIndex', function(socket, menuItems, menuItemIndex) { 
+                return socket.emitp('kickPlayer', {player: player.id})
+                .then(function() {
+                  menuItems.splice(menuItemIndex, 1);
+                  // reject promise so menu doesn't close
+                  return $q.reject("Player kicked");
+                });
               }]
             };
           });
