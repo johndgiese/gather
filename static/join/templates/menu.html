@@ -1,7 +1,7 @@
 <p class="secondary-instruction">You are <span class="light-blue">{{player.name}}</span></p>
 <ul class="list-unstyled">
   <li>
-  <a class="action-card" href="mailto:info@gather.gg?subject=In%20Game%20Feedback%20[{{player.id}}]">Leave Feedback</a>
+  <a class="action-card" href="mailto:info@gather.gg?subject=In%20Game%20Feedback%20[{{player.id}}]">Tell us we Suck</a>
   </li>
   <li ng-repeat="item in menu">
     <a class="action-card" ng-click="item.action().then($dismiss);" ng-class="{locked: item.action.lock}">{{item.title}}</a>
