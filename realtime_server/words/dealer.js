@@ -8,6 +8,7 @@ var models = require('./models');
 var db = require('../db');
 var util = require('util');
 var debug = require('debug')('gather:words');
+var _ = require('underscore');
 
 /**
  * Deal a prompt card for a given game.
@@ -23,7 +24,7 @@ exports.dealPrompt = function(gameId) {
 /**
  * @constant {Number}
  */
-var CARDS_IN_HAND = exports.CARDS_IN_HAND = 7;
+var CARDS_IN_HAND = exports.CARDS_IN_HAND = 2;
 
 
 /**
@@ -97,33 +98,53 @@ function pickResponses(playerGameId, gameId, numToDeal, dealt, timesAllCardsPlay
   }
 
   var numLeft = numToDeal - dealt.length;
-  var inserts = [playerGameId, gameId, timesAllCardsPlayed, numLeft];
 
-  var query = '' + 
-  'SELECT resId FROM tbResponse WHERE ' +
-    'resId NOT IN (' +
-      'SELECT resId FROM (' + 
-        'SELECT resId, Count(*) as timesUsed FROM tbCard NATURAL JOIN tbPlayerGame ' + 
-              'WHERE gId=? AND resActive=TRUE GROUP BY resId ' +
-      ') as T WHERE T.timesUsed=? ' +
-    ') ';
-  if (timesAllCardsPlayed >= 1) {
-    // ensure you don't get a card in two people's hands after a "wrap-around"
-    query += '' + 
-    'AND resId NOT IN (' +
-      'SELECT resId FROM tbCard NATURAL JOIN tbPlayerGame WHERE gId=? AND rId is NULL ' +
-    ') ';
+  var inserts, query;
+  if (timesAllCardsPlayed === 0) {
+    inserts = [gameId, numLeft];
+    query = '' + 
+    'SELECT resId FROM tbResponse WHERE ' +
+
+      // don't pick a card that has already been played
+      'resId NOT IN (' +
+        'SELECT resId FROM tbCard JOIN tbPlayerGame USING (pgId) ' + 
+              'WHERE gId=? ' +
+      ') AND resActive=TRUE ORDER BY RAND() LIMIT ?';
+  } else {
+    inserts = [gameId, timesAllCardsPlayed, gameId, numLeft];
+    query = '' + 
+    'SELECT resId FROM tbResponse WHERE ' +
+
+      // don't pick cards that have been played more than `timesAllCardsPlayed`
+      'resId NOT IN (' +
+        'SELECT resId FROM (' + 
+          'SELECT resId, Count(*) as timesUsed FROM tbCard NATURAL JOIN tbPlayerGame ' + 
+                'WHERE gId=? GROUP BY resId ' +
+        ') as T WHERE T.timesUsed=? ' +
+      ') ' + 
+
+      // ensure the card two people's hands after a "wrap-around"
+      'AND resId NOT IN (' +
+        'SELECT resId FROM tbCard NATURAL JOIN tbPlayerGame WHERE gId=? AND rId is NULL ' +
+      ') AND resActive=TRUE ORDER BY RAND() LIMIT ?';
   }
-  query += 'ORDER BY RAND() LIMIT ?';
 
   return db.raw(query, inserts)
   .then(function(result) {
-    dealt = dealt.concat(result);
+    dealt = dealt.concat(_.pluck(result, 'resId'));
+
+    // if not enough dealt, is because all the responses have been played at
+    // least `timesAllCardsPlayed` times, so we have to start using cards over
+    // again from the begging (by recursively calling this function).  This is
+    // equivalent to "re-shuffling" the deck in a game of CAH after you get to
+    // the end.
     if (dealt.length < numToDeal) {
       timesAllCardsPlayed++;
       return pickResponses(playerGameId, gameId, numToDeal, dealt, timesAllCardsPlayed);
+    } else {
+      return dealt;
     }
-    return dealt;
+
   });
 }
 

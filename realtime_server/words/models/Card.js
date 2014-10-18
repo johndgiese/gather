@@ -12,7 +12,7 @@ var fields = {
 var Card = orm.define('tbCard', fields, 'cId');
 exports.Model = Card;
 
-var FOR_API_SQL = 'SELECT cId AS id, resText AS text, resId AS responseId FROM ' +
+var FOR_API_SQL = 'cId AS id, resText AS text, resId AS responseId FROM ' +
     'tbCard JOIN tbPlayerGame USING (pgId) JOIN tbResponse USING (resId) ';
 
 Card.play = function(cardId, roundId) {
@@ -23,14 +23,14 @@ Card.play = function(cardId, roundId) {
 
 
 Card.serializeHand = function(playerGameId) {
-  var sql = FOR_API_SQL + 'WHERE rId IS NULL AND pgId=?';
+  var sql = 'SELECT ' + FOR_API_SQL + 'WHERE rId IS NULL AND pgId=?';
   var inserts = [playerGameId];
   return Card.raw(sql, inserts);
 };
 
 
 Card.forApi = function(cardId) {
-  var sql = FOR_API_SQL + 'WHERE cId=?';
+  var sql = 'SELECT ' + FOR_API_SQL + 'WHERE cId=?';
   var inserts = [cardId];
   return Card.rawOne(sql, inserts);
 };
@@ -39,7 +39,7 @@ Card.forApi = function(cardId) {
 Card.queryLatestByGame = function(gameId) {
   // get latest batch of choices for a game
   inserts = [gameId];
-  var sql = FOR_API_SQL + 'WHERE rId=(SELECT rId FROM tbRound WHERE gId=? AND rDoneVoting IS NULL)';
+  var sql = 'SELECT pgId, ' + FOR_API_SQL + 'WHERE rId=(SELECT rId FROM tbRound WHERE gId=? AND rDoneVoting IS NULL)';
   return this.raw(sql, inserts)
   .then(function(cards) {
     return _.map(cards, function(c) {
@@ -66,8 +66,8 @@ Card.dealFor = function(playerGameId, responseIds) {
   var sql = 'INSERT INTO tbCard (pgId, resId) VALUES ?';
   return this.raw(sql, inserts)
   .then(function(result) {
-    var sql = FOR_API_SQL + 'WHERE pgId=? AND resId IN (?)';
-    var inserts = [playerGame, responseIds];
+    var sql = 'SELECT ' + FOR_API_SQL + 'WHERE pgId=? AND resId IN (?) AND rId IS NULL';
+    var inserts = [playerGameId, responseIds];
     return Card.raw(sql, inserts);
   });
 };
