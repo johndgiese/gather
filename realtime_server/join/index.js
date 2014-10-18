@@ -111,7 +111,13 @@ exports.setup = function(socket) {
   // TODO: make this more secure
   function login(data, acknowledge) {
     Q.fcall(function() {
-      requireNoPlayer();
+      if (player) {
+        if (player.id !== data.id) {
+          throw new Error("Different player already established");
+        } else {
+          acknowledge(player);
+        }
+      }
     })
     .then(function() {
       return models.Player.queryOneId(data.id)
