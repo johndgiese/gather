@@ -178,7 +178,6 @@ exports.join = function(socket, player, party, game, playerGameId) {
       choices: data[4],
     };
 
-    debug(gs);
     return {
       gameState: gs,
       cleanup: cleanup

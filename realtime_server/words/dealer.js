@@ -26,15 +26,6 @@ exports.dealPrompt = function(gameId) {
 var CARDS_IN_HAND = exports.CARDS_IN_HAND = 7;
 
 
-// TODO: make this smarter; avoid recently used cards etc.
-// TODO: optimize randomization
-var DEAL_CARDS_SQL = 'INSERT INTO tbCard (resId, pgId) ' +
-  'SELECT resId, ? FROM tbResponse WHERE ' +
-  'resId NOT IN (' +
-    'SELECT resId FROM tbCard NATURAL JOIN tbPlayerGame WHERE gId=?' +
-  ') AND resActive=TRUE ' +
-  'ORDER BY RAND() LIMIT ?';
-
 /**
  * Deals as many response cards as is required for a given player.
  * Should be used to retrieve initial game state (not for dealing individual
@@ -53,11 +44,9 @@ exports.dealResponses = function(playerGameId, gameId) {
     if (fullHand) {
       return Q.when(cards);
     } else if (emptyHand) {
-
-      var inserts = [playerGameId, gameId, CARDS_IN_HAND];
-      return db.raw(DEAL_CARDS_SQL, inserts)
-      .then(function() {
-        return models.Card.serializeHand(playerGameId);
+      return pickResponses(playerGameId, gameId, CARDS_IN_HAND)
+      .then(function(responseIds) {
+        return models.Card.dealFor(playerGameId, responseIds);
       });
     } else {
       throw new Error(util.format('Bad hand state: %j', cards));
@@ -78,14 +67,63 @@ exports.dealResponse = function(gameId, playerGameId) {
   return models.Card.serializeHand(playerGameId)
   .then(function(cards) {
     if (cards.length === CARDS_IN_HAND - 1) {
-      var inserts = [playerGameId, gameId, 1];
-      return db.raw(DEAL_CARDS_SQL, inserts)
-      .then(function(result) {
-        return models.Card.forApi(result.insertId);
+      return pickResponses(playerGameId, gameId, 1)
+      .then(function(responseIds) {
+        return models.Card.dealFor(playerGameId, responseIds);
+      })
+      .then(function(cards) {
+        return cards[0];
       });
     } else {
       throw new Error(util.format('Bad hand state: %j', cards));
     }
   });
 };
+
+
+/**
+ * Randomly deal responses for a particular player in a particular game.
+ * Returns a promise for an array of responseIds of the requested length.
+ * Usually is not called with the last two arguments (this is used internally
+ * for recursively handling the situation when a game plays through all the
+ * cards)
+ */
+// TODO: make this smarter; avoid recently used cards etc.
+// TODO: optimize randomization
+function pickResponses(playerGameId, gameId, numToDeal, dealt, timesAllCardsPlayed) {
+  if (dealt === undefined) {
+    dealt = [];
+    timesAllCardsPlayed = 0;
+  }
+
+  var numLeft = numToDeal - dealt.length;
+  var inserts = [playerGameId, gameId, timesAllCardsPlayed, numLeft];
+
+  var query = '' + 
+  'SELECT resId FROM tbResponse WHERE ' +
+    'resId NOT IN (' +
+      'SELECT resId FROM (' + 
+        'SELECT resId, Count(*) as timesUsed FROM tbCard NATURAL JOIN tbPlayerGame ' + 
+              'WHERE gId=? AND resActive=TRUE GROUP BY resId ' +
+      ') as T WHERE T.timesUsed=? ' +
+    ') ';
+  if (timesAllCardsPlayed >= 1) {
+    // ensure you don't get a card in two people's hands after a "wrap-around"
+    query += '' + 
+    'AND resId NOT IN (' +
+      'SELECT resId FROM tbCard NATURAL JOIN tbPlayerGame WHERE gId=? AND rId is NULL ' +
+    ') ';
+  }
+  query += 'ORDER BY RAND() LIMIT ?';
+
+  return db.raw(query, inserts)
+  .then(function(result) {
+    dealt = dealt.concat(result);
+    if (dealt.length < numToDeal) {
+      timesAllCardsPlayed++;
+      return pickResponses(playerGameId, gameId, numToDeal, dealt, timesAllCardsPlayed);
+    }
+    return dealt;
+  });
+}
 
