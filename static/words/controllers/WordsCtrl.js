@@ -1,7 +1,7 @@
 angular.module('words')
 .controller('WordsCtrl', [
-  '$scope', '$stateParams', '$state', 'ScopedSocket', 'gameState', 'player', 'lastRoundDetails', 'stateResolver', 'relogin', '$interval', 'messageService',
-  function($scope, $stateParams, $state, ScopedSocket, gameState, player, lastRoundDetails, stateResolver, relogin, $interval, messageService) {
+  '$scope', '$stateParams', '$state', 'ScopedSocket', 'gameState', 'player', 'lastRoundDetails', 'stateResolver', '$interval', 'messageService',
+  function($scope, $stateParams, $state, ScopedSocket, gameState, player, lastRoundDetails, stateResolver, $interval, messageService) {
 
     lastRoundDetails.clear();
     var socket = new ScopedSocket($scope);
