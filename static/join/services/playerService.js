@@ -50,7 +50,7 @@ angular.module('join')
           return player;
         }, function() {
           setPlayer(null);
-          return $q.reject("Can't sync, bar response");
+          return $q.reject("Can't sync, bad response");
         });
       } else {
         return $q.reject("Can't sync, no local id");
