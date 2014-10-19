@@ -11,17 +11,6 @@ var debug = require('debug')('gather:words');
 var _ = require('underscore');
 
 /**
- * Deal a prompt card for a given game.
- * @arg {Number}
- * @returns {Promise<words.models.Prompt>}
- */
-exports.dealPrompt = function(gameId) {
-  // TODO: make this smarter
-  // TODO: handle the case when all prompts have been used!
-  return db.raw('SELECT proId FROM tbPrompt WHERE proId NOT IN (SELECT proId FROM tbRound WHERE gId=?) AND proActive=TRUE ORDER BY RAND() LIMIT 1', [gameId]);
-};
-
-/**
  * @constant {Number}
  */
 var CARDS_IN_HAND = exports.CARDS_IN_HAND = 2;
@@ -147,4 +136,35 @@ function pickResponses(playerGameId, gameId, numToDeal, dealt, timesAllCardsPlay
 
   });
 }
+
+
+/**
+ * Deal a prompt card for a given game.
+ * @arg {Number}
+ * @arg {Number} - should never be used in the outer call
+ * @returns {Promise<words.models.Prompt>}
+ */
+var dealPrompt = exports.dealPrompt = function(gameId, timesAllCardsPlayed) {
+  if (timesAllCardsPlayed === undefined) {
+    timesAllCardsPlayed = 0;
+  }
+
+  var sql = 'SELECT proId FROM tbPrompt ' + 
+    'WHERE proId NOT IN (' + 
+      'SELECT proId FROM (' + 
+        'SELECT proId, Count(*) as timesUsed FROM tbRound WHERE gId=? GROUP BY proId ORDER BY NULL' +
+      ') as T WHERE T.timesUsed>?' + 
+    ') ' + 
+    'AND proActive=TRUE ORDER BY RAND() LIMIT 1';
+
+  return db.raw(sql, [gameId, timesAllCardsPlayed])
+  .then(function(result) {
+    if (result.length === 0) {
+      timesAllCardsPlayed++;
+      return dealPrompt(gameId, timesAllCardsPlayed);
+    } else {
+      return result;
+    }
+  });
+};
 
