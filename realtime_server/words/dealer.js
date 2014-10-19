@@ -108,7 +108,7 @@ function pickResponses(playerGameId, gameId, numToDeal, dealt, timesAllCardsPlay
       // don't pick a card that has already been played
       'resId NOT IN (' +
         'SELECT resId FROM tbCard JOIN tbPlayerGame USING (pgId) ' + 
-              'WHERE gId=? ' +
+              'WHERE gId=?' +
       ') AND resActive=TRUE ORDER BY RAND() LIMIT ?';
   } else {
     inserts = [gameId, timesAllCardsPlayed, gameId, numLeft];
@@ -119,8 +119,8 @@ function pickResponses(playerGameId, gameId, numToDeal, dealt, timesAllCardsPlay
       'resId NOT IN (' +
         'SELECT resId FROM (' + 
           'SELECT resId, Count(*) as timesUsed FROM tbCard NATURAL JOIN tbPlayerGame ' + 
-                'WHERE gId=? GROUP BY resId ' +
-        ') as T WHERE T.timesUsed=? ' +
+                'WHERE gId=? GROUP BY resId ORDER BY NULL' +
+        ') as T WHERE T.timesUsed>?' +
       ') ' + 
 
       // ensure the card two people's hands after a "wrap-around"
