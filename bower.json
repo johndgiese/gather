@@ -20,7 +20,7 @@
     "socket.io-client": "1.0",
     "angular-ui-router": "0.2",
     "underscore": "~1.7.0",
-    "angular-qrcode": "https://github.com/johndgiese/angular-qrcode"
+    "angular-qrcode": "johndgiese/angular-qrcode"
   },
   "devDependencies": {
     "angular-mocks": "~1.2.23"

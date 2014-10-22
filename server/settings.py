@@ -6,6 +6,7 @@ from django.conf.global_settings import TEMPLATE_CONTEXT_PROCESSORS as TCP
 
 from util.conf import grab_or_generate_secret_key, create_dir
 
+AUTH_USER_MODEL = 'join.Player'
 
 BASE_DIR = os.path.dirname(__file__)
 

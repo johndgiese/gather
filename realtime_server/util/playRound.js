@@ -19,6 +19,7 @@ function allActiveRecieve(clients, gameStates, event) {
  * Return a function that plays through a round of the game.
  * @arg - array of clients with state listeners setup etc.
  * @arg - array of gamestates
+ * @arg - array of session strings
  * @arg - object of hooks that execute functions at certain times during a
  * round. There are two types of hooks, groupHooks, and individual hooks.
  * Possible group hooks include:
@@ -29,8 +30,8 @@ function allActiveRecieve(clients, gameStates, event) {
  *    beforeVoting
  *
  * All group hook function are passed in an array of clients, an array of
- * gameStates, and the index of the reader for the round. Hook functions must
- * return a promise.
+ * gameStates, an array of sessions, and the index of the reader for the round.
+ * Hook functions must return a promise.
  *
  * Possible individual hooks include:
  *
@@ -54,7 +55,7 @@ function allActiveRecieve(clients, gameStates, event) {
  * group hook) you also need to reject the promise.
  */
 // TODO reduce code duplication
-module.exports = function playRoundWith(clients, gameStates, hooks, maxDelay) {
+module.exports = function playRoundWith(clients, gameStates, sessions, hooks, maxDelay) {
 
   return function() {
 
@@ -77,7 +78,7 @@ module.exports = function playRoundWith(clients, gameStates, hooks, maxDelay) {
       return function() {
         if (hooks[hookName] !== undefined) {
           debug("Calling " + hookName);
-          return hooks[hookName](clients, gameStates, readerIndex());
+          return hooks[hookName](clients, gameStates, sessions, readerIndex());
         } else {
           debug("No listener " + hookName);
           return Q.when();
@@ -89,7 +90,7 @@ module.exports = function playRoundWith(clients, gameStates, hooks, maxDelay) {
       return function() {
         if (hooks[hookName] !== undefined) {
           debug("Calling " + hookName + ' for ' + index);
-          return hooks[hookName](clients, gameStates, readerIndex(), index);
+          return hooks[hookName](clients, gameStates, sessions, readerIndex(), index);
         } else {
           debug("No listener " + hookName);
           return Q.when();

@@ -3,6 +3,16 @@ DROP TABLE IF EXISTS tbPlayerGame, tbPlayer, tbGame;
 SET foreign_key_checks = 1;
 
 CREATE TABLE tbPlayer (
+
+    -- these fields are created by django abstract base user class (hence
+    -- difference name scheme)
+    password varchar(128), -- null if no account created
+    last_login DATETIME NOT NULL,
+    is_superuser bool NOT NULL DEFAULT FALSE,
+
+    pEmail varchar(255) UNIQUE, -- null if no account created
+    pActive bool NOT NULL DEFAULT TRUE,
+    pAdmin bool NOT NULL DEFAULT FALSE,
     pId INT NOT NULL AUTO_INCREMENT,
     pName VARCHAR(255) NOT NULL,
     pCreatedOn TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,

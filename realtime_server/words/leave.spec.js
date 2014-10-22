@@ -12,12 +12,13 @@ words.INTER_ROUND_DELAY = 200;
 
 describe('The words module can handle players leaving and coming', function() {
 
-  var clients, players, party, gameStates = [];
+  var clients, players, sessions, party, gameStates = [];
   beforeEach(function() {
     return tu.setupAndJoinGame(3, 'words')
     .then(function(data) {
       clients = data.clients;
       players = data.players;
+      sessions = data.sessions;
       party = data.party;
       gameStates = data.gameStates;
     });
@@ -32,7 +33,7 @@ describe('The words module can handle players leaving and coming', function() {
     .then(function() {
       expect(gameStates[0].players.length).to.equal(2);
       expect(gameStates[1].players.length).to.equal(2);
-      return tu.expectSameStateAfterReconnect(clients, gameStates, players, party, 0);
+      return tu.expectSameStateAfterReconnect(clients, gameStates, sessions, players, party, 0);
     });
   });
 
@@ -43,7 +44,7 @@ describe('The words module can handle players leaving and coming', function() {
       clients[0].emitp('leaveGame', {})
     ])
     .then(function() {
-      return tu.expectSameStateAfterReconnect(clients, gameStates, players, party, 2)
+      return tu.expectSameStateAfterReconnect(clients, gameStates, sessions, players, party, 2)
       .should.be.rejectedWith(Error);
     })
     .then(function() {

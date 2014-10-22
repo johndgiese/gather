@@ -21,7 +21,7 @@ describe('The join socket API', function() {
     it('returns a player object on success', function() {
       return client.emitp('createPlayer', {name: 'test player'})
       .then(function(data) {
-        expect(data.id).not.to.equal(undefined);
+        expect(data.player.id).not.to.equal(undefined);
       });
     });
     it('returns an error if an invalid data is passed into it', function() {
@@ -40,21 +40,22 @@ describe('The join socket API', function() {
   });
 
   describe('provides a way to log back in as a player', function() {
-    var player;
+    var player, session;
     it('if you create a player', function() {
       return client.emitp('createPlayer', {name: 'test player'})
-      .then(function(player_) {
-        player = player_;
+      .then(function(response) {
+        session = response.session;
+        player = response.player;
       });
     });
     it('you can then log back in with a different connection', function() {
-      return client.emitp('login', {id: player.id})
-      .then(function(player_) {
-        expect(player_).to.eql(player_);
+      return client.emitp('loginViaSession', {session: session})
+      .then(function(response) {
+        expect(response.player).to.eql(player);
       });
     });
-    it('if you login with an invalid id you get an error', function() {
-      return client.emitp('login', {id: 40000000}).should.be.rejectedWith(Error);
+    it('if you login with an invalid session id you get an error', function() {
+      return client.emitp('loginViaSession', {session: "asdfasdfasdf"}).should.be.rejectedWith(Error);
     });
 
   });
@@ -88,8 +89,8 @@ describe('The join socket API', function() {
     beforeEach(function() {
       clients = tu.setupClients(3);
       return tu.setupPlayers(clients)
-      .then(function(players_) {
-        players = players_;
+      .then(function(data) {
+        players = data.players;
         return clients[0].emitp('createGame', {type: 'dummy'});
       })
       .then(function(data) {

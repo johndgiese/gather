@@ -1,10 +1,46 @@
 from django.db import models
+from django.contrib.auth.models import BaseUserManager, AbstractBaseUser, PermissionsMixin
+from django.utils import timezone
 
 
-class Player(models.Model):
+class PersonManager(BaseUserManager):
+    def create_user(self, email, password=None):
+        if not email:
+            raise ValueError('Users must have an email address')
+        user = self.model(email=self.normalize_email(email))
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
+
+    def create_superuser(self, email, password):
+        user = self.create_user(email, password=password)
+        user.is_admin = True
+        user.save(using=self._db)
+        return user
+
+
+class Player(AbstractBaseUser, PermissionsMixin):
     id = models.AutoField(primary_key=True, db_column='pId')
     name = models.CharField(max_length=255, db_column='pName')
     created_on = models.DateTimeField(auto_now_add=True, db_column='pCreatedOn')
+    email = models.EmailField(max_length=255, unique=True, null=True, blank=True, db_column='pEmail')
+    is_active = models.BooleanField(default=True, db_column='pActive')
+    is_admin = models.BooleanField(default=False, db_column='pAdmin')
+
+    objects = PersonManager()
+
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = []
+
+    def get_full_name(self):
+        return self.email
+
+    def get_short_name(self):
+        return self.email
+
+    @property
+    def is_staff(self):
+        return self.is_admin
 
     class Meta:
         db_table = 'tbPlayer'

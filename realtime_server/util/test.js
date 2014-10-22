@@ -75,13 +75,13 @@ var compareGameStates = exports.compareGameStates = function(gameStateOne, gameS
   return _.isEqual(gameStateOne, gameStateTwo);
 };
 
-exports.expectSameStateAfterReconnect = function(clients, gameStates, players, party, num) {
+exports.expectSameStateAfterReconnect = function(clients, gameStates, sessions, players, party, num) {
   if (num === undefined) {
     num = _.random(gameStates.length - 1);
   }
 
   var gameStateBeforeDisconnect = deepcopy(gameStates[num]);
-  return disconnectAndRejoinGame(clients, gameStates, num, players[num].id, party)
+  return disconnectAndRejoinGame(clients, gameStates, sessions, num, players[num].id, party)
   .then(function() {
     var gameStateAfterReconnect = deepcopy(gameStates[num]);
     expect(compareGameStates(gameStateBeforeDisconnect, gameStateAfterReconnect)).to.equal(true);
@@ -130,14 +130,17 @@ function oncePromise(event) {
 
 var setupPlayers = exports.setupPlayers = function(clients) {
   var count = 0;
-  var players = _.map(clients, function(client) {
+  var responses = _.map(clients, function(client) {
     var name = 'player' + String(count++);
-    return client.emitp('createPlayer', {name: name})
-    .then(function(player) {
-      return player;
-    });
+    return client.emitp('createPlayer', {name: name});
   });
-  return Q.all(players);
+  return Q.all(responses)
+  .then(function(responses) {
+    return {
+      players: _.pluck(responses, 'player'),
+      sessions: _.pluck(responses, 'session'),
+    };
+  });
 };
 
 
@@ -149,11 +152,11 @@ var setupPlayers = exports.setupPlayers = function(clients) {
  * @arg {string} - party
  * @returns - a promise for when the player has reconnected
  */
-var disconnectAndRejoinGame = exports.disconnectAndRejoinGame = function(clients, gameStates, index, playerId, party) {
+var disconnectAndRejoinGame = exports.disconnectAndRejoinGame = function(clients, gameStates, sessions, index, playerId, party) {
   var promise = clients[index ? index - 1 : index + 1]
   .oncep('playerDisconnected')
   .then(function() {
-    return rejoinGame(clients, gameStates, index, playerId, party);
+    return rejoinGame(clients, gameStates, sessions, index, playerId, party);
   });
 
   clients[index].disconnect();
@@ -167,17 +170,18 @@ var disconnectAndRejoinGame = exports.disconnectAndRejoinGame = function(clients
  * If the socket is disconneced, create a new one, and login, otherwise use the
  * existing socket setup.
  */
-var rejoinGame = exports.rejoinGame = function(clients, gameStates, index, playerId, party) {
+var rejoinGame = exports.rejoinGame = function(clients, gameStates, sessions, index, playerId, party) {
   var client, loggedInPromise;
   if (clients[index] && clients[index].disconnected) {
     client = clients[index] = setupClient();
-    loggedInPromise = client.emitp('login', {id: playerId});
+    loggedInPromise = client.emitp('loginViaSession', {session: sessions[index]});
   } else {
     client = clients[index];
     loggedInPromise = Q.when();
   }
 
-  return loggedInPromise.then(function() {
+  return loggedInPromise.then(function(data) {
+    sessions[index] = data.session;
     return joinGame(client, party)
     .then(function(gameState) {
       gameStates[index] = gameState;
@@ -313,8 +317,9 @@ exports.setupAndJoinGame = function(numPlayers, type) {
   var out = {};
   out.clients = setupClients(numPlayers);
   return setupPlayers(out.clients)
-  .then(function(players) {
-    out.players = players;
+  .then(function(data) {
+    out.sessions = data.sessions;
+    out.players = data.players;
     return setupGame(out.clients[0], type);
   })
   .then(function(party) {
