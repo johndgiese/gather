@@ -6,6 +6,19 @@ var util = require('util');
 var db = require('../db');
 var debug = require('debug')('gather:join');
 var transaction = require('../transaction');
+var session = require('./session');
+var config = require('../config');
+
+// a month
+var SESSION_LENGTH = 1000*60*60*24*31;
+
+function createSession(player) {
+  return session.generateSession(config.SECRET, player.id, SESSION_LENGTH);
+}
+
+function playerIdFromSession(sessionStr) {
+  return session.secureIdFromSession(config.SECRET, sessionStr);
+}
 
 
 exports.setup = function(socket) {
@@ -30,7 +43,8 @@ exports.setup = function(socket) {
 
   clearPartyState();
 
-  socket.on('login', login);
+  socket.on('loginViaCredentials', loginViaCredentials);
+  socket.on('loginViaSession', loginViaSession);
   socket.on('logout', logout);
   socket.on('createPlayer', createPlayer);
   socket.on('createGame', createGame);
@@ -92,11 +106,18 @@ exports.setup = function(socket) {
       requireValidPlayerName(data.name);
     })
     .then(function() {
-      return new models.Player({name: data.name})
+      return new models.Player({
+        name: data.name,
+        lastLogin: new Date(),
+        email: data.email || null,
+      })
       .save()
       .then(function(player_) {
         player = player_;
-        acknowledge(player);
+        acknowledge({
+          player: player.forApi(),
+          session: createSession(player),
+        });
       });
     })
     .fail(function(error) {
@@ -108,27 +129,42 @@ exports.setup = function(socket) {
   /**
    * Login a player, given the player's id.
    */
-  // TODO: make this more secure
-  function login(data, acknowledge) {
+  function loginViaSession(data, acknowledge) {
     Q.fcall(function() {
-      if (player) {
-        if (player.id !== data.id) {
-          throw new Error("Different player already established");
-        } else {
-          acknowledge(player);
-        }
+      var playerId = playerIdFromSession(data.session);
+      if (playerId === null) {
+        throw new Error('Invalid session');
+      } else {
+        return playerId;
       }
     })
-    .then(function() {
-      return models.Player.queryOneId(data.id)
+    .then(function(playerId) {
+      return models.Player.queryOneId(playerId)
       .then(function(player_) {
         player = player_;
-        acknowledge(player);
+        acknowledge({
+          player: player.forApi(),
+          session: createSession(player),
+        });
       });
     })
     .fail(function(error) {
       logger.error(error);
       acknowledge({_error: "Unable to login"});
+    });
+  }
+
+  /**
+   * Login a player, given the player's id.
+   */
+  function loginViaCredentials(data, acknowledge) {
+    Q.fcall(function() {
+    })
+    .then(function() {
+    })
+    .fail(function(error) {
+      logger.error(error);
+      acknowledge({_error: "Unable to login using credentials"});
     });
   }
 

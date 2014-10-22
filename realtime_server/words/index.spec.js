@@ -20,8 +20,9 @@ describe('The words socket API', function() {
     var clients, players, party;
     beforeEach(function() {
       clients = tu.setupClients(3);
-      return tu.setupPlayers(clients).then(function(players_) {
-        players = players_;
+      return tu.setupPlayers(clients)
+      .then(function(data) {
+        players = data.players;
       });
     });
 
@@ -53,12 +54,14 @@ describe('The words socket API', function() {
 
   describe('provides an API to play through a game', function() {
 
-    var clients, players, party, gameStates = [];
+    var clients, players, sessions, party, gameStates = [];
 
     it('after setting up the game', function() {
       clients = tu.setupClients(3);
-      return tu.setupPlayers(clients).then(function(players_) {
-        players = players_;
+      return tu.setupPlayers(clients)
+      .then(function(data) {
+        sessions = data.sessions;
+        players = data.players;
       })
       .then(function() {
         return tu.setupGame(clients[0], 'words');

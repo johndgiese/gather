@@ -3,7 +3,13 @@ var db = require('../../db');
 
 var fields = {
   name: 'pName',
-  createdOn: 'pCreatedOn'
+  createdOn: 'pCreatedOn',
+  email: 'pEmail',
+  active: 'pActive',
+  admin: 'pAdmin',
+  password: 'password',
+  lastLogin: 'last_login',
+  superuser: 'is_superuser',
 };
 var Player = orm.define('tbPlayer', fields, 'pId');
 exports.Model = Player;
@@ -51,6 +57,14 @@ Player.prototype.leave = function(party) {
   var sql = 'UPDATE tbPlayerGame SET pgActive = FALSE WHERE pId=? ' +
               'AND gId=(SELECT gId from tbGame WHERE gParty=?)';
   return this.M.raw(sql, inserts);
+};
+
+Player.prototype.forApi = function() {
+  return {
+    id: this.id,
+    name: this.name,
+    email: this.email,
+  };
 };
 
 Player.queryFromPlayerGameId = function(playerGameId) {

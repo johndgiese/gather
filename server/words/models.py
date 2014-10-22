@@ -112,6 +112,7 @@ class Round(models.Model):
     class Meta:
         unique_together = (("game", "number"),)
         db_table = 'tbRound'
+        managed = False
 
     def __unicode__(self):
         return u'Round {} of {}'.format(self.number, self.game)
@@ -127,6 +128,7 @@ class Card(models.Model):
 
     class Meta:
         db_table = 'tbCard'
+        managed = False
 
     def __unicode__(self):
         return u'Card {} in hand of {}'.format(self.response.text, self.owner.player.name)
@@ -140,6 +142,7 @@ class Vote(models.Model):
 
     class Meta:
         db_table = 'tbVote'
+        managed = False
 
     def __unicode__(self):
         return u'Vote by {} for {}'.format(self.voter, self.card)

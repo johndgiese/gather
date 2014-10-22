@@ -39,15 +39,15 @@ angular.module('join')
     }
 
     /**
-     * Use locally stored playerId to relogin.
+     * Use locally stored session to relogin.
      */
     function sync() {
-      var playerId = localStorageService.get('playerId');
-      if (_.isNumber(playerId)) {
-        return socket.emitp('login', {id: playerId})
-        .then(function(player) {
-          setPlayer(player);
-          return player;
+      var session = localStorageService.get('gameSession');
+      if (_.isString(session)) {
+        return socket.emitp('loginViaSession', {session: session})
+        .then(function(response) {
+          setPlayer(response.player, response.session);
+          return response.player;
         }, function() {
           setPlayer(null);
           return $q.reject("Can't sync, bad response");
@@ -70,22 +70,20 @@ angular.module('join')
       }).result
       .then(function(playerData) {
         return socket.emitp('createPlayer', playerData)
-        .then(function(player) {
-          setPlayer(player);
-          return player;
+        .then(function(response) {
+          setPlayer(response.player, response.session);
+          return response.player;
         });
       });
     }
 
-    function setPlayer(player) {
-      if (player && _.isNumber(player.id)) {
-        service.player = player;
-        localStorageService.set('playerId', player.id);
-      } else if (_.isNull(player)) {
+    function setPlayer(player, session) {
+      if (_.isNull(player)) {
         service.player = null;
-        localStorageService.set('playerId', null);
+        localStorageService.set('gameSession', null);
       } else {
-        throw new Error("invalid player object");
+        service.player = player;
+        localStorageService.set('gameSession', session);
       }
     }
 
