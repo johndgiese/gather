@@ -51,13 +51,15 @@ angular.module('words')
         if (confirmTimeout !== null) {
           $timeout.cancel(confirmTimeout);
         }
-        $scope.currentSelected = cardIndex;
+        $scope.currentSelected = responseIndex;
         confirmTimeout = $timeout(function() {
           $scope.currentSelected = null;
           confirmTimeout = null;
         }, 2500);
         return $timeout(function() {}, 200);
       } else {
+        $timeout.cancel(confirmTimeout);
+
         $scope.insult = null;
         $scope.votedIndex = responseIndex;
         return socket.emitp('castVote', {

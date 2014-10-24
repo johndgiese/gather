@@ -1,16 +1,15 @@
 <p class="prompt">{{ prompt }}</p>
 
 <p class="secondary-instruction pull-down">Vote for a response</p>
-<p class="secondary-instruction text-danger pull-down" ng-hide="insult === null">{{ insult }}</p>
 
 <ul id="responses">
   <li ng-repeat="(responseIndex, response) in responses">
   <a class="action-card" ng-click="vote(response, responseIndex)" ng-class="{locked: votedIndex===responseIndex}">
-    <span ng-show="cardIndex === currentSelected" class="light-blue">
-      <span ng-show="response.player === gameState.you">{{ insult }}</span>
-      <span ng-show="response.player !== gameState.you">Click Again to Confirm</span>
+    <span ng-show="responseIndex === currentSelected" class="light-blue">
+      <span ng-show="response.player === you">{{ insult }}</span>
+      <span ng-show="response.player !== you">Click Again to Confirm</span>
     </span>
-    <span ng-hide="cardIndex === currentSelected">{{ response.card.text }}</span>
+    <span ng-hide="responseIndex === currentSelected">{{ response.card.text }}</span>
   </a>
   </li>
 </ul>

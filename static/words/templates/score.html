@@ -11,12 +11,6 @@
   <div ng-show="!tie && perfectWin">
     <span class="secondary-instruction">{{winAdjective}} win by <span class="light-blue">{{ winners[0].name }}</span> with</span><br>
     <p class="prompt-sm">{{ winners[0].response }}</p>
-    <div>
-      Share your win on
-      <a href="#" class="img-twitter" ng-click="shareWin.twitter()"></a>
-      or
-      <a href="#" class="img-facebook" ng-click="shareWin.facebook()"></a>.
-    </div>
   </div>
 
   <div ng-show="!tie && !perfectWin">
