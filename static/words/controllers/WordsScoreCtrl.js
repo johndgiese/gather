@@ -46,10 +46,12 @@ angular.module('words')
           'Major',
           'Sizable',
           'Dominant',
+          'Sad',
           'Ultra',
           'Perfect',
           'Non-insignificant',
           'Annoyingly good',
+          'Surprising',
         ];
         $scope.winAdjective = winAdjectives[(round.number - 1) % winAdjectives.length];
         $scope.shareWin = wordsShareService.win(round.promptId, $scope.winners[0].responseId);
