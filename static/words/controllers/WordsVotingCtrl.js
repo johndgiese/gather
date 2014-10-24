@@ -1,7 +1,7 @@
 angular.module('words')
 .controller('WordsVotingCtrl', [
-  '$scope', '$stateParams', '$state', 'socket', 'gameState', 'wordsShareService', 'lockService', '$q',
-  function($scope, $stateParams, $state, socket, gameState, wordsShareService, lockService, $q) {
+  '$scope', '$stateParams', '$state', 'socket', 'gameState', 'wordsShareService', 'lockService', '$q', '$timeout',
+  function($scope, $stateParams, $state, socket, gameState, wordsShareService, lockService, $q, $timeout) {
 
     // shuffle the list of choices to avoid voting order bias
     $scope.responses = _.shuffle(gameState.custom.choices);
@@ -39,10 +39,24 @@ angular.module('words')
     $scope.prompt = round.prompt;
     $scope.votedIndex = null;
 
+    $scope.currentSelected = null;
+    var confirmTimeout = null;
     $scope.vote = lockService.lockByGroup('ui', function(response, responseIndex) {
-      if (response.player === gameState.you) {
+      var selfVote = response.player === gameState.you;
+      if (selfVote) {
         $scope.insult = getNextInsult($scope.insult);
-        return $q.when();
+      }
+
+      if ($scope.currentSelected !== responseIndex || selfVote) {
+        if (confirmTimeout !== null) {
+          $timeout.cancel(confirmTimeout);
+        }
+        $scope.currentSelected = cardIndex;
+        confirmTimeout = $timeout(function() {
+          $scope.currentSelected = null;
+          confirmTimeout = null;
+        }, 2500);
+        return $timeout(function() {}, 200);
       } else {
         $scope.insult = null;
         $scope.votedIndex = responseIndex;

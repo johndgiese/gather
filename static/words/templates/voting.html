@@ -5,7 +5,13 @@
 
 <ul id="responses">
   <li ng-repeat="(responseIndex, response) in responses">
-  <a class="action-card" ng-click="vote(response, responseIndex)" ng-class="{locked: votedIndex===responseIndex}">{{ response.card.text }}</a>
+  <a class="action-card" ng-click="vote(response, responseIndex)" ng-class="{locked: votedIndex===responseIndex}">
+    <span ng-show="cardIndex === currentSelected" class="light-blue">
+      <span ng-show="response.player === gameState.you">{{ insult }}</span>
+      <span ng-show="response.player !== gameState.you">Click Again to Confirm</span>
+    </span>
+    <span ng-hide="cardIndex === currentSelected">{{ response.card.text }}</span>
+  </a>
   </li>
 </ul>
 
