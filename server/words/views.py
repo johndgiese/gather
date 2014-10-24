@@ -96,8 +96,6 @@ class ValidateWordView(TemplateView):
         formset = FunnyVoteFormset(request.POST)
         funny_votes = formset.save()
         should_be_active = request.POST.get('should_be_active', "off") == "on"
-        logger.info(should_be_active)
-        logger.info(request.POST)
 
         if self.AddClass == Prompt:
             prompt = funny_votes[0].prompt
