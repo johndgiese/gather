@@ -4,7 +4,10 @@
 
 <ul id="choices">
   <li ng-repeat="(cardIndex, card) in hand">
-  <a class="action-card" ng-click="play(card.id, cardIndex)" ng-class="{locked: playedIndex===cardIndex}">{{ card.text }}</a>
+    <a class="action-card" ng-click="play(card.id, cardIndex)" ng-class="{locked: playedIndex===cardIndex}">
+      <span class="light-blue" ng-show="cardIndex === currentSelected">Click Again to Confirm</span>
+      <span ng-hide="cardIndex === currentSelected">{{ card.text }}</span>
+    </a>
   </li>
 </ul>
 
