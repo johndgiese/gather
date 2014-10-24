@@ -27,7 +27,6 @@ angular.module('words')
         return $timeout(function() {}, 200);
       } else {
         // already tapped card once
-        $scope.currentSelected = null;
         $scope.playedIndex = cardIndex;
         var currentRound = _.last(gameState.custom.rounds);
         return socket.emitp('chooseCard', {
