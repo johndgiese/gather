@@ -3,7 +3,7 @@ angular.module('words')
   '$scope', '$stateParams', 'gameState', '$interval', '$timeout', 'lastRoundDetails', 'wordsShareService', 'player',
   function($scope, $stateParams, gameState, $interval, $timeout, lastRoundDetails, wordsShareService, player) {
 
-    $scope.round = _.last(gameState.custom.rounds);
+    var round = $scope.round = _.last(gameState.custom.rounds);
     $scope.score = _.sortBy(gameState.custom.score, 'score').reverse();
 
     var details = lastRoundDetails.get();
@@ -33,9 +33,12 @@ angular.module('words')
         };
       });
 
-      $scope.perfectWin = (Number($scope.getDifferential(gameState.you)) === $scope.players.length - 1) && ($scope.players.length > 2);
+
+      // only show perfect win if there are at least 4 players
+      $scope.perfectWin = (maxDifferential === $scope.players.length - 1) && ($scope.players.length >= 4);
+
       if ($scope.perfectWin) {
-        $scope.winAdjective = _.sample([
+      var winAdjectives = [
           'Crushing',
           'Grandslam',
           'Demonstrable',
@@ -47,13 +50,14 @@ angular.module('words')
           'Perfect',
           'Non-insignificant',
           'Annoyingly good',
-        ]);
-        $scope.shareWin = wordsShareService.win($scope.round.promptId, $scope.winners[0].responseId);
+        ];
+        $scope.winAdjective = winAdjectives[(round.number - 1) % winAdjectives.length];
+        $scope.shareWin = wordsShareService.win(round.promptId, $scope.winners[0].responseId);
       }
 
     }
 
-    var INTER_ROUND_DELAY = 12000;  // in ms
+    var INTER_ROUND_DELAY = round === undefined ? 5000 : 12000;  // in ms
 
     // 1. determine ms before next round starts
     // 2. round counter up to nearest sec
@@ -61,8 +65,8 @@ angular.module('words')
     // 4. then set timeout for remaining whole seconds, decrememting counter on
     //    each whole second
     var timerStart;
-    if ($scope.round) {
-      timerStart = $scope.round.doneVoting;
+    if (round) {
+      timerStart = round.doneVoting;
     } else {
       timerStart = gameState.game.startedOn;
     }

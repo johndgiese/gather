@@ -2,7 +2,7 @@ var config = require('./config');
 var join = require('./join');
 
 var app;
-if (config.SSL_KEY_PATH !== "CHANGME") {
+if (config.SSL_KEY_PATH !== "CHANGEME") {
   var https = require('https');
   var fs = require('fs');
   var https_options = {
