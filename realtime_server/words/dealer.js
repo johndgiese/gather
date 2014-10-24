@@ -13,7 +13,7 @@ var _ = require('underscore');
 /**
  * @constant {Number}
  */
-var CARDS_IN_HAND = exports.CARDS_IN_HAND = 2;
+var CARDS_IN_HAND = exports.CARDS_IN_HAND = 7;
 
 
 /**
