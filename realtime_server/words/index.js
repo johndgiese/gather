@@ -190,19 +190,18 @@ exports.join = function(socket, player, party, game, playerGameId) {
 function setupRoundStart(socket, player, game) {
 
   // NOTE: errors in the following code won't be caught
-  Q.delay(exports.INTER_ROUND_DELAY)
-  .then(function() {
-    models.Round.newByGame(game.id)
-    .then(function(round) {
-      return round.forApi()
-      .then(function(roundData) {
-        socket.emit('roundStarted', {round: roundData});
-        socket.broadcast.to(game.party).emit('roundStarted', {round: roundData});
-      });
-    })
-    .fail(function(reason) {
-      logger.error(reason);
+  models.Round.newByGame(game.id)
+  .then(function(round) {
+    var delay = round.number === 1 ? exports.FIRST_ROUND_DELAY : exports.INTER_ROUND_DELAY;
+    return round.forApi()
+    .delay(delay)
+    .then(function(roundData) {
+      socket.emit('roundStarted', {round: roundData});
+      socket.broadcast.to(game.party).emit('roundStarted', {round: roundData});
     });
+  })
+  .fail(function(reason) {
+    logger.error(reason);
   });
 
   return Q.when();
@@ -355,4 +354,5 @@ exports.leave = function(socket, player, party, game, playerGameId) {
  * round, in milliseconds
  */
 exports.INTER_ROUND_DELAY = 12000;
+exports.FIRST_ROUND_DELAY = 5000;
 
