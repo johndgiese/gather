@@ -7,8 +7,7 @@ var words = require('../words');
 var Game = require('../join/models').Game;
 var Round = require('../words/models').Round;
 
-// keep inter round delay short during tests
-words.INTER_ROUND_DELAY = 200;
+words.turnOnTestingMode();
 
 describe('The words module can handle players leaving and coming', function() {
 
