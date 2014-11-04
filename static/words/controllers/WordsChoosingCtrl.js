@@ -23,7 +23,7 @@ angular.module('words')
         confirmTimeout = $timeout(function() {
           $scope.currentSelected = null;
           confirmTimeout = null;
-        }, 2500);
+        }, 5000);
         return $timeout(function() {}, 200);
       } else {
         $timeout.cancel(confirmTimeout);
