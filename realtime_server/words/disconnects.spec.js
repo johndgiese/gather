@@ -29,15 +29,15 @@ describe('The words module can handle disconnects and reconnects', function() {
   });
 
   var disconnectHooks = {
-    beforeReadingPrompt: function(clients, gameStates, readerIndex) {
+    beforeReadingPrompt: function(clients, gameStates, sessions, readerIndex) {
       tu.expectStates(gameStates, 'waitingForPromptReader', readerIndex, 'readPrompt');
       return tu.expectSameStateAfterReconnect(clients, gameStates, sessions, players, party);
     },
-    beforeChoosing: function(clients, gameStates, readerIndex) {
+    beforeChoosing: function(clients, gameStates, sessions, readerIndex) {
       tu.expectStates(gameStates, 'choosing');
       return tu.expectSameStateAfterReconnect(clients, gameStates, sessions, players, party);
     },
-    beforeChoice: function(clients, gameStates, readerIndex, index) {
+    beforeChoice: function(clients, gameStates, sessions, readerIndex, index) {
       tu.expectState(gameStates[index], 'choosing');
       if (index === (readerIndex + 1) % clients.length) {
         return tu.expectSameStateAfterReconnect(clients, gameStates, sessions, players, party);
@@ -45,7 +45,7 @@ describe('The words module can handle disconnects and reconnects', function() {
         return Q.when();
       }
     },
-    afterChoice: function(clients, gameStates, readerIndex, index) {
+    afterChoice: function(clients, gameStates, sessions, readerIndex, index) {
       var isLastPerson = index === clients.length - 1;
 
       if (!isLastPerson) {
@@ -57,11 +57,11 @@ describe('The words module can handle disconnects and reconnects', function() {
         return Q.when();
       }
     },
-    beforeReadingChoices: function(clients, gameStates, readerIndex) {
+    beforeReadingChoices: function(clients, gameStates, sessions, readerIndex) {
       tu.expectStates(gameStates, 'waitingForChoicesReader', readerIndex, 'readChoices');
       return tu.expectSameStateAfterReconnect(clients, gameStates, sessions, players, party);
     },
-    beforeVote: function(clients, gameStates, readerIndex, index) {
+    beforeVote: function(clients, gameStates, sessions, readerIndex, index) {
       tu.expectState(gameStates[index], 'voting');
       if (index === (readerIndex + 1) % clients.length) {
         return tu.expectSameStateAfterReconnect(clients, gameStates, sessions, players, party);
@@ -69,7 +69,7 @@ describe('The words module can handle disconnects and reconnects', function() {
         return Q.when();
       }
     },
-    afterVote: function(clients, gameStates, readerIndex, index) {
+    afterVote: function(clients, gameStates, sessions, readerIndex, index) {
       var isLastPerson = index === clients.length - 1;
 
       if (!isLastPerson) {
