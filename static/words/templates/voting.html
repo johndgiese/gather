@@ -4,7 +4,7 @@
 
 <ul id="responses">
   <li ng-repeat="(responseIndex, response) in responses">
-  <a class="action-card" ng-click="vote(response, responseIndex)" ng-class="{locked: votedIndex===responseIndex}">
+  <a class="action-card  reverse-animation" ng-click="vote(response, responseIndex)" ng-class="{locked: votedIndex===responseIndex}">
     <span ng-show="responseIndex === currentSelected" class="light-blue">
       <span ng-show="response.player === you">{{ insult }}</span>
       <span ng-show="response.player !== you">Click Again to Confirm</span>
