@@ -192,7 +192,7 @@ function setupRoundStart(socket, player, game) {
   // NOTE: errors in the following code won't be caught
   models.Round.newByGame(game.id)
   .then(function(round) {
-    var delay = round.number === 1 ? exports.FIRST_ROUND_DELAY : exports.INTER_ROUND_DELAY;
+    var delay = round.number === 1 ? FIRST_ROUND_DELAY : INTER_ROUND_DELAY;
     return round.forApi()
     .delay(delay)
     .then(function(roundData) {
@@ -353,6 +353,10 @@ exports.leave = function(socket, player, party, game, playerGameId) {
  * @constant {number} - delay between finishing a round, and starting the next
  * round, in milliseconds
  */
-exports.INTER_ROUND_DELAY = 12000;
-exports.FIRST_ROUND_DELAY = 5000;
+var INTER_ROUND_DELAY = 12000;
+var FIRST_ROUND_DELAY = 5000;
+exports.turnOnTestingMode = function() {
+  INTER_ROUND_DELAY = 50;
+  FIRST_ROUND_DELAY = 50;
+};
 

@@ -10,8 +10,7 @@ var server = require('../index').server;
 var words = require('../words');
 var dealer = require('./dealer');
 
-// keep inter round delay short during tests
-words.INTER_ROUND_DELAY = 50;
+words.turnOnTestingMode();
 
 describe('The words socket API', function() {
 

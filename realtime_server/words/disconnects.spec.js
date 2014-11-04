@@ -12,8 +12,7 @@ var words = require('../words');
 var dealer = require('./dealer');
 var stateResolver = require('./stateResolver');
 
-// keep inter round delay short during tests
-words.INTER_ROUND_DELAY = 200;
+words.turnOnTestingMode();
 
 describe('The words module can handle disconnects and reconnects', function() {
 
