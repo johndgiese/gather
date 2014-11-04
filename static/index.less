@@ -133,19 +133,37 @@ a.login {
     }
     margin-bottom: 6px;
 
-    & .locked {
-        .animation(pulse-color-light-blue 1.6s ease 0 infinite);
+    &.locked * {
+        .animation(pulse-color-light-blue 3.2s ease 0 infinite);
+    }
+
+    &.locked.reverse-animation * {
+        .animation(pulse-color-light-blue-reversed 3.2s ease 0 infinite);
     }
 }
 
 @keyframes pulse-color-light-blue {
+    0% { color: @brand-yellow; }
     50% { color: @brand-light-blue; }
     100% { color: @brand-yellow; }
 }
 
 @-webkit-keyframes pulse-color-light-blue {
+    0% { color: @brand-yellow; }
     50% { color: @brand-light-blue; }
     100% { color: @brand-yellow; }
+}
+
+@keyframes pulse-color-light-blue-reversed {
+    0% { color: @brand-light-blue; }
+    50% { color: @brand-yellow; }
+    100% { color: @brand-light-blue; }
+}
+
+@-webkit-keyframes pulse-color-light-blue-reversed {
+    0% { color: @brand-light-blue; }
+    50% { color: @brand-yellow; }
+    100% { color: @brand-light-blue; }
 }
 
 .action,
