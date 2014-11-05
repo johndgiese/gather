@@ -1,5 +1,9 @@
 from django.db import models
 from join.models import Game, Player
+from django.core.exceptions import ObjectDoesNotExist
+
+from join.models import Game
+from calculate_stats import calculate_funny_votes, calculate_response_stats
 
 from util.fields import TimestampField, BooleanField
 
@@ -10,6 +14,13 @@ class Response(models.Model):
     tags = models.ManyToManyField('Tag', through='ResponseTag')
     created_by = models.ForeignKey('join.Player', db_column='resCreatedBy')
     created_on = TimestampField(auto_now_add=True, db_column='resCreatedOn')
+
+    def refresh_stats(self):
+        try:
+            self.stats
+        except ObjectDoesNotExist:
+            self.stats = ResponseStats()
+        self.stats.refresh()
 
     class Meta:
         db_table = 'tbResponse'
@@ -25,6 +36,14 @@ class Prompt(models.Model):
     created_by = models.ForeignKey('join.Player', db_column='proCreatedBy')
     created_on = TimestampField(auto_now_add=True, db_column='proCreatedOn')
     tags = models.ManyToManyField('Tag', through='PromptTag')
+
+
+    def refresh_stats(self):
+        try:
+            self.stats
+        except ObjectDoesNotExist:
+            self.stats = PromptStats()
+        self.stats.refresh()
 
     class Meta:
         db_table = 'tbPrompt'
@@ -134,6 +153,49 @@ class Vote(models.Model):
 
 
 class WordGame(Game):
+    """Dummy proxy model; hack to allow two different admin views."""
     class Meta:
         proxy = True
+
+
+class ResponseStats(models.Model):
+    """
+    Keep track of statistics related to responses.
+
+    This is to keep performance high, as the calls require a lot of database hits.
+    """
+    response = models.OneToOneField('Response', related_name="stats", blank=True)
+
+    num_funny_votes = models.IntegerField(default=0)
+    percent_funny_votes = models.FloatField(default=0)
+
+    times_played = models.IntegerField(default=0)
+    num_votes = models.IntegerField(default=0)
+    percent_votes = models.FloatField(default=0)
+
+    def refresh(self):
+        num_funny_votes, percent_funny_votes = calculate_funny_votes(self.response)
+        self.num_funny_votes = num_funny_votes
+        self.percent_funny_votes = percent_funny_votes
+
+        num_votes, times_played, percent_votes = calculate_response_stats(self.response)
+        self.num_votes = num_votes
+        self.times_played = times_played
+        self.percent_votes = percent_votes
+
+        self.save()
+
+
+class PromptStats(models.Model):
+    prompt = models.OneToOneField('Prompt', related_name="stats", blank=True)
+
+    num_funny_votes = models.IntegerField(default=0)
+    percent_funny_votes = models.FloatField(default=0)
+
+    def refresh(self):
+        num_funny_votes, percent_funny_votes = calculate_funny_votes(self.prompt)
+        self.num_funny_votes = num_funny_votes
+        self.percent_funny_votes = percent_funny_votes
+
+        self.save()
 

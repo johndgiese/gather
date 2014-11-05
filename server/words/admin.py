@@ -27,14 +27,13 @@ def print_tags(instance):
 print_tags.short_description = 'Tags'
 
 
-def percent_funny(instance):
-    num_funny = instance.funnyvote_set.filter(funny=True).count()
-    total = instance.num_funny_votes
-    if total == 0:
-        return int(0)
-    else:
-        return int(round((num_funny/float(total))*100.0))
-percent_funny.short_description = '% Funny'
+def stats_field(stats_key, short_description):
+    """Generate a `list_display` callable for stats fields."""
+    def get_stat(obj):
+        return getattr(obj.stats, stats_key)
+    get_stat.short_description = short_description
+    get_stat.admin_order_field = 'stats__' + stats_key
+    return get_stat
 
 
 wider_tag_edit_fields = {
@@ -42,21 +41,22 @@ wider_tag_edit_fields = {
 }
 
 
-
 # THE MODEL ADMINS
 
 class WordAdmin(admin.ModelAdmin):
-    list_display = ['id', 'created_by', 'created_on', 'active', percent_funny, 'num_funny_votes', 'text']
+    """Abstract base word admin class."""
 
-    def get_queryset(self, request):
-        qs = super(WordAdmin, self).get_queryset(request)
-        qs = qs.annotate(num_funny_votes=models.Count('funnyvote'))
-        return qs
+    Model = None  # fill in in subclass
 
-    def num_funny_votes(self, obj):
-        return obj.num_funny_votes
-    num_funny_votes.admin_order_field = 'num_funny_votes'
-    num_funny_votes.short_description = 'FV'
+    list_display = [
+        'id', 
+        'active', 
+        'is_cah', 
+        stats_field('num_funny_votes', 'NFV'),
+        stats_field('percent_funny_votes', '%FV'),
+        'text'
+    ]
+
 
     list_editable = ['text']
     list_filter = ('active', 'tags')
@@ -65,7 +65,7 @@ class WordAdmin(admin.ModelAdmin):
 
     formfield_overrides = wider_tag_edit_fields
 
-    actions = ['mark_active', 'mark_inactive', 'create_using', 'create_from_active', 'claim_to_have_created_these']
+    actions = ['mark_active', 'mark_inactive', 'create_using', 'create_from_active', 'refresh_stats', 'claim_to_have_created_these']
 
     def mark_active(self, request, queryset):
         rows_updated = queryset.update(active=True)
@@ -95,30 +95,39 @@ class WordAdmin(admin.ModelAdmin):
             return redirect('prompt_new')
 
     def create_from_active(self, request, queryset):
-        if self.model == Prompt:
-            request.session['validate_using'] = [q.id for q in Response.objects.filter(active=True)]
+        request.session['validate_using'] = [q.id for q in self.Model.objects.filter(active=True)]
+        if self.Model == Prompt:
             return redirect('prompt_new')
         else:
-            request.session['validate_using'] = [q.id for q in Prompt.objects.filter(active=True)]
             return redirect('response_new')
+
+    def refresh_stats(self, request, queryset):
+        if len(queryset) == 0:
+            queryset = self.Model.objects.all()
+
+        for m in queryset:
+            m.refresh_stats()
 
 
 @admin.register(Response)
 class ResponseAdmin(WordAdmin):
-    model = Response
+    Model = Response
     inlines = [ResponseTagInline]
 
+    # insert extra stats after base stats, but before text
     list_display = list(WordAdmin.list_display)
-    list_display.insert(5, 'num_votes')
+    just_before_text = len(list_display) - 1
 
-    def num_votes(self, response):
-        return response.card_set.annotate(num_votes=Count('vote')).aggregate(Count('num_votes'))['num_votes__count']
-    num_votes.short_description = 'Votes'
+    list_display.insert(just_before_text, stats_field('num_votes', 'NV'))
+    just_before_text += 1
+
+    list_display.insert(just_before_text, stats_field('percent_votes', '%VWP'))
+    just_before_text += 1
 
 
 @admin.register(Prompt)
 class PromptAdmin(WordAdmin):
-    model = Prompt
+    Model = Prompt
     inlines = [PromptTagInline]
 
 
