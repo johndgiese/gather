@@ -54,6 +54,7 @@ INSTALLED_APPS = (
     'join',
     'common',
     'landing',
+    'api',
 )
 
 MIDDLEWARE_CLASSES = (

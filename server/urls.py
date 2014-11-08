@@ -7,4 +7,5 @@ urlpatterns = patterns('',
     url(r'^share/', include('words.share_urls')),
     url(r'^admin/', include(admin.site.urls)),
     url(r'^add/', include('words.admin_urls')),
+    url(r'^api/', include('api.urls')),
 )
