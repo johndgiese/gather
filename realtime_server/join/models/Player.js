@@ -73,3 +73,9 @@ Player.queryFromPlayerGameId = function(playerGameId) {
               'SELECT pId FROM tbPlayerGame WHERE pgId=?);';
   return Player.queryOne(sql, inserts);
 };
+
+Player.queryOneEmail = function(playerEmail) {
+  var inserts = [playerEmail];
+  var sql = 'SELECT * FROM tbPlayer WHERE pEmail=?;';
+  return Player.queryOne(sql, inserts);
+};

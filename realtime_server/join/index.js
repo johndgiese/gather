@@ -1,13 +1,16 @@
-var models = require('./models');
 var _ = require('underscore');
-var logger = require('../logger');
 var Q = require('q');
+var validator = require('validator');
 var util = require('util');
+
+var models = require('./models');
+var logger = require('../logger');
 var db = require('../db');
 var debug = require('debug')('gather:join');
 var transaction = require('../transaction');
 var session = require('./session');
 var config = require('../config');
+var auth = require('./auth');
 
 // a month
 var SESSION_LENGTH = 1000*60*60*24*31;
@@ -54,6 +57,9 @@ exports.setup = function(socket) {
   socket.on('kickPlayer', kickPlayer);
   socket.on('startGame', startGame);
 
+  // TODO: make these "ideal" functions by passing in the "socket state",
+  // instead of creating closures for each socket; will save on memory and be
+  // easier to understand
   function requirePlayer() {
     if (player === null) {
       throw new Error('No player connected to socket');
@@ -106,6 +112,17 @@ exports.setup = function(socket) {
       requireValidPlayerName(data.name);
     })
     .then(function() {
+
+      if (false) {
+        // TODO: handle email/password creation
+        if (!validator.isEmail(data.email)) {
+          throw new Error("Invalid email address");
+        }
+        if (!validator.isLength(data.password, 6)) {
+          throw new Error("Password is too short");
+        }
+      }
+
       return new models.Player({
         name: data.name,
         lastLogin: new Date(),
@@ -155,12 +172,28 @@ exports.setup = function(socket) {
   }
 
   /**
-   * Login a player, given the player's id.
+   * Login a player, given the player's email and password.
    */
   function loginViaCredentials(data, acknowledge) {
     Q.fcall(function() {
+      requireNoPlayer();
     })
     .then(function() {
+      return auth.checkPassword(data.email, data.password);
+    })
+    .then(function(isValid) {
+      if (isValid) {
+        return models.Player.queryOneEmail(data.email)
+        .then(function(player_) {
+          player = player_;
+          acknowledge({
+            player: player.forApi(),
+            session: createSession(player),
+          });
+        });
+      } else {
+        throw new Error("Invalid password/email combination");
+      }
     })
     .fail(function(error) {
       logger.error(error);
