@@ -1,47 +1,87 @@
-<form novalidation role="form" name="form">
+<div ng-show="internalPage === 'login'">
+  <form novalidation role="form" name="loginForm">
 
-  <div class="form-group" ng-class="{'has-error': (form.email.$dirty && form.email.$invalid) || incorrectEmail}">
-    <p class="secondary-instruction pull-down pull-left">
-      <span ng-show="!incorrectEmail">
-        <span ng-hide="form.email.$dirty && form.email.$invalid">Email</span>
-        <span ng-show="form.email.$dirty && form.email.$invalid" class="text-danger">Invalid Email</span>
-      </span>
-      <span ng-hide="!incorrectEmail" class="text-danger">Incorrect Email</span>
-    </p>
-    <input
-        ng-model="p.email"
-        class="form-control"
-        type="email"
-        name="email"
-        required
-        autofocus
-        focus-on="incorrectEmail"
-        ng-model-options="{updateOn: 'default blur', debounce:{default: 500, blur: 0}}">
-  </div>
+    <div class="form-group" ng-class="{'has-error': (loginForm.email.$dirty && loginForm.email.$invalid) || incorrectEmail}">
+      <p class="secondary-instruction pull-down pull-left">
+        <span ng-show="!incorrectEmail">
+          <span ng-hide="loginForm.email.$dirty && loginForm.email.$invalid">Email</span>
+          <span ng-show="loginForm.email.$dirty && loginForm.email.$invalid" class="text-danger">Invalid Email</span>
+        </span>
+        <span ng-hide="!incorrectEmail" class="text-danger">Incorrect Email</span>
+      </p>
+      <input
+          ng-model="p.email"
+          class="form-control"
+          type="email"
+          name="email"
+          required
+          autofocus
+          focus-on="incorrectEmail"
+          ng-model-options="{updateOn: 'default blur', debounce:{default: 500, blur: 0}, allowInvalid: true}">
+    </div>
 
-  <div class="form-group" ng-class="{'has-error': (form.password.$dirty && form.password.$invalid) || incorrectPassword}">
-    <p class="pull-down pull-left secondary-instruction">
-      <span ng-show="!incorrectPassword">
-        <span ng-hide="form.password.$dirty && form.password.$invalid">Password</span>
-        <span ng-show="form.password.$dirty && form.password.$invalid" class="text-danger">Password Too Short</span>
-      </span>
-      <span ng-hide="!incorrectPassword" class="text-danger">Incorrect Password</span>
-    </p>
-    <a class="pull-down pull-right secondary-instruction light-blue" tabindex="-1" href="#" ng-click="gotoForgotPassword()">I Forgot</a>
+    <div class="form-group" ng-class="{'has-error': (loginForm.password.$dirty && loginForm.password.$invalid) || incorrectPassword}">
+      <p class="pull-down pull-left secondary-instruction">
+        <span ng-show="!incorrectPassword">
+          <span ng-hide="loginForm.password.$dirty && loginForm.password.$invalid">Password</span>
+          <span ng-show="loginForm.password.$dirty && loginForm.password.$invalid" class="text-danger">Password Too Short</span>
+        </span>
+        <span ng-hide="!incorrectPassword" class="text-danger">Incorrect Password</span>
+      </p>
+      <a class="pull-down pull-right secondary-instruction light-blue" tabindex="-1" ng-click="goTo('forget')">I Forgot</a>
 
-    <input 
-        ng-model="p.password"
-        class="form-control"
-        name="password"
-        type="password"
-        required
-        minlength="6"
-        focus-on="incorrectPassword"
-        ng-model-options="{updateOn: 'default blur', debounce: {default: 500, blur: 0 }}">
-  </div>
+      <input 
+          ng-model="p.password"
+          class="form-control"
+          name="password"
+          type="password"
+          required
+          minlength="6"
+          focus-on="incorrectPassword"
+          ng-model-options="{updateOn: 'default blur', debounce: {default: 500, blur: 0 }}">
+    </div>
 
-  <input type="submit" class="action" ng-click="login()" ng-disabled="form.$invalid || form.$pristine" value="Login">
-  <a class="action" ng-click="$dismiss()">Cancel</a>
-  <small><a class="light-blue" href="mailto:info@gather.gg?subject=Trouble%20logging%20in">Trouble logging in?</a></small>
-</form>
+    <input type="submit" class="action" ng-click="login()" ng-disabled="loginForm.$invalid || loginForm.$pristine" value="Login">
+    <a class="action" ng-click="$dismiss()">Cancel</a>
+    <small><a class="light-blue" href="mailto:info@gather.gg?subject=Trouble%20logging%20in">Trouble logging in?</a></small>
+  </form>
+</div>
 
+
+<div ng-show="internalPage === 'forget'">
+  <form novalidation role="form" name="resetForm">
+
+    <div class="form-group" ng-class="{'has-error': resetForm.email.$dirty && resetForm.email.$invalid}">
+      <p class="secondary-instruction pull-down pull-left">
+        <span ng-hide="resetForm.email.$dirty && resetForm.email.$invalid">Email</span>
+        <span ng-show="resetForm.email.$dirty && resetForm.email.$invalid" class="text-danger">Invalid Email</span>
+      </p>
+      <input
+          ng-model="p.email"
+          class="form-control"
+          type="email"
+          name="email"
+          required
+          ng-model-options="{updateOn: 'default blur', debounce:{default: 500, blur: 0}, allowInvalid: true}">
+    </div>
+
+    <input type="submit" class="action" ng-click="sendPasswordReset()" ng-disabled="resetForm.$invalid || (resetForm.$pristine && loginForm.$pristine)" value="Reset Password">
+    <a class="action" ng-click="goTo('login')">Back to Login</a>
+    <small><a class="light-blue" href="mailto:info@gather.gg?subject=Can%20not%20recall%20email">Forgot your email?</a></small>
+  </form>
+</div>
+
+
+<div ng-show="internalPage === 'success'">
+  <p class="main-instruction text-success">Success</p>
+  <p class="secondary-text text-left">We sent an email to <span class="light-blue">{{ p.email }}</span> with reset instructions.  If the email does not arrive soon, check your spam folder.</p>
+  <a class="action" ng-click="$dismiss()">Back to Login</a>
+  <small><a class="light-blue" href="mailto:info@gather.gg?subject=No%20password%20reset%20email">Didn't get the email?</a></small>
+</div>
+
+
+<div ng-show="internalPage === 'error'">
+  <p class="main-instruction text-danger">Server Error</p>
+  <p class="secondary-text text-left">We apologize, but there was a server error.  Please try again.  If the problem persists, please <a class="light-blue" href="mailto:info@gather.gg?subject=Server%20error%20on%20login">let us know</a> and we will make it right!</p>
+  <a class="action" ng-click="$dismiss()">Back to Login</a>
+</div>
