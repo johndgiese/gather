@@ -10,6 +10,7 @@ angular.module('join')
     service.getOrCreate = lockService.inOrderByGroup('playerService', getOrCreate);
     service.logout = lockService.inOrderByGroup('playerService', logout);
     service.login = lockService.inOrderByGroup('playerService', login);
+    service.sendPasswordReset = lockService.inOrderByGroup('playerService', sendPasswordReset);
 
     return service;
 
@@ -72,7 +73,8 @@ angular.module('join')
         controller: 'LoginCtrl',
         backdrop: 'static',  // would be annoying to accidentally close
         resolve: {
-          login: function() { return makeLoginCall; }
+          login: function() { return makeLoginCall; },
+          sendPasswordReset: function() { return sendPasswordReset; },
         }
       }).result;
     }
@@ -114,6 +116,12 @@ angular.module('join')
         service.player = player;
         localStorageService.set('gameSession', session);
       }
+    }
+
+
+    function sendPasswordReset(email) {
+      // TODO: implement
+      return $q.reject({});
     }
 
   }
