@@ -29,11 +29,11 @@ angular.module('join')
         if (reason === "password") {
           $scope.incorrectEmail = false;
           $scope.incorrectPassword = true;
-          // TODO: focus on element
+          $scope.$broadcast('incorrectPassword');
         } else {
           $scope.incorrectEmail = true;
           $scope.incorrectPassword = false;
-          // TODO: focus on element
+          $scope.$broadcast('incorrectEmail');
         }
       });
     };
