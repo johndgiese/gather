@@ -82,10 +82,14 @@ angular.module('join')
             $state.go('app.landing');
           });
         } else if (data.gameOver) {
-          messageService.message("The game master canceled the game!")
-          .then(function() {
+          if ($scope.isMaster) {
             $state.go('app.landing');
-          });
+          } else {
+            messageService.message("The game master canceled the game!")
+            .then(function() {
+              $state.go('app.landing');
+            });
+          }
         } else {
           for (var i = 0; i < gameState.players.length; i++) {
             if (data.player.id === gameState.players[i].id) {
