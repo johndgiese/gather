@@ -15,6 +15,7 @@
         name="email"
         required
         autofocus
+        focus-on="incorrectEmail"
         ng-model-options="{updateOn: 'default blur', debounce:{default: 500, blur: 0}}">
   </div>
 
@@ -35,6 +36,7 @@
         type="password"
         required
         minlength="6"
+        focus-on="incorrectPassword"
         ng-model-options="{updateOn: 'default blur', debounce: {default: 500, blur: 0 }}">
   </div>
 

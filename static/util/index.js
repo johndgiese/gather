@@ -7,4 +7,5 @@ angular.module('util', [
   'util.encodeParams',
   'util.lockService',
   'util.selectOnClickDirective',
+  'util.focusOnDirective',
 ]);
