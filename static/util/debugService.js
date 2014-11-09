@@ -5,7 +5,7 @@ angular.module('util.debugService', [])
     if ($location.host() === 'localhost' || localStorageService.get('gatherDebug')) {
 
       var logContainer = angular.element(
-        '<div style="position: fixed; background-color: rgba(255, 255, 255, 0.8); width: 100%; pointer-events: none;"></div>'
+        '<div style="position: fixed; background-color: rgba(255, 255, 255, 0.8); top: 0; width: 100%; pointer-events: none;"></div>'
       );
 
       window.onload = function() {
