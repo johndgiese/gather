@@ -1,4 +1,5 @@
 <form novalidation role="form" name="form">
+
   <div class="form-group" ng-class="{'has-error': (form.email.$dirty && form.email.$invalid) || incorrectEmail}">
     <p class="secondary-instruction pull-down pull-left">
       <span ng-show="!incorrectEmail">
@@ -15,7 +16,6 @@
         required
         autofocus
         ng-model-options="{updateOn: 'default blur', debounce:{default: 500, blur: 0}}">
-
   </div>
 
   <div class="form-group" ng-class="{'has-error': (form.password.$dirty && form.password.$invalid) || incorrectPassword}">
@@ -36,11 +36,10 @@
         required
         minlength="6"
         ng-model-options="{updateOn: 'default blur', debounce: {default: 500, blur: 0 }}">
-
-    <!--<input ng-model="p.password" class="form-control" type="password" autofocus ng-hide="showPassword">-->
   </div>
 
   <input type="submit" class="action" ng-click="login()" ng-disabled="form.$invalid || form.$pristine" value="Login">
   <a class="action" ng-click="$dismiss()">Cancel</a>
+  <small><a class="light-blue" href="mailto:info@gather.gg?subject=Trouble%20logging%20in">Trouble logging in?</a></small>
 </form>
 
