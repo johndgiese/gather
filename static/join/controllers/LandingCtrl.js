@@ -1,7 +1,10 @@
 angular.module('join')
 .controller('LandingCtrl', [
-  '$scope',
-  function($scope) {
+  '$scope', 'playerService', 
+  function($scope, playerService) {
+    $scope.login = function() {
+      playerService.login();
+    };
   }
 ]);
 

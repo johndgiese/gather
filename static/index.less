@@ -11,12 +11,14 @@
 @import "_vendor/bootstrap/less/forms.less";
 @import "_vendor/bootstrap/less/buttons.less";
 @import "_vendor/bootstrap/less/responsive-utilities.less";
+@import "_vendor/bootstrap/less/utilities.less";
 
 @import "modal/index.less";
 @import "join/hamburger.less";
 
 a {
     text-decoration: none;
+    cursor: pointer;
 }
 
 body {
@@ -36,6 +38,10 @@ body {
 .secondary-instruction {
     font-size: 110%;
     font-weight: bold;
+
+    .has-error & {
+        .text-danger();
+    }
 }
 
 .warning {
@@ -53,19 +59,19 @@ body {
 }
 
 .dark-blue {
-    color: @brand-dark-blue;
+    color: @brand-dark-blue !important;
 }
 
 .light-blue {
-    color: @brand-light-blue;
+    color: @brand-light-blue !important;
 }
 
 .yellow {
-    color: @brand-yellow;
+    color: @brand-yellow !important;
 }
 
 .dark-tan {
-    color: @brand-background-darker;
+    color: @brand-background-darker !important;
 }
 
 #share-link {
@@ -170,7 +176,8 @@ a.login {
 .action-card {
     color: @brand-yellow;
     .btn-block();
-    &:hover {
+    &:hover,
+    &:focus {
         color: @brand-yellow;
     }
 }
@@ -183,7 +190,8 @@ a.login {
     width: 100%;
     display: inline-block;
     color: @brand-dark-blue !important;
-    &:hover {
+    &:focus,
+    &:active {
         color: @brand-dark-blue !important;
     }
 }
@@ -208,7 +216,8 @@ a.login {
     color: @brand-yellow;
     float: right;
     width: 30%;
-    &:hover {
+    &:focus,
+    &:active {
         color: @brand-yellow;
     }
 }
@@ -217,7 +226,8 @@ a.login {
     color: @brand-light-blue;
     float: left;
     width: 30%;
-    &:hover {
+    &:focus,
+    &:active {
         color: @brand-light-blue;
     }
 }

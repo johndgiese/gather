@@ -1,0 +1,46 @@
+<form novalidation role="form" name="form">
+  <div class="form-group" ng-class="{'has-error': (form.email.$dirty && form.email.$invalid) || incorrectEmail}">
+    <p class="secondary-instruction pull-down pull-left">
+      <span ng-show="!incorrectEmail">
+        <span ng-hide="form.email.$dirty && form.email.$invalid">Email</span>
+        <span ng-show="form.email.$dirty && form.email.$invalid" class="text-danger">Invalid Email</span>
+      </span>
+      <span ng-hide="!incorrectEmail" class="text-danger">Incorrect Email</span>
+    </p>
+    <input
+        ng-model="p.email"
+        class="form-control"
+        type="email"
+        name="email"
+        required
+        autofocus
+        ng-model-options="{updateOn: 'default blur', debounce:{default: 500, blur: 0}}">
+
+  </div>
+
+  <div class="form-group" ng-class="{'has-error': (form.password.$dirty && form.password.$invalid) || incorrectPassword}">
+    <p class="pull-down pull-left secondary-instruction">
+      <span ng-show="!incorrectPassword">
+        <span ng-hide="form.password.$dirty && form.password.$invalid">Password</span>
+        <span ng-show="form.password.$dirty && form.password.$invalid" class="text-danger">Password Too Short</span>
+      </span>
+      <span ng-hide="!incorrectPassword" class="text-danger">Incorrect Password</span>
+    </p>
+    <a class="pull-down pull-right secondary-instruction light-blue" tabindex="-1" href="#" ng-click="gotoForgotPassword()">I Forgot</a>
+
+    <input 
+        ng-model="p.password"
+        class="form-control"
+        name="password"
+        type="password"
+        required
+        minlength="6"
+        ng-model-options="{updateOn: 'default blur', debounce: {default: 500, blur: 0 }}">
+
+    <!--<input ng-model="p.password" class="form-control" type="password" autofocus ng-hide="showPassword">-->
+  </div>
+
+  <input type="submit" class="action" ng-click="login()" ng-disabled="form.$invalid || form.$pristine" value="Login">
+  <a class="action" ng-click="$dismiss()">Cancel</a>
+</form>
+

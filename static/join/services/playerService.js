@@ -9,6 +9,7 @@ angular.module('join')
     service.syncOrNull = lockService.inOrderByGroup('playerService', syncOrNull);
     service.getOrCreate = lockService.inOrderByGroup('playerService', getOrCreate);
     service.logout = lockService.inOrderByGroup('playerService', logout);
+    service.login = lockService.inOrderByGroup('playerService', login);
 
     return service;
 
@@ -29,7 +30,6 @@ angular.module('join')
      * player to create a player.  Rejects the prompise if player cancels the
      * create player.
      */
-    // TODO: also allow players to log back in
     function getOrCreate() {
       if (service.player !== null) {
         return $q.when(service.player);
@@ -62,8 +62,32 @@ angular.module('join')
       return socket.emitp('logout', {});
     }
 
+
+    /**
+     * Open a modal that will login the player.
+     */
+    function login() {
+      return $modal.open({
+        templateUrl: '/static/join/templates/login.html',
+        controller: 'LoginCtrl',
+        resolve: {
+          login: function() { return makeLoginCall; }
+        }
+      }).result;
+    }
+
+    /**
+     * Actually make the request and set the state properly.
+     */
+    function makeLoginCall(email, password) {
+      return socket.emitp('loginViaCredentials', {email: email, password: password})
+      .then(function(response) {
+        setPlayer(response.player, response.session);
+        return response.player;
+      });
+    }
+
     function createPlayer() {
-      // TODO: create modal that gets a player name
       return $modal.open({
         templateUrl: '/static/join/templates/create-player.html',
         controller: 'CreatePlayerCtrl',

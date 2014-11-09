@@ -13,7 +13,7 @@ var config = require('../config');
 function booleanInternalAPIRequestProm(path, data) {
   var deferred = Q.defer();
 
-  var dataWithSecret = _.extend({}, {secret: config['SECRET']}, data);
+  var dataWithSecret = _.extend({}, {secret: config.SECRET}, data);
   var encodedData = querystring.stringify(dataWithSecret);
 
   var options = {
@@ -43,7 +43,7 @@ function booleanInternalAPIRequestProm(path, data) {
   request.end();
 
   return deferred.promise;
-};
+}
 
 
 /**
@@ -77,7 +77,7 @@ exports.checkPassword = function(email, password) {
     return true;
   }, function(reason) {
     if (reason === 404) {
-      return false
+      return false;
     } else {
       return Q.reject(reason);
     }
