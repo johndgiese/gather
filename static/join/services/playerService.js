@@ -70,6 +70,7 @@ angular.module('join')
       return $modal.open({
         templateUrl: '/static/join/templates/login.html',
         controller: 'LoginCtrl',
+        backdrop: 'static',  // would be annoying to accidentally close
         resolve: {
           login: function() { return makeLoginCall; }
         }
