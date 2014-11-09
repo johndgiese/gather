@@ -82,8 +82,12 @@ angular.module('join')
     function makeLoginCall(email, password) {
       return socket.emitp('loginViaCredentials', {email: email, password: password})
       .then(function(response) {
-        setPlayer(response.player, response.session);
-        return response.player;
+        if (response.player === undefined) {
+          return $q.reject(response);  // should be "email" or "password"
+        } else {
+          setPlayer(response.player, response.session);
+          return response.player;
+        }
       });
     }
 
