@@ -30,7 +30,10 @@ angular.module('app', [
 }])
 
 .config(['$locationProvider', function($locationProvider) {
-  $locationProvider.html5Mode(true);
+  $locationProvider.html5Mode({
+    enabled: true,
+    requireBase: false,
+  });
 }])
 
 .config(['$compileProvider', function($compileProvider) {   

@@ -16,6 +16,9 @@
   Hello <span class="light-blue">{{player.name}}</span>!
   <a class="link" href="#" ng-click="logout()">Logout</a>
 </p>
+<p ng-show="player === null" class="secondary-instruction">
+  Have an account? <a class="link" ng-click="login()">Login</a>
+</p>
 
 <footer>
   <ul id="business-links">
