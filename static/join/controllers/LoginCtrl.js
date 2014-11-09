@@ -32,6 +32,7 @@ angular.module('join')
           // TODO: focus on element
         } else {
           $scope.incorrectEmail = true;
+          $scope.incorrectPassword = false;
           // TODO: focus on element
         }
       });

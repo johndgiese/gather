@@ -181,8 +181,8 @@ exports.setup = function(socket) {
     .then(function() {
       return auth.checkPassword(data.email, data.password);
     })
-    .then(function(isValid) {
-      if (isValid) {
+    .then(function(valid) {
+      if (valid === "good") {
         return models.Player.queryOneEmail(data.email)
         .then(function(player_) {
           player = player_;
@@ -191,8 +191,10 @@ exports.setup = function(socket) {
             session: createSession(player),
           });
         });
+      } else if (valid === "password") {
+        acknowledge("password");
       } else {
-        throw new Error("Invalid password/email combination");
+        acknowledge("email");
       }
     })
     .fail(function(error) {

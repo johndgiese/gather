@@ -1,6 +1,6 @@
 from django.views.decorators.http import require_GET, require_POST
 from django.contrib.auth.hashers import check_password, make_password, is_password_usable
-from django.http import HttpResponse, HttpResponseNotFound
+from django.http import HttpResponse, HttpResponseNotFound, HttpResponseForbidden
 from django.contrib.auth import authenticate
 from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
@@ -25,9 +25,17 @@ def check_password_view(request):
     email = request.POST.get('email', None)
     password = request.POST.get('password', None)
     if (not email is None) and (not password is None):
-        player = authenticate(username=email, password=password)
-        if not player is None:
-            return HttpResponse()
+        try:
+            player = Player.objects.get(email=email)
+            if player.check_password(password):
+                return HttpResponse()
+            else:
+                # return different error code so we can inform the user if it
+                # was a bad email or bad password
+                return HttpResponseForbidden()
+        except Player.DoesNotExist:
+            pass
+
     return HttpResponseNotFound()
 
 

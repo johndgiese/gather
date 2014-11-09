@@ -65,8 +65,8 @@ exports.setPassword = function(email, password) {
  * Check the password using a call to django's server.
  * @arg {String} - player email
  * @arg {String} - plain text password
- * @returns {Promise(Boolean)} - true if it matches, false if it doesn't;
- * promise is rejected if error on transmission.
+ * @returns {Promise(String)} - "good" if passed, "email" if bad email,
+ * "password" if bad password, promise is rejected if error on transmission.
  */
 exports.checkPassword = function(email, password) {
   return booleanInternalAPIRequestProm('/api/check_password', {
@@ -74,10 +74,12 @@ exports.checkPassword = function(email, password) {
     password: password
   })
   .then(function(v) {
-    return true;
+    return "good";
   }, function(reason) {
     if (reason === 404) {
-      return false;
+      return "email";
+    } else if (reason === 403) {
+      return "password";
     } else {
       return Q.reject(reason);
     }
