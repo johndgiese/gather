@@ -61,6 +61,20 @@ angular.module('join')
         return socket.emitp('joinGame', {party: $stateParams.party});
       }]
     }
+  })
+
+  // reset your password
+  .state('app.resetPassword', {
+    url: '/account/passwordreset/:playerId/:token',
+    controller: 'ResetPasswordCtrl',
+    templateUrl: '/static/join/templates/password-reset.html',
+  })
+
+  // done reseting your password
+  .state('app.resetPasswordComplete', {
+    url: '/account/passwordreset-complete',
+    controller: 'ResetPasswordCompleteCtrl',
+    templateUrl: '/static/join/templates/password-reset-complete.html',
   });
 
 }]);

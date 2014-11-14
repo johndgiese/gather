@@ -3,6 +3,30 @@ var http = require('http');
 var _ = require('underscore');
 var querystring = require('querystring');
 var config = require('../config');
+var crypto = require('crypto');
+
+
+function randomValueBase64(len) {
+  return crypto.randomBytes(Math.ceil(len * 3 / 4))
+  .toString('base64')   // convert to base64 format
+  .slice(0, len)        // return required number of characters
+  .replace(/\+/g, '0')  // replace '+' with '0'
+  .replace(/\//g, '0'); // replace '/' with '0'
+}
+
+
+/**
+ * Check if a password is valid.
+ * @arg {String} - password
+ * @returns {Boolean} - is it valid?
+ */
+function validPassword(password) {
+  return password.length >= 8 &&
+         password.search(/[a-z]/) !== -1 &&
+         password.search(/[A-Z]/) !== -1 &&
+         password.search(/\d/) !== -1 &&
+         password.search(/[\!\@\#\$\%\^\&\*\(\)\_\+]/) !== -1;
+}
 
 
 /**
@@ -55,10 +79,14 @@ function booleanInternalAPIRequestProm(path, data) {
  * @returns {Promise} - is rejected if not succesful
  */
 exports.setPassword = function(email, password) {
-  return booleanInternalAPIRequestProm('/api/set_password', {
-    email: email,
-    password: password
-  });
+  if (validPassword(password)) {
+    return booleanInternalAPIRequestProm('/api/set_password', {
+      email: email,
+      password: password,
+    });
+  } else {
+    return Q.reject("Invalid Password");
+  }
 };
 
 /**
@@ -84,4 +112,44 @@ exports.checkPassword = function(email, password) {
       return Q.reject(reason);
     }
   });
+};
+
+
+/**
+ * Given a player object, generate a password reset token.
+ * @arg {Player} - player object
+ * @arg {Number} - life time in days (default is 7)
+ * @returns {Promise<String>} - token
+ */
+exports.generatePasswordResetToken = function(player, days) {
+  if (days === undefined) {
+    days = 7;
+  }
+
+  var timeOut = new Date();
+  timeOut.setDate(timeOut.getDate() + days);
+
+  var token = randomValueBase64(20);
+  player.resetToken = token;
+  player.resetTokenTimeout = timeOut;
+
+  return player.save()
+  .then(function() {
+    Q.when(token);
+  });
+};
+
+
+/**
+ * Check a token against a player object.
+ * @arg {Player} - player object
+ * @arg {String} - token
+ * @returns {Boolean} - days until it expires (0 if invalid)
+ */
+exports.checkPasswordResetToken = function(player, token) {
+  if (player.resetTokenTimeout < new Date()) {
+    return false;
+  } else {
+    return player.resetToken === token;
+  }
 };

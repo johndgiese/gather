@@ -11,6 +11,7 @@ angular.module('join')
     service.logout = lockService.inOrderByGroup('playerService', logout);
     service.login = lockService.inOrderByGroup('playerService', login);
     service.sendPasswordReset = lockService.inOrderByGroup('playerService', sendPasswordReset);
+    service.resetPassword = lockService.inOrderByGroup('playerService', resetPassword);
 
     return service;
 
@@ -118,10 +119,19 @@ angular.module('join')
       }
     }
 
-
     function sendPasswordReset(email) {
-      // TODO: implement
-      return $q.reject({});
+      return socket.emitp('sendPasswordResetEmail', {email: email});
+    }
+
+    function resetPassword(playerId, token, newPassword) {
+      return socket.emitp('resetPassword', {
+        playerId: playerId,
+        token: token,
+        newPassword: newPassword
+      })
+      .then(function(response) {
+        setPlayer(response.player, response.session);
+      });
     }
 
   }

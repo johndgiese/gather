@@ -8,6 +8,8 @@ var fields = {
   active: 'pActive',
   admin: 'pAdmin',
   password: 'password',
+  resetToken: 'pResetToken',
+  resetTokenTimeout: 'pResetTokenTimeout',
   lastLogin: 'last_login',
   superuser: 'is_superuser',
 };

@@ -56,6 +56,8 @@ exports.setup = function(socket) {
   socket.on('disconnect', disconnect);
   socket.on('kickPlayer', kickPlayer);
   socket.on('startGame', startGame);
+  socket.on('sendPasswordResetEmail', sendPasswordResetEmail);
+  socket.on('resetPassword', resetPassword);
 
   // TODO: make these "ideal" functions by passing in the "socket state",
   // instead of creating closures for each socket; will save on memory and be
@@ -168,6 +170,61 @@ exports.setup = function(socket) {
     .fail(function(error) {
       logger.error(error);
       acknowledge({_error: "Unable to login"});
+    });
+  }
+
+
+  function sendPasswordResetEmail(data, acknowledge) {
+    Q.fcall(function() {
+    })
+    .then(function() {
+      return models.Player.queryOneEmail(data.email)
+      .then(function(player) {
+        return auth.generatePasswordResetToken(player);
+      })
+      .then(function(resetToken) {
+        // TODO: send reset email
+        // on success acknowledge
+        acknowledge({});
+        // on fail indicate error
+      })
+      .fail(function() {
+        // TODO: wait approx as long as sending an email takes
+        // don't inform the user that the email was bad
+        acknowledge({});
+      });
+    })
+    .fail(function(error) {
+      logger.error(error);
+      acknowledge({_error: "Unable to send password reset email"});
+    });
+  }
+
+  function resetPassword(data, acknowledge) {
+    Q.fcall(function() {
+      // require playerId, token, newPassword
+    })
+    .then(function() {
+      return models.Player.queryOneId(data.playerId)
+      .then(function(player_) {
+        var tokenValid = auth.checkPasswordResetToken(player_, data.token);
+        if (tokenValid) {
+          return auth.setPassword(player_.email, data.newPassword)
+          .then(function() {
+            player = player_;
+            acknowledge({
+              player: player.forApi(),
+              session: createSession(player),
+            });
+          });
+        } else {
+          throw new Error("Invalid token");
+        }
+      });
+    })
+    .fail(function(error) {
+      logger.error(error);
+      acknowledge({_error: "Unable to reset password"});
     });
   }
 
