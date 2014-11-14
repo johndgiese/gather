@@ -49,6 +49,8 @@ def set_password_view(request):
         try:
             player = Player.objects.get(email=email)
             player.set_password(password)
+            player.password_reset_token = None;
+            player.password_reset_token_timeout = None;
             player.save()
             return HttpResponse()
         except Player.DoesNotExist:

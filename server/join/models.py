@@ -26,6 +26,8 @@ class Player(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(max_length=255, unique=True, null=True, blank=True, db_column='pEmail')
     is_active = models.BooleanField(default=True, db_column='pActive')
     is_admin = models.BooleanField(default=False, db_column='pAdmin')
+    password_reset_token = models.CharField(max_length=255, db_column='pResetToken', null=True, blank=True)
+    password_reset_token_timeout = models.DateTimeField(db_column='pResetTokenTimeout', null=True, blank=True)
 
     objects = PersonManager()
 
