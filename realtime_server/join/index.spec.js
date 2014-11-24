@@ -8,13 +8,37 @@ var models = require('./models');
 
 var server = require('../index').server;
 
+var validPassword = 'aA12!@@FF';
+var validEmail = 'a@a.a';
+var validEmail2 = 'b@b.b';
+
+
 describe('The join socket API', function() {
 
   var client;
 
   beforeEach(function() {
     client = tu.setupClient();
-    return client.oncep('connect');
+    var connectedClientProm = client.oncep('connect');
+
+    // delete all test users
+    return Q.allSettled([
+      models.Player.queryOneEmail(validEmail),
+      models.Player.queryOneEmail(validEmail2),
+    ])
+    .then(function(playersToDelete) {
+      var deleted = [];
+      playersToDelete.forEach(function(result) {
+        if (result.state === "fulfilled") {
+          var player = result.value;
+          deleted.push(player.delete());
+        }
+      });
+      return Q.all(deleted);
+    })
+    .then(function() {
+      return connectedClientProm;
+    });
   });
 
   describe('provides a way to create players', function() {
@@ -37,17 +61,49 @@ describe('The join socket API', function() {
         return client.emitp('createPlayer', {name: 'david'}).should.be.rejectedWith(Error);
       });
     });
+    it('allows you to fill in an email and password', function() {
+      return client.emitp('createPlayer', {name: 'david', email: validEmail, password: validPassword})
+      .then(function(data) {
+        expect(data.player.id).not.to.equal(undefined);
+      });
+    });
+    it('will complain if the email is in use already', function() {
+      return client.emitp('createPlayer', {name: 'david', email: validEmail, password: validPassword})
+      .then(function() {
+        client.emitp('createPlayer', {name: 'david', email: validEmail, password: validPassword})
+        .should.be.rejectedWith(Error);
+      });
+    });
+    it('but you need both a valid email AND password', function() {
+      return client.emitp('createPlayer', {name: 'dav', email: validEmail})
+      .should.be.rejectedWith(Error)
+      .then(function() {
+        return client.emitp('createPlayer', {name: 'dav', password: validPassword})
+        .should.be.rejectedWith(Error);
+      })
+      .then(function() {
+        return client.emitp('createPlayer', {name: 'dav', password: 'aa', email: validEmail})
+        .should.be.rejectedWith(Error);
+      })
+      .then(function() {
+        return client.emitp('createPlayer', {name: 'dav', password: validPassword, email: 'ass'})
+        .should.be.rejectedWith(Error);
+      });
+    });
   });
 
   describe('provides a way to log back in as a player', function() {
     var player, session;
-    it('if you create a player', function() {
-      return client.emitp('createPlayer', {name: 'test player'})
+    var origName = 'test dude';
+
+    beforeEach(function() {
+      return client.emitp('createPlayer', {name: origName})
       .then(function(response) {
         session = response.session;
         player = response.player;
       });
     });
+
     it('you can then log back in with a different connection', function() {
       return client.emitp('loginViaSession', {session: session})
       .then(function(response) {
@@ -55,9 +111,54 @@ describe('The join socket API', function() {
       });
     });
     it('if you login with an invalid session id you get an error', function() {
-      return client.emitp('loginViaSession', {session: "asdfasdfasdf"}).should.be.rejectedWith(Error);
+      return client.emitp('loginViaSession', {session: "asdfasdfasdf"})
+      .should.be.rejectedWith(Error);
+    });
+    it('is possible to update the player once logged in', function() {
+      return client.emitp('loginViaSession', {session: session})
+      .then(function() {
+        return models.Player.queryOneId(player.id);
+      })
+      .then(function(player_) {
+        expect(player_.name).to.equal(origName);
+      })
+      .then(function() {
+        return client.emitp('updatePlayer', {name: 'new name'});
+      })
+      .then(function() {
+        return models.Player.queryOneId(player.id);
+      })
+      .then(function(player_) {
+        expect(player_.name).to.equal('new name');
+      });
     });
 
+    it('is possible to fill in the email and password once', function() {
+      return client.emitp('loginViaSession', {session: session})
+      .then(function() {
+        return client.emitp('updatePlayer', {email: validEmail, password: validPassword});
+      })
+      .then(function() {
+        return models.Player.queryOneId(player.id);
+      })
+      .then(function(player_) {
+        expect(player_.email).to.equal(validEmail);
+      })
+      .then(function() {
+        // shouldn't let you set the password since it is already set above
+        return client.emitp('updatePlayer', {email: validEmail, password: validPassword})
+        .should.be.rejectedWith(Error);
+      })
+      .then(function() {
+        return client.emitp('updatePlayer', {email: validEmail2});
+      })
+      .then(function() {
+        return models.Player.queryOneId(player.id);
+      })
+      .then(function(player_) {
+        expect(player_.email).to.equal(validEmail2);
+      });
+    });
   });
 
   describe('provides a way of creating games', function() {
@@ -160,6 +261,8 @@ describe('The join socket API', function() {
     // TODO: make sure these items are true
   });
 
-});
 
+  // TODO: test password reset
+
+});
 

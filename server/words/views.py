@@ -22,9 +22,6 @@ logger = logging.getLogger(__name__)
 class ResponseCreate(CreateView):
     model = Response
     fields = ['text']
-    initial = {
-        'tags': Tag.objects.get(text='Custom')
-    }
 
     def get_success_url(self):
         return reverse_lazy('response_validate', kwargs={'id': self.object.id})
@@ -100,11 +97,13 @@ class ValidateWordView(TemplateView):
         if self.AddClass == Prompt:
             prompt = funny_votes[0].prompt
             prompt.active = should_be_active
+            prompt.created_by = request.user
             prompt.save()
             return redirect('prompt_new')
         elif self.AddClass == Response:
             response = funny_votes[0].response
             response.active = should_be_active
+            response.created_by = request.user
             response.save()
             return redirect('response_new')
         else:
@@ -135,15 +134,10 @@ class ShareCardsView(TemplateView):
             context['prompt'] = Prompt.objects.get(pk=prompt_id)
 
         # TODO: make more efficient
-        # TODO: ensure CAH cards don't leak
         card_id_keys = [c for c in kwargs.keys() if c.startswith('card_')]
         card_id_keys.sort(lambda c1, c2: int(c1[5:]) - int(c2[5:]))
         card_ids = [kwargs[c] for c in card_id_keys]
         context['cards'] = [Response.objects.get(pk=c) for c in card_ids]
-
-        for c in context['cards']:
-            if c.is_cah:
-                raise Http404
 
         return context
 

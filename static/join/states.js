@@ -29,7 +29,7 @@ angular.module('join')
     resolve: {
       player: ['playerService', function(playerService) {
         // TODO: handle failure
-        return playerService.getOrCreate();
+        return playerService.getOrCreateFull();
       }]
     }
   })

@@ -16,8 +16,9 @@ CREATE TABLE tbPlayer (
     pId INT NOT NULL AUTO_INCREMENT,
     pName VARCHAR(255) NOT NULL,
     pCreatedOn TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    pResetToken VARCHAR(255),
+    pResetToken VARCHAR(255) NULL,
     pResetTokenTimeout TIMESTAMP NULL,
+    pOnEmailList bool NOT NULL DEFAULT TRUE,
     PRIMARY KEY (pId)
 );
 

@@ -3,8 +3,6 @@ var db = require('../../db');
 var mysql = require('mysql');
 
 var validTags = [
-  'Cards Against Humanity',
-  'Custom',
   'Mature',
   'UT',
   'Pop Culture',

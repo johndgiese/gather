@@ -169,7 +169,7 @@ Model.prototype.save = function () {
 Model.prototype.delete = function () {
   var self = this;
   var inserts = [this.M.table, this.M.idField, this.id];
-  return this.raw('DELETE FROM ?? WHERE ??=?', inserts)
+  return this.M.raw('DELETE FROM ?? WHERE ??=?', inserts)
   .then(function(result) {
     var success = result.affectedRows === 1;
     if (success) {

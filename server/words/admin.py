@@ -46,7 +46,7 @@ wider_tag_edit_fields = {
 # THE MODEL ADMINS
 
 class WordAdmin(admin.ModelAdmin):
-    list_display = ['id', 'active', 'is_cah', percent_funny, 'num_funny_votes', 'text']
+    list_display = ['id', 'created_by', 'created_on', 'active', percent_funny, 'num_funny_votes', 'text']
 
     def get_queryset(self, request):
         qs = super(WordAdmin, self).get_queryset(request)
@@ -58,11 +58,6 @@ class WordAdmin(admin.ModelAdmin):
     num_funny_votes.admin_order_field = 'num_funny_votes'
     num_funny_votes.short_description = 'FV'
 
-    def is_cah(self, obj):
-        return not 'Cards Against Humanity' in [t.text for t in obj.tags.all()[:]]
-    is_cah.short_description = '!CAH'
-    is_cah.boolean = True
-
     list_editable = ['text']
     list_filter = ('active', 'tags')
     list_per_page = 1000
@@ -70,7 +65,7 @@ class WordAdmin(admin.ModelAdmin):
 
     formfield_overrides = wider_tag_edit_fields
 
-    actions = ['mark_active', 'mark_inactive', 'create_using', 'create_from_active']
+    actions = ['mark_active', 'mark_inactive', 'create_using', 'create_from_active', 'claim_to_have_created_these']
 
     def mark_active(self, request, queryset):
         rows_updated = queryset.update(active=True)
@@ -79,6 +74,10 @@ class WordAdmin(admin.ModelAdmin):
         else:
             message_bit = "%s words were" % rows_updated
         self.message_user(request, "%s successfully marked as active." % message_bit)
+
+    def claim_to_have_created_these(self, request, queryset):
+        rows_updated = queryset.update(created_by=request.user)
+        self.message_user(request, "Successfully claimed creation of %d words." % rows_updated)
 
     def mark_inactive(self, request, queryset):
         rows_updated = queryset.update(active=False)
