@@ -170,24 +170,21 @@ module.exports = function(grunt) {
       },
       setupDatabase: {
         command: [
-          'cd <%= NODE_ROOT %>',
-          'mysql -u<%= config.DB_USERNAME %> -p<%= config.DB_PASSWORD %> <%= config.DB_NAME %> < schema.sql',
-          'cd -',
           'cd <%= SERVER_ROOT %>',
           './manage.py migrate',
-          'cd -',
+          './manage.py loaddata join/initial_data.json',
+          './manage.py load_csv_data words/fixtures/tbprompt.csv',
+          './manage.py load_csv_data words/fixtures/tbresponse.csv',
+          'cd ..',
         ].join(' && ')
       },
-      loadWords: {
-        command: 'node <%= NODE_ROOT %>/words/data/loadWords <%= NODE_ROOT %>/words/data/words.csv'
-      }
     }
   });
 
 
   grunt.registerTask('default', ['jshint', 'mochaTest', 'less', 'uglify', 'watch']);
   grunt.registerTask('tests', ['jshint', 'mochaTest']);
-  grunt.registerTask('setup', ['shell:setupDirectories', 'shell:setupDatabase', 'shell:loadWords', 'static']);
+  grunt.registerTask('setup', ['shell:setupDirectories', 'shell:setupDatabase', 'static']);
   grunt.registerTask('static', ['jshint', 'less', 'uglify', 'cssmin']);
 
 };

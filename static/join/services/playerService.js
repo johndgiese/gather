@@ -8,6 +8,7 @@ angular.module('join')
     service.sync = lockService.inOrderByGroup('playerService', sync);
     service.syncOrNull = lockService.inOrderByGroup('playerService', syncOrNull);
     service.getOrCreate = lockService.inOrderByGroup('playerService', getOrCreate);
+    service.getOrCreateFull = lockService.inOrderByGroup('playerService', getOrCreateFull);
     service.logout = lockService.inOrderByGroup('playerService', logout);
     service.login = lockService.inOrderByGroup('playerService', login);
     service.sendPasswordReset = lockService.inOrderByGroup('playerService', sendPasswordReset);
@@ -15,6 +16,21 @@ angular.module('join')
 
     return service;
 
+    /**
+     * Use locally stored session to relogin.
+     */
+    function sync() {
+      var session = localStorageService.get('gameSession');
+      if (_.isString(session)) {
+        return socket.emitp('loginViaSession', {session: session})
+        .then(setPlayer, function() {
+          setPlayer(null);
+          return $q.reject("Can't sync, bad response");
+        });
+      } else {
+        return $q.reject("Can't sync, no local id");
+      }
+    }
 
     function syncOrNull() {
       if (service.player !== null) {
@@ -36,27 +52,32 @@ angular.module('join')
       if (service.player !== null) {
         return $q.when(service.player);
       } else {
-        return sync().then(createPlayer, createPlayer);
+        return sync().catch(createPlayer);
       }
     }
 
     /**
-     * Use locally stored session to relogin.
+     * Get or create a player; if player exists, ensure it is a "fully filled
+     * out" player.
      */
-    function sync() {
-      var session = localStorageService.get('gameSession');
-      if (_.isString(session)) {
-        return socket.emitp('loginViaSession', {session: session})
-        .then(function(response) {
-          setPlayer(response.player, response.session);
-          return response.player;
-        }, function() {
-          setPlayer(null);
-          return $q.reject("Can't sync, bad response");
-        });
+    function getOrCreateFull() {
+      var existingPlayerPromise;
+      if (service.player !== null) {
+        existingPlayerPromise = $q.when(service.player);
       } else {
-        return $q.reject("Can't sync, no local id");
+        existingPlayerPromise = sync();
       }
+
+      return existingPlayerPromise
+      .then(function(player) {
+        if (service.player.email !== null) {
+          return $q.when(player);
+        } else {
+          return createPlayerFull(service.player);
+        }
+      }, function() {
+          return createPlayerFull();
+      });
     }
 
     function logout() {
@@ -89,12 +110,15 @@ angular.module('join')
         if (response.player === undefined) {
           return $q.reject(response);  // should be "email" or "password"
         } else {
-          setPlayer(response.player, response.session);
-          return response.player;
+          return setPlayer(response);
         }
       });
     }
 
+    /**
+     * Create a simple player (not fully registered with email/password)
+     * @returns {Promise<Player>}
+     */
     function createPlayer() {
       return $modal.open({
         templateUrl: '/static/join/templates/create-player.html',
@@ -102,20 +126,50 @@ angular.module('join')
       }).result
       .then(function(playerData) {
         return socket.emitp('createPlayer', playerData)
-        .then(function(response) {
-          setPlayer(response.player, response.session);
-          return response.player;
-        });
+        .then(setPlayer);
+      }, function(reason) {
+        if (reason === "logging in instead") {
+          return login();
+        } else {
+          return $q.reject(reason);
+        }
       });
     }
 
-    function setPlayer(player, session) {
-      if (_.isNull(player)) {
+    /**
+     * Create a fully registered player, or finish registering a partially registered on.
+     * @returns {Promise<Player>}
+     */
+    function createPlayerFull(existingPlayer) {
+      existingPlayer = existingPlayer ? existingPlayer : null;
+      return $modal.open({
+        templateUrl: '/static/join/templates/create-player-full.html',
+        controller: 'CreatePlayerFullCtrl',
+        resolve: {
+          existingPlayer: function() { return existingPlayer; },
+        }
+      }).result
+      .then(function(playerData) {
+        return socket.emitp(existingPlayer === null ? 'createPlayer' : 'updatePlayer', playerData)
+        .then(setPlayer);
+      }, function(reason) {
+        if (reason === "logging in instead") {
+          return login();
+        } else {
+          return $q.reject(reason);
+        }
+      });
+    }
+
+    function setPlayer(data) {
+      if (_.isNull(data)) {
         service.player = null;
         localStorageService.set('gameSession', null);
+        return null;
       } else {
-        service.player = player;
-        localStorageService.set('gameSession', session);
+        service.player = data.player;
+        localStorageService.set('gameSession', data.session);
+        return service.player;
       }
     }
 
@@ -129,9 +183,7 @@ angular.module('join')
         token: token,
         newPassword: newPassword
       })
-      .then(function(response) {
-        setPlayer(response.player, response.session);
-      });
+      .then(setPlayer);
     }
 
   }

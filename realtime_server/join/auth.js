@@ -20,13 +20,14 @@ function randomValueBase64(len) {
  * @arg {String} - password
  * @returns {Boolean} - is it valid?
  */
-function validPassword(password) {
-  return password.length >= 8 &&
+var validPassword = exports.validPassword = function(password) {
+  return _.isString(password) &&
+         password.length >= 8 &&
          password.search(/[a-z]/) !== -1 &&
          password.search(/[A-Z]/) !== -1 &&
          password.search(/\d/) !== -1 &&
          password.search(/[\!\@\#\$\%\^\&\*\(\)\_\+]/) !== -1;
-}
+};
 
 
 /**
@@ -74,15 +75,19 @@ function booleanInternalAPIRequestProm(path, data) {
  * Send request to the django server to create a password for the specified
  * user.  Use djano for this, so that we can share the django and game login
  * systems.
- * @arg {String} - player email
+ * @arg {Player} - player
  * @arg {String} - plain text password
  * @returns {Promise} - is rejected if not succesful
  */
-exports.setPassword = function(email, password) {
+exports.setPassword = function(player, password) {
   if (validPassword(password)) {
     return booleanInternalAPIRequestProm('/api/set_password', {
-      email: email,
+      email: player.email,
       password: password,
+    })
+    .then(function(val) {
+      // TODO: actually set it as a hash
+      player.password = 'set';  // mark that it is set
     });
   } else {
     return Q.reject("Invalid Password");

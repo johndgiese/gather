@@ -1,0 +1,75 @@
+<p class="main-instruction" ng-show="startedRegistering && currentState === 'app.createGame'">
+  Before creating a game,<br class="hidden-md hidden-lg"> please finish registering
+</p>
+<p class="main-instruction" ng-hide="startedRegistering && currentState === 'app.createGame'">
+  Create an account
+</p>
+
+<form novalidation role="form" name="form">
+
+  <div class="form-group" ng-show="step === 'one'">
+    <p class="secondary-instruction pull-down pull-left">Nickname</p>
+    <input 
+        ng-model="p.name"
+        class="form-control"
+        type="text"
+        name="playerName"
+        focus-on="focusName"
+        ng-class="{'text-danger': !validNickname}">
+    <small class="light-blue">
+      <span ng-show="validNickname">Use the suggestion, or write your own</span>
+      <span ng-hide="validNickname" class="text-danger">Your nickname is too short</span>
+    </small>
+  </div>
+
+  <div class="form-group" ng-class="{'has-error': emailTaken || (form.email.$dirty && form.email.$invalid)}" ng-show="step === 'two'">
+    <p class="secondary-instruction pull-down pull-left">
+      <span ng-show="!emailTaken">
+        <span ng-hide="form.email.$dirty && form.email.$invalid">Email</span>
+        <span ng-show="form.email.$dirty && form.email.$invalid" class="text-danger">Invalid Email</span>
+      </span>
+      <span ng-show="emailTaken" class="text-danger">Email Already Registered</span>
+    </p>
+    <input
+        ng-model="p.email"
+        class="form-control"
+        type="email"
+        name="email"
+        required
+        focus-on="focusEmail"
+        ng-model-options="{updateOn: 'default blur', debounce:{default: 500, blur: 0}, allowInvalid: true}">
+  </div>
+
+  <div class="form-group" ng-class="{'has-error': form.password.$dirty && !validPassword}" style="margin-bottom: 5px;" ng-show="step === 'two'">
+    <p class="pull-down pull-left secondary-instruction">Password</p>
+    <input 
+        ng-model="p.password"
+        class="form-control"
+        name="password"
+        focus-on="focusPassword"
+        type="password">
+
+    <div class="row text-muted">
+      <small ng-class="{'light-blue': hasLowerCaseLetter}">Lowercase Letter</small> &middot;
+      <small ng-class="{'light-blue': hasUpperCaseLetter}">Uppercase Letter</small> &middot;
+      <small ng-class="{'light-blue': hasNumber}">Number</small><span class="hidden-xs"> &middot;</span><br class="hidden-sm hidden-md hidden-lg">
+      <small ng-class="{'light-blue': hasSpecial}">Special Character</small> &middot;
+      <small ng-class="{'light-blue': longEnough}">Long Enough</small>
+    </div>
+    <br>
+  </div>
+
+  <div ng-show="step === 'one'">
+    <a class="action" ng-click="next()" ng-disabled="!validNickname">Continue</a>
+    <a class="action" ng-click="$dismiss()">Cancel</a>
+  </div>
+  <div ng-show="step === 'two'">
+    <a class="action" ng-click="createPlayer()" ng-disabled="form.email.$invalid || !validPassword">Start Playing!</a>
+    <a class="action" ng-click="back()">Back</a>
+  </div>
+  <a class="link secondary-instruction" ng-click="$dismiss('logging in instead')">
+    Have an account?
+  </a>
+
+</form>
+

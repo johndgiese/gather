@@ -12,6 +12,7 @@ var fields = {
   resetTokenTimeout: 'pResetTokenTimeout',
   lastLogin: 'last_login',
   superuser: 'is_superuser',
+  onEmailList: 'pOnEmailList',
 };
 var Player = orm.define('tbPlayer', fields, 'pId');
 exports.Model = Player;

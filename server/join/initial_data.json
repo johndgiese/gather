@@ -1,0 +1,59 @@
+[
+{
+  "fields": {
+    "on_email_list": true,
+    "name": "David",
+    "password_reset_token_timeout": null,
+    "is_active": true,
+    "password_reset_token": null,
+    "is_superuser": true,
+    "created_on": "2014-11-24T20:46:14",
+    "last_login": "2014-11-24T20:46:14Z",
+    "groups": [],
+    "user_permissions": [],
+    "is_admin": true,
+    "password": "pbkdf2_sha256$12000$iEGT3OREyAhG$q3WQMA7JMrVdtcPl6VEgScKe27DR0JoSqyOg40La71g=",
+    "email": "david@gather.gg"
+  },
+  "model": "join.player",
+  "pk": 1
+},
+{
+  "fields": {
+    "on_email_list": true,
+    "name": "Jason",
+    "password_reset_token_timeout": null,
+    "is_active": true,
+    "password_reset_token": null,
+    "is_superuser": false,
+    "created_on": "2014-11-24T20:46:29",
+    "last_login": "2014-11-24T20:46:29Z",
+    "groups": [],
+    "user_permissions": [],
+    "is_admin": true,
+    "password": "pbkdf2_sha256$12000$rh5aWucpQhMn$mb9KP9Ym6/bthca+O6tldog2uBxfsdgGdDU0GCPRZIA=",
+    "email": "jason@gather.gg"
+  },
+  "model": "join.player",
+  "pk": 2
+},
+{
+  "fields": {
+    "on_email_list": true,
+    "name": "Adam",
+    "password_reset_token_timeout": null,
+    "is_active": true,
+    "password_reset_token": null,
+    "is_superuser": false,
+    "created_on": "2014-11-24T20:46:39",
+    "last_login": "2014-11-24T20:46:39Z",
+    "groups": [],
+    "user_permissions": [],
+    "is_admin": true,
+    "password": "pbkdf2_sha256$12000$VwpUox5sTMsZ$A58LqIypJQsev+PmzWFfmi+f7Im2IK1EzuKZF1uztGw=",
+    "email": "adam@gather.gg"
+  },
+  "model": "join.player",
+  "pk": 3
+}
+]

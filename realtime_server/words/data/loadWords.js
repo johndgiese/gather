@@ -10,15 +10,7 @@ var responseCount = 0, promptCount = 0, promises = [];
 var csvStream = csv({trim: true})
   .on("record", function(data) {
     var text = data[0];
-    var type = data[1];
-    var tagText = data[2] || null;
-    var tags = [];
-    if (tagText !== null) {
-      tags = tagText.split(',')
-        .map(function(untrimmed) {
-          return untrimmed.trim();
-        });
-    }
+    var createdOn = data[1];
 
     var p;
     if (type == "Answer") {
@@ -40,5 +32,4 @@ var csvStream = csv({trim: true})
 var wordFileName = process.argv[2];
 var stream = fs.createReadStream(wordFileName);
 
-words.createTags();
 stream.pipe(csvStream);

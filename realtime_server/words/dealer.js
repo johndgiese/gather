@@ -125,8 +125,7 @@ function pickResponses(playerGameId, gameId, numToDeal, dealt, timesAllCardsPlay
     // if not enough dealt, is because all the responses have been played at
     // least `timesAllCardsPlayed` times, so we have to start using cards over
     // again from the begging (by recursively calling this function).  This is
-    // equivalent to "re-shuffling" the deck in a game of CAH after you get to
-    // the end.
+    // equivalent to "re-shuffling" the deck
     if (dealt.length < numToDeal) {
       timesAllCardsPlayed++;
       return pickResponses(playerGameId, gameId, numToDeal, dealt, timesAllCardsPlayed);

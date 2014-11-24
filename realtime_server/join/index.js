@@ -50,6 +50,7 @@ exports.setup = function(socket) {
   socket.on('loginViaSession', loginViaSession);
   socket.on('logout', logout);
   socket.on('createPlayer', createPlayer);
+  socket.on('updatePlayer', updatePlayer);
   socket.on('createGame', createGame);
   socket.on('joinGame', joinGame);
   socket.on('leaveGame', leaveGame);
@@ -58,6 +59,7 @@ exports.setup = function(socket) {
   socket.on('startGame', startGame);
   socket.on('sendPasswordResetEmail', sendPasswordResetEmail);
   socket.on('resetPassword', resetPassword);
+  socket.on('checkEmailAvailability', checkEmailAvailability);
 
   // TODO: make these "ideal" functions by passing in the "socket state",
   // instead of creating closures for each socket; will save on memory and be
@@ -115,13 +117,12 @@ exports.setup = function(socket) {
     })
     .then(function() {
 
-      if (false) {
-        // TODO: handle email/password creation
+      if (data.email !== undefined || data.password !== undefined) {
         if (!validator.isEmail(data.email)) {
           throw new Error("Invalid email address");
         }
-        if (!validator.isLength(data.password, 6)) {
-          throw new Error("Password is too short");
+        if (!auth.validPassword(data.password)) {
+          throw new Error("Invalid password");
         }
       }
 
@@ -129,10 +130,17 @@ exports.setup = function(socket) {
         name: data.name,
         lastLogin: new Date(),
         email: data.email || null,
+        password: '',  // over-ridden below
+        superuser: false,
       })
       .save()
       .then(function(player_) {
         player = player_;
+        if (data.password !== undefined) {
+          return auth.setPassword(player, data.password);
+        }
+      })
+      .then(function() {
         acknowledge({
           player: player.forApi(),
           session: createSession(player),
@@ -144,6 +152,62 @@ exports.setup = function(socket) {
       acknowledge({_error: "Unable to create player"});
     });
   }
+
+  /**
+   * Update a player's details.
+   * note: setting the password is only allowed if it is currently null.
+   */
+  function updatePlayer(data, acknowledge) {
+    Q.fcall(function() {
+      requirePlayer();
+    })
+    .then(function() {
+      if (data.email !== undefined && !validator.isEmail(data.email)) {
+        throw new Error("Invalid email address");
+      } else {
+        player.email = data.email;
+      }
+
+      if (data.password !== undefined) {
+        if (!auth.validPassword(data.password)) {
+          throw new Error("Invalid password");
+        }
+        if (player.password === null || player.password === "") {
+          if (data.email === undefined) {
+            throw new Error("If setting password for first time, must also set email");
+          }
+        } else {
+          throw new Error("Password is already set");
+        }
+      }
+
+      if (data.name !== undefined) {
+        requireValidPlayerName(data.name);
+        player.name = data.name;
+      }
+
+      player.lastLogin = new Date();
+
+      return player.save()
+      .then(function(player_) {
+        player = player_;
+        if (data.password !== undefined) {
+          return auth.setPassword(player, data.password);
+        }
+      })
+      .then(function() {
+        acknowledge({
+          player: player.forApi(),
+          session: createSession(player),
+        });
+      });
+    })
+    .fail(function(error) {
+      logger.error(error);
+      acknowledge({_error: "Unable to update password"});
+    });
+  }
+
 
   /**
    * Login a player, given the player's id.
@@ -209,7 +273,7 @@ exports.setup = function(socket) {
       .then(function(player_) {
         var tokenValid = auth.checkPasswordResetToken(player_, data.token);
         if (tokenValid) {
-          return auth.setPassword(player_.email, data.newPassword)
+          return auth.setPassword(player_, data.newPassword)
           .then(function() {
             player = player_;
             acknowledge({
@@ -507,6 +571,26 @@ exports.setup = function(socket) {
         socket.emit('playerLeft', leaveData);
         socket.broadcast.to(party).emit('playerLeft', leaveData);
       });
+    });
+  }
+  
+  function checkEmailAvailability(data, acknowledge) {
+    return Q.fcall(function() {
+      if (data && !validator.isEmail(data.email)) {
+        throw new Error("Invalid email address");
+      }
+    })
+    .then(function() {
+      return models.Player.queryOneEmail(data.email)
+      .then(function() {
+        acknowledge({exists: true});
+      }, function() {
+        acknowledge({exists: false});
+      });
+    })
+    .fail(function(error) {
+      logger.error(error);
+      acknowledge({_error: "Unable to check email"});
     });
   }
 
