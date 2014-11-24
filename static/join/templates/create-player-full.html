@@ -8,7 +8,7 @@
 <form novalidation role="form" name="form">
 
   <div class="form-group" ng-show="step === 'one'">
-    <p class="secondary-instruction pull-down pull-left">Nickname</p>
+    <p class="secondary-instruction pull-down text-left">Nickname</p>
     <input 
         ng-model="p.name"
         class="form-control"
@@ -23,7 +23,7 @@
   </div>
 
   <div class="form-group" ng-class="{'has-error': emailTaken || (form.email.$dirty && form.email.$invalid)}" ng-show="step === 'two'">
-    <p class="secondary-instruction pull-down pull-left">
+    <p class="secondary-instruction pull-down text-left">
       <span ng-show="!emailTaken">
         <span ng-hide="form.email.$dirty && form.email.$invalid">Email</span>
         <span ng-show="form.email.$dirty && form.email.$invalid" class="text-danger">Invalid Email</span>
@@ -41,7 +41,7 @@
   </div>
 
   <div class="form-group" ng-class="{'has-error': form.password.$dirty && !validPassword}" style="margin-bottom: 5px;" ng-show="step === 'two'">
-    <p class="pull-down pull-left secondary-instruction">Password</p>
+    <p class="pull-down text-left secondary-instruction">Password</p>
     <input 
         ng-model="p.password"
         class="form-control"

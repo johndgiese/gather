@@ -2,7 +2,7 @@
   <form novalidation role="form" name="loginForm">
 
     <div class="form-group" ng-class="{'has-error': (loginForm.email.$dirty && loginForm.email.$invalid) || incorrectEmail}">
-      <p class="secondary-instruction pull-down pull-left">
+      <p class="secondary-instruction pull-down text-left">
         <span ng-show="!incorrectEmail">
           <span ng-hide="loginForm.email.$dirty && loginForm.email.$invalid">Email</span>
           <span ng-show="loginForm.email.$dirty && loginForm.email.$invalid" class="text-danger">Invalid Email</span>
@@ -21,14 +21,14 @@
     </div>
 
     <div class="form-group" ng-class="{'has-error': (loginForm.password.$dirty && loginForm.password.$invalid) || incorrectPassword}">
-      <p class="pull-down pull-left secondary-instruction">
+      <p class="pull-down text-left secondary-instruction">
         <span ng-show="!incorrectPassword">
           <span ng-hide="loginForm.password.$dirty && loginForm.password.$invalid">Password</span>
           <span ng-show="loginForm.password.$dirty && loginForm.password.$invalid" class="text-danger">Password Too Short</span>
         </span>
         <span ng-hide="!incorrectPassword" class="text-danger">Incorrect Password</span>
+        <a class="pull-right light-blue" tabindex="-1" ng-click="goTo('forget')">I Forgot</a>
       </p>
-      <a class="pull-down pull-right secondary-instruction light-blue" tabindex="-1" ng-click="goTo('forget')">I Forgot</a>
 
       <input 
           ng-model="p.password"
@@ -52,7 +52,7 @@
   <form novalidation role="form" name="resetForm">
 
     <div class="form-group" ng-class="{'has-error': resetForm.email.$dirty && resetForm.email.$invalid}">
-      <p class="secondary-instruction pull-down pull-left">
+      <p class="secondary-instruction pull-down text-left">
         <span ng-hide="resetForm.email.$dirty && resetForm.email.$invalid">Email</span>
         <span ng-show="resetForm.email.$dirty && resetForm.email.$invalid" class="text-danger">Invalid Email</span>
       </p>
