@@ -10,6 +10,7 @@ def calculate_funny_votes(instance):
     else:
         percent_funny_votes = (num_funny/float(total))*100.0
 
+    percent_funny_votes = round(percent_funny_votes, 2)
     return total, percent_funny_votes
 
 def calculate_response_stats(response):
@@ -24,7 +25,13 @@ def calculate_response_stats(response):
         total_votes_in_round = c.round_played.card_set.count()
 
         # subtract one, because you can't vote for yourself
-        avg_frac_of_possible_votes_when_played += (100.0*float(votes_for_card)/float(total_votes_in_round - 1))
+        denominator = float(total_votes_in_round - 1)
+        numerator = 100.0*float(votes_for_card)
+        if denominator == 0:
+            frac = 0
+        else:
+            frac = numerator/denominator
+        avg_frac_of_possible_votes_when_played += frac
 
         times_played += 1
         num_votes += votes_for_card
@@ -34,4 +41,5 @@ def calculate_response_stats(response):
     else:
         avg_frac_of_possible_votes_when_played = 0
 
+    avg_frac_of_possible_votes_when_played = round(avg_frac_of_possible_votes_when_played, 2)
     return num_votes, times_played, avg_frac_of_possible_votes_when_played

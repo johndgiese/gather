@@ -118,6 +118,9 @@ class ResponseAdmin(WordAdmin):
     list_display = list(WordAdmin.list_display)
     just_before_text = len(list_display) - 1
 
+    list_display.insert(just_before_text, stats_field('times_played', 'TP'))
+    just_before_text += 1
+
     list_display.insert(just_before_text, stats_field('num_votes', 'NV'))
     just_before_text += 1
 
