@@ -5,6 +5,7 @@ angular.module('join')
     $scope.showError = false;
     $scope.p = {};
     $scope.p.newPassword = '';
+    $scope.p.newPasswordAgain = '';
     $scope.validPassword = false;
 
     $scope.hasLowerCaseLetter = false;
@@ -13,14 +14,18 @@ angular.module('join')
     $scope.hasSpecial = false;
     $scope.longEnough = false;
 
-    $scope.$watch('p.newPassword', function(password) {
+    function validatePassword(password) {
       $scope.longEnough = password.length >= 8;
       $scope.hasLowerCaseLetter = password.search(/[a-z]/) !== -1;
       $scope.hasUpperCaseLetter = password.search(/[A-Z]/) !== -1;
       $scope.hasNumber = password.search(/\d/) !== -1;
       $scope.hasSpecial = password.search(/[\!\@\#\$\%\^\&\*\(\)\_\+]/) !== -1;
-      $scope.validPassword = ($scope.hasLowerCaseLetter && $scope.hasUpperCaseLetter && $scope.hasNumber && $scope.hasSpecial && $scope.longEnough);
-    });
+      $scope.match = $scope.p.newPassword === $scope.p.newPasswordAgain;
+      $scope.validPassword = ($scope.hasLowerCaseLetter && $scope.hasUpperCaseLetter && $scope.hasNumber && $scope.hasSpecial && $scope.longEnough && $scope.match);
+    }
+
+    $scope.$watch('p.newPassword', validatePassword);
+    $scope.$watch('p.newPasswordAgain', validatePassword);
 
     $scope.resetPassword = function() {
       $scope.showError = false;
