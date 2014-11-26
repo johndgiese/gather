@@ -140,7 +140,7 @@ exports.generatePasswordResetToken = function(player, days) {
 
   return player.save()
   .then(function() {
-    Q.when(token);
+    return Q.when(token);
   });
 };
 

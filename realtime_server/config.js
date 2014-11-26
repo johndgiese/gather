@@ -11,3 +11,4 @@ if (local.ENV === 'DEV') {
   Q.longStackSupport = true;
 }
 
+exports.MANDRILL_API_KEY = '3ttDkoUzVEhYS5IJ3zMHlg';
