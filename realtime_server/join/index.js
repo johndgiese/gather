@@ -11,6 +11,7 @@ var transaction = require('../transaction');
 var session = require('./session');
 var config = require('../config');
 var auth = require('./auth');
+var email = require('../email');
 
 // a month
 var SESSION_LENGTH = 1000*60*60*24*31;
@@ -145,6 +146,7 @@ exports.setup = function(socket) {
           player: player.forApi(),
           session: createSession(player),
         });
+        email.sendWelcomeEmail(player.email);
       });
     })
     .fail(function(error) {
@@ -244,17 +246,16 @@ exports.setup = function(socket) {
     .then(function() {
       return models.Player.queryOneEmail(data.email)
       .then(function(player) {
-        return auth.generatePasswordResetToken(player);
-      })
-      .then(function(resetToken) {
-        // TODO: send reset email
-        // on success acknowledge
-        acknowledge({});
-        // on fail indicate error
+        return auth.generatePasswordResetToken(player)
+        .then(function(resetToken) {
+          var resetLink = 'http://127.0.0.1:8000/g/account/passwordreset/' + player.id + '/' + resetToken;
+          email.sendPasswordReset(player.email, resetLink);
+          acknowledge({});
+        });
       })
       .fail(function() {
-        // TODO: wait approx as long as sending an email takes
         // don't inform the user that the email was bad
+        // TODO: wait approx as long as sending an email takes
         acknowledge({});
       });
     })
