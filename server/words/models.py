@@ -37,7 +37,6 @@ class Prompt(models.Model):
     created_on = TimestampField(auto_now_add=True, db_column='proCreatedOn')
     tags = models.ManyToManyField('Tag', through='PromptTag')
 
-
     def refresh_stats(self):
         try:
             self.stats

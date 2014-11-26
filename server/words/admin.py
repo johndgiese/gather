@@ -51,7 +51,6 @@ class WordAdmin(admin.ModelAdmin):
     list_display = [
         'id', 
         'active', 
-        'is_cah', 
         stats_field('num_funny_votes', 'NFV'),
         stats_field('percent_funny_votes', '%FV'),
         'text'

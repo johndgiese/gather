@@ -192,11 +192,7 @@ function setupRoundStart(socket, player, game) {
   // NOTE: errors in the following code won't be caught
   models.Round.newByGame(game.id)
   .then(function(round) {
-<<<<<<< HEAD
     var delay = round.number === 1 ? FIRST_ROUND_DELAY : INTER_ROUND_DELAY;
-=======
-    var delay = round.number === 1 ? exports.FIRST_ROUND_DELAY : exports.INTER_ROUND_DELAY;
->>>>>>> Various fixes
     return round.forApi()
     .delay(delay)
     .then(function(roundData) {
