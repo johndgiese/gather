@@ -3,6 +3,8 @@
 A simple group-based word game designed to be played on phones and tablets
 while at the same location.
 
+Checkout the site online at: https://gather.gg
+
 The code is organized into three main folders.
 
 1. `server` - a django based server (serving non-game files)
